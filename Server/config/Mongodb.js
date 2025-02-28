@@ -1,7 +1,8 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 
-// URL kết nối MongoDB (thay thế bằng URL thực tế của bạn)
-const MONGO_URI = "mongodb://localhost:27017/your_database_name";
+// Lấy URL kết nối MongoDB từ biến môi trường
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/BadmintonManager";
 
 // Hàm kết nối database
 const connectDB = async () => {
