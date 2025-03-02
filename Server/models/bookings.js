@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+<<<<<<< Updated upstream
   courtId: { type: mongoose.Schema.Types.ObjectId, ref: "Court", required: true },
   
   type: { type: String, enum: ["daily", "monthly"], required: true }, // daily hoặc monthly
@@ -16,6 +17,16 @@ const bookingSchema = new mongoose.Schema({
   depositAmount: { type: Number, default: 0 }, // Tiền cọc cho đặt sân cố định
 
   expiresAt: { type: Date }, // Dùng để tự động hủy giữ chỗ nếu pending quá lâu
+=======
+  date: { type: String, required: true }, // YYYY-MM-DD
+  timeSlots: [
+    {
+      time: { type: String, required: true }, // VD: "06:00", "06:30"
+      status: { type: String, enum: ["pending", "booked"], default: "pending" }
+    }
+  ],
+  billId: { type: mongoose.Schema.Types.ObjectId, ref: "Bill" }, // Chỉ cần 1 billId cho toàn bộ booking
+>>>>>>> Stashed changes
   createdAt: { type: Date, default: Date.now }
 });
 
