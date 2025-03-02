@@ -1,4 +1,4 @@
-require('dotenv').config({ path: './server/.env' });  // Đường dẫn tới file .env trong thư mục server
+require('dotenv').config(); // Đảm bảo dòng này có trong đầu file
 const mongoose = require("mongoose");
 
 // Lấy URL kết nối MongoDB từ biến môi trường
