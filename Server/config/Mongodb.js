@@ -1,15 +1,14 @@
+require('dotenv').config(); // Đảm bảo dòng này có trong đầu file
 const mongoose = require("mongoose");
 
-// URL kết nối MongoDB (thay thế bằng URL thực tế của bạn)
-const MONGO_URI = "mongodb://localhost:27017/your_database_name";
+// Lấy URL kết nối MongoDB từ biến môi trường
+const MONGO_URI = process.env.MONGO_URI;
 
 // Hàm kết nối database
 const connectDB = async () => {
   try {
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Kết nối MongoDB mà không cần tùy chọn deprecated
+    await mongoose.connect(MONGO_URI);
     console.log("✅ Kết nối MongoDB thành công!");
   } catch (error) {
     console.error("❌ Lỗi kết nối MongoDB:", error);
