@@ -5,7 +5,7 @@ const updateAvgRating = require("../middleware/updateAvgRating");
 const testInsertRating = async () => {
   try {
     
-    const centerId = "67bcab5646f2f0993a4d7945"; // ID của sân cần đánh gi
+    const centerId = "67c3db4d7ef7f103bcf612fe"; // ID của sân cần đánh gi
 
     const newRating = new Rating({
       center: centerId,

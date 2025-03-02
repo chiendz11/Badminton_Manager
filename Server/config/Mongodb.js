@@ -1,16 +1,14 @@
-require("dotenv").config();
+require('dotenv').config({ path: './server/.env' });  // Đường dẫn tới file .env trong thư mục server
 const mongoose = require("mongoose");
 
 // Lấy URL kết nối MongoDB từ biến môi trường
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/BadmintonManager";
+const MONGO_URI = process.env.MONGO_URI;
 
 // Hàm kết nối database
 const connectDB = async () => {
   try {
-    await mongoose.connect(MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    // Kết nối MongoDB mà không cần tùy chọn deprecated
+    await mongoose.connect(MONGO_URI);
     console.log("✅ Kết nối MongoDB thành công!");
   } catch (error) {
     console.error("❌ Lỗi kết nối MongoDB:", error);
