@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-<<<<<<< Updated upstream
+
   courtId: { type: mongoose.Schema.Types.ObjectId, ref: "Court", required: true },
   
   type: { type: String, enum: ["daily", "monthly"], required: true }, // daily hoặc monthly
