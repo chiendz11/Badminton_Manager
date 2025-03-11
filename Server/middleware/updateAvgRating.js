@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Rating = require("../models/ratings");
+const Rating = require("../models/Ratings");
 const Center = require("../models/centers");
 
 const updateAvgRating = async (centerId) => {

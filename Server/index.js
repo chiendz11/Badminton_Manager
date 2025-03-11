@@ -1,17 +1,30 @@
-const express = require('express');
-const app = express();
-const connectDB = require("./config/Mongodb");
-const testInsertRating = require("./controllers/ratingController");
+import express from "express";
+import cors from "cors";
+import http from "http";
+import { Server as SocketIOServer } from "socket.io";
 
-// Kết nối database khi server khởi động
+import userRoutes from "./routes/userRoute.js";
+import connectDB from "./config/Mongodb.js";
+import courtRoute from "./routes/courtRoute.js";
+import courtStatusRoute from "./routes/courtStatusRoute.js"; // API booking status
+import { initSocket } from "./config/socket.js";
+import bookingPendingRoute from "./routes/bookingPendingRoute.js";
 
+// Kết nối tới MongoDB
 connectDB();
 
-testInsertRating();
-app.get('/', (req, res) => {
-    res.send('Hello from Express server');
-});
+const app = express();
+app.use(express.json());
+app.use(cors());
 
-app.listen(3000, () => {
-    console.log('Server running at http://localhost:3000/');
-});
+app.use("/api/users", userRoutes);
+app.use("/api/courts", courtRoute);
+app.use("/api/booking", courtStatusRoute);
+app.use("/api/booking/pending", bookingPendingRoute);
+
+const server = http.createServer(app);
+const io = new SocketIOServer(server, { cors: { origin: "*" } });
+initSocket(io);
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server chạy trên cổng ${PORT}`));

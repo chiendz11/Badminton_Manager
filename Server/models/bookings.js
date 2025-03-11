@@ -1,36 +1,29 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const bookingSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  courtId: { type: mongoose.Schema.Types.ObjectId, ref: "Court", required: true },
-  
-  type: { type: String, enum: ["daily", "monthly"], required: true }, // daily hoặc monthly
-  startDate: { type: Date, required: true }, // Nếu daily => ngày đặt | Nếu monthly => ngày bắt đầu
-  endDate: { type: Date }, // Chỉ dùng cho monthly booking
-
-  timeSlots: [{ type: String, required: true }], // VD: ["06:00", "06:30"]
-  daysOfWeek: [{ type: Number, enum: [2, 3, 4, 5, 6, 7, 8] }], // Dùng cho đặt cố định (monthly)
-
-  status: { type: String, enum: ["pending", "deposit", "booked"], default: "pending" }, // Trạng thái đặt
-  totalAmount: { type: Number, required: true },
-  depositAmount: { type: Number, default: 0 }, // Tiền cọc cho đặt sân cố định
-
-  expiresAt: { type: Date }, // Dùng để tự động hủy giữ chỗ nếu pending quá lâu
-  createdAt: { type: Date, default: Date.now }
+const bookingSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+  centerId: { type: Schema.Types.ObjectId, ref: "Center", required: true, index: true },
+  billId: { type: Schema.Types.ObjectId, ref: "Bill", index: true, sparse: true },
+  courts: [
+    {
+      courtId: { type: Schema.Types.ObjectId, ref: "Court", required: true },
+      timeslots: [{ type: Number, required: true }]
+    }
+  ],
+  date: { type: String, required: true, index: true }, // Format: "YYYY-MM-DD"
+  status: { type: String, enum: ["pending", "booked", "canceled"], default: "pending", index: true },
+  expiresAt: { type: Date, default: null },
+  createdAt: { type: Date, default: Date.now, index: true }
 });
 
-// Middleware tính `endDate` cho monthly booking
-bookingSchema.pre("save", function (next) {
-  if (this.type === "monthly" && this.startDate && this.daysOfWeek.length > 0) {
-    const end = new Date(this.startDate);
-    end.setMonth(end.getMonth() + 1); // Mặc định đặt sân cố định là 1 tháng
-    this.endDate = end;
-  }
-  next();
-});
+// Nếu muốn tự động xóa pending booking sau 60 giây, uncomment phần dưới
+// bookingSchema.pre("save", function(next) {
+//   if (this.status === "pending" && !this.expiresAt) {
+//     this.expiresAt = new Date(this.createdAt.getTime() + 60000);
+//   }
+//   next();
+// });
+// bookingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Tự động xóa booking "pending" sau X phút
-bookingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-
-const Booking = mongoose.model("Booking", bookingSchema, "bookings");
-module.exports = Booking;
+export default model("Booking", bookingSchema);
