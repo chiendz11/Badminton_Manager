@@ -1,20 +1,18 @@
-require('dotenv').config(); // Đảm bảo dòng này có trong đầu file
-const mongoose = require("mongoose");
+import dotenv from 'dotenv';
+dotenv.config();
 
-// Lấy URL kết nối MongoDB từ biến môi trường
+import mongoose from 'mongoose';
+
 const MONGO_URI = process.env.MONGO_URI;
 
-// Hàm kết nối database
 const connectDB = async () => {
   try {
-    // Kết nối MongoDB mà không cần tùy chọn deprecated
     await mongoose.connect(MONGO_URI);
     console.log("✅ Kết nối MongoDB thành công!");
   } catch (error) {
     console.error("❌ Lỗi kết nối MongoDB:", error);
-    process.exit(1); // Dừng chương trình nếu không thể kết nối
+    process.exit(1);
   }
 };
 
-// Xuất hàm để sử dụng trong các file khác
-module.exports = connectDB;
+export default connectDB;

@@ -4,7 +4,6 @@ const stockHistorySchema = new mongoose.Schema({
   inventoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Inventory", required: true }, // Sản phẩm nhập kho
   centerId: { type: mongoose.Schema.Types.ObjectId, ref: "Center", required: true }, // Trung tâm nhập hàng
   supplier: { type: String, required: true }, // Nhà cung cấp
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Nhân viên nhập kho
 
   quantityImport: { type: Number, required: true }, // Số lượng nhập (theo đơn vị nhập kho)
   unitImport: { type: String, required: true }, // Đơn vị nhập (Thùng, Kiện...)

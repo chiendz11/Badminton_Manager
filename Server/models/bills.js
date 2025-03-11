@@ -1,30 +1,53 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const billSchema = new mongoose.Schema({
-  billCode: { type: String, unique: true }, // Mã hóa đơn
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  type: { type: String, enum: ["daily", "monthly"], required: true },
-  booking: { type: mongoose.Schema.Types.ObjectId, ref: "Booking", required: true }, // Chỉ có 1 booking
+const billSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+
+  centerId: { type: Schema.Types.ObjectId, ref: "Center", required: true, index: true }, // Thêm CenterId
+
+  // Danh sách các booking đã xác nhận
+  bookings: [{ type: Schema.Types.ObjectId, ref: "Booking", required: true }],
+
+  // Tổng tiền (tính từ pricing của center)
   totalAmount: { type: Number, required: true },
-  paymentStatus: { 
-    type: String, 
-    enum: ["paid", "deposit"], 
-    required: true
-  },
-  note: { type: String, default: "" }, // Ghi chú hóa đơn
-  createdAt: { type: Date, default: Date.now }
+
+  // Phương thức thanh toán
+  paymentMethod: { type: String, default: "" },
+
+  // Trạng thái thanh toán
+  paymentStatus: { type: String, enum: ["pending", "paid"], default: "pending", index: true },
+
+  // Mã hóa đơn (tự động sinh)
+  billCode: { type: String, unique: true, required: true, index: true },
+
+  // Ghi chú (nếu có)
+  note: { type: String, default: "" },
+
+  createdAt: { type: Date, default: Date.now, index: true }
 });
 
-// Middleware tự động tạo billCode khi lưu
-billSchema.pre("save", function(next) {
+// Middleware tạo billCode tự động nếu chưa có
+billSchema.pre("save", async function (next) {
   if (!this.billCode) {
-    const now = new Date();
-    const typeCode = this.type === "daily" ? "D" : "M";
-    const formattedDate = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 12); // YYYYMMDDHHMM
-    this.billCode = `#B${typeCode}${formattedDate}`;
+    let isUnique = false;
+    while (!isUnique) {
+      const now = new Date();
+      const formattedDate = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 12);
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000); // Random 4 số cuối để tránh trùng
+      const newBillCode = `#Bill${formattedDate}${randomSuffix}`;
+
+      // Kiểm tra xem billCode có bị trùng không
+      const existingBill = await mongoose.models.Bill.findOne({ billCode: newBillCode });
+      if (!existingBill) {
+        this.billCode = newBillCode;
+        isUnique = true;
+      }
+    }
   }
   next();
 });
 
-const Bill = mongoose.model("Bill", billSchema, "bills");
-module.exports = Bill;
+const Bill = model("Bill", billSchema);
+export default Bill;
+  
