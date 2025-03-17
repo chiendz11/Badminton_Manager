@@ -5,7 +5,7 @@ const BookingTable = ({ courts, bookingData, toggleBookingStatus, times, slotCou
     <div className="mt-4 bg-green-100 p-4 rounded-md overflow-auto">
       <table className="table-fixed w-full" style={{ borderCollapse: "collapse" }}>
         <thead>
-          <tr>
+          <tr>  
             <th className="p-3 bg-green-100 text-center font-bold text-black" style={{ width: "100px" }}></th>
             {Array.from({ length: slotCount }, (_, i) => {
               const startHour = times[i];

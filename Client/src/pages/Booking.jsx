@@ -1,7 +1,7 @@
 // src/pages/BookingSchedule.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import DatePicker from "../components/datepicker";
+import DatePicker from "../components/datePicker";
 import Legend from "../components/legend";
 import BookingTable from "../components/bookingTable";
 import socket from "../socket";
