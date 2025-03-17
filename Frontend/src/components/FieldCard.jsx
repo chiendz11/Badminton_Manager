@@ -23,7 +23,7 @@ const FieldCard = ({ field }) => {
 
   const goToBooking = async (userId) => {
     try {
-      const { exists } = await checkPendingExists({ userId, centerId, date: today });
+      const { exists } = await checkPendingExists({ userId, centerId});
       if (exists) {
         alert(`User ${userId} đã có booking pending cho trung tâm này. Vui lòng chờ hết 5 phút.`);
       } else {

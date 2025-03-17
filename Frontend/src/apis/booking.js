@@ -52,10 +52,10 @@ export const confirmBooking = async ({ userId, centerId, date }) => {
   }
 };
 
-export const checkPendingExists = async ({ userId, centerId, date }) => {
+export const checkPendingExists = async ({ userId, centerId}) => {
   try {
     const response = await axios.get(`${API_URL}/api/booking/pending/exists`, {
-      params: { userId, centerId, date }
+      params: { userId, centerId}
     });
     return response.data;
   } catch (error) {
