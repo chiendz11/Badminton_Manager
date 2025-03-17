@@ -6,16 +6,25 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import './styles/global.css';
 import BookingSchedule from './pages/Booking';
+import PaymentPage from './pages/Payment';
 
 function App() {
   return (
     <Router>
-      <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            <>
+              <Header />
+              <Home />
+              <Footer />
+            </>
+          }
+        />
         <Route path="/booking" element={<BookingSchedule />} />
+        <Route path="/payment" element={< PaymentPage/>} />
       </Routes>
-      <Footer />
     </Router>
   );
 }
