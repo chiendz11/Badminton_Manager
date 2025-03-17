@@ -39,3 +39,4 @@
   });
   bookingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
   export default model("Booking", bookingSchema);
+
