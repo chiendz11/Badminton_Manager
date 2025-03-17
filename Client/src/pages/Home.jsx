@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import socket from "../socket";
-import { checkPendingExists } from "../apis/bookingPending";
+import { checkPendingExists } from "../apis/booking";
 
 const Home = () => {
   const navigate = useNavigate();

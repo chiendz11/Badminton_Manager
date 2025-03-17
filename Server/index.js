@@ -8,7 +8,7 @@
     import courtRoute from "./routes/courtRoute.js";
     import courtStatusRoute from "./routes/courtStatusRoute.js"; // API booking status
     import { initSocket } from "./config/socket.js";
-    import bookingPendingRoute from "./routes/bookingPendingRoute.js";
+    import bookingPendingRoute from "./routes/bookingRoute.js";
 
     // Kết nối tới MongoDB
     connectDB();
