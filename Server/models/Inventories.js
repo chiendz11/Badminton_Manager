@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const inventorySchema = new mongoose.Schema({
   name: { type: String, required: true }, // Tên mặt hàng
@@ -25,4 +25,5 @@ const inventorySchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("Inventory", inventorySchema);
+const Inventory = mongoose.model("Inventory", inventorySchema);
+export default Inventory;

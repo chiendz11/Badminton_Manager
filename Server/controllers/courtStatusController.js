@@ -1,5 +1,5 @@
 // controllers/bookingController.js
-import Booking from "../models/Bookings.js";
+import Booking from "../models/bookings.js";
 const TIMES = [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
 
 export const getBookingStatus = async (req, res) => {

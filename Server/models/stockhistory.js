@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const stockHistorySchema = new mongoose.Schema({
   inventoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Inventory", required: true }, // Sản phẩm nhập kho
@@ -16,4 +16,5 @@ const stockHistorySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("StockHistory", stockHistorySchema);
+const StockHistory = mongoose.model("StockHistory", stockHistorySchema);
+export default StockHistory;

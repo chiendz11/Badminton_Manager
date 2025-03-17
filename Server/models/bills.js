@@ -21,6 +21,9 @@ const billSchema = new Schema({
   // Mã hóa đơn (tự động sinh)
   billCode: { type: String, unique: true, required: true, index: true },
 
+  // Kiểu đơn: "fixed" cho đơn cố định, "daily" cho đơn theo ngày
+  orderType: { type: String, enum: ["fixed", "daily"], default: "daily", index: true },
+
   // Ghi chú (nếu có)
   note: { type: String, default: "" },
 
@@ -50,4 +53,3 @@ billSchema.pre("save", async function (next) {
 
 const Bill = model("Bill", billSchema);
 export default Bill;
-  

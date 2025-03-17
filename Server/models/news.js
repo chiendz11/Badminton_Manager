@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const newsSchema = new mongoose.Schema({
   title: { type: String, required: true }, // Tiêu đề bài viết
@@ -13,4 +13,4 @@ const newsSchema = new mongoose.Schema({
 });
 
 const News = mongoose.model("News", newsSchema, "news");
-module.exports = News;
+export default News;

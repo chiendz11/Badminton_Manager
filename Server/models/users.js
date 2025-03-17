@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+const { Schema, model } = mongoose;
 
-const UserSchema = new mongoose.Schema(
+const UserSchema = new Schema(
   {
     name: {
       type: String,
@@ -29,24 +30,42 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // Username và password_hash sẽ để trống nếu role là "guest"
     username: {
       type: String,
-      required: true,
-      unique: true,
       trim: true,
+      default: "",
     },
     password_hash: {
       type: String,
-      required: true,
+      default: "",
     },
     avatar_image_path: {
       type: String,
       default: "",
     },
+    role: {
+      type: String,
+      enum: ["member", "guest"],
+      default: "member",
+    },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model("User", UserSchema);
+// Nếu là user thật (member), bắt buộc phải có username và password_hash
+UserSchema.pre("validate", function (next) {
+  if (this.role === "member") {
+    if (!this.username) {
+      this.invalidate("username", "Username is required for member accounts");
+    }
+    if (!this.password_hash) {
+      this.invalidate("password_hash", "Password is required for member accounts");
+    }
+  }
+  next();
+});
+
+const User = model("User", UserSchema);
 
 export default User;

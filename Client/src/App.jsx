@@ -1,16 +1,21 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Register from "./pages/Register";
+// App.jsx
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Home from "./pages/Home";
 import BookingSchedule from "./pages/Booking";
+import PaymentPage from "./pages/PaymentPage";
 
 function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<BookingSchedule/>} />
+        <Route path="/" element={<Home />} />
+        <Route path="/booking" element={<BookingSchedule />} />
+        <Route path="/payment" element={<PaymentPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
 
 export default App;
-  
