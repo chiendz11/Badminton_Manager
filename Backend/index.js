@@ -9,6 +9,7 @@
     import courtStatusRoute from "./routes/courtStatusRoute.js"; // API booking status
     import { initSocket } from "./config/socket.js";
     import bookingPendingRoute from "./routes/bookingRoute.js";
+    import adminRoute from "./routes/adminRoutes.js";
 
     // Kết nối tới MongoDB
     connectDB();
@@ -21,6 +22,7 @@
     app.use("/api/courts", courtRoute);
     app.use("/api/booking", courtStatusRoute);
     app.use("/api/booking", bookingPendingRoute);
+    app.use("/api/admin", adminRoute);
 
     const server = http.createServer(app);
     const io = new SocketIOServer(server, { cors: { origin: "*" } });
