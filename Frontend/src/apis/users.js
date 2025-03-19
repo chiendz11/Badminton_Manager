@@ -12,3 +12,13 @@ export const registerUser = async (userData) => {
         throw error;
     }
 };
+
+export const getUserById = async (userId) => {
+    try {
+        const res = await axios.get(`${API_URL}/api/users/${userId}`);
+        return res.data; // Giả sử API trả về { name: "User Name", phone: "0123456789" }
+    } catch (error) {
+        console.error("Error fetching user info:", error);
+        return null;
+    }
+};

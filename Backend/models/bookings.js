@@ -28,7 +28,7 @@
       if (minSlot !== Infinity) {
         if (this.status === "pending") {
           // pending: ở DB nên có TTL (ví dụ 5 phút)
-          this.expiresAt = new Date(this.createdAt.getTime() + 5 * 60 * 1000);
+          this.expiresAt = new Date(this.createdAt.getTime() + 1 * 60 * 1000);
         } else if (this.status === "booked") {
           // booked: expiredAt là thời gian bắt đầu của timeslot nhỏ nhất trong ngày đặt
           this.expiresAt = new Date(`${this.date}T${minSlot.toString().padStart(2, "0")}:00:00.000Z`);

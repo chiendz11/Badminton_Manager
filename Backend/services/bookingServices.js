@@ -65,7 +65,7 @@ export const pendingBookingToDB = async (userId, centerId, date) => {
     throw new Error("No pending booking found in cache");
   }
   const now = new Date();
-  const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
+  const fiveMinutesLater = new Date(now.getTime() + 1 * 60 * 1000);
   const dbBooking = new Booking({
     userId: cachedBooking.userId,
     centerId: cachedBooking.centerId,

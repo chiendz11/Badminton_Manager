@@ -1,54 +1,102 @@
 // src/pages/PaymentPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import DatePicker from "../components/datepicker";
 import { clearAllPendingBookings, confirmBooking } from "../apis/booking";
-
-const PaymentPage = () => {
+import { getUserById } from "../apis/users";
+import { Copy } from "lucide-react";
+import SessionExpired from "./SessionExpired";
+import PaymentHeader from "../components/paymentHeader";
+export default function PaymentPage() {
   const navigate = useNavigate();
   const { search } = useLocation();
   const query = new URLSearchParams(search);
 
-  // Lấy thông tin từ URL
+  // Lấy các query parameter từ URL
   const userId = query.get("user") || "000000000000000000000001";
   const centerId = query.get("centerId") || "67ca6e3cfc964efa218ab7d7";
-  // Nếu không có giá trị date trong URL, mặc định lấy ngày hôm nay
   const initialDate = query.get("date") || new Date().toISOString().split("T")[0];
-  const [selectedDate, setSelectedDate] = useState(initialDate);
+  // Tổng tiền được truyền từ BookingSchedule
+  const totalPrice = query.get("total") ? Number(query.get("total")) : 0;
 
-  const TTL = 300; // 5 phút
-  const [timeLeft, setTimeLeft] = useState(TTL);
+  const [selectedDate] = useState(initialDate);
+  const [userInfo, setUserInfo] = useState({ name: "", phone: "" });
+  // timeLeft sẽ được tính dựa trên bookingExpiresAt (nếu có) hoặc fallback 300 giây
+  const [timeLeft, setTimeLeft] = useState(300);
+  const [showCopied, setShowCopied] = useState(false);
+  const qrCode = "/images/Tiền.jpg"; // Đường dẫn QR code
 
-  // Khi trang load (F5) hoặc mount, clear toàn bộ pending booking của user tại trung tâm
+  // Lấy thông tin user khi component mount
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const user = await getUserById(userId);
+        if (user) {
+          setUserInfo(user);
+        }
+      } catch (error) {
+        console.error("Error fetching user info:", error);
+      }
+    };
+    fetchUserInfo();
+  }, [userId]);
+
+  // Clear pending bookings khi load
   useEffect(() => {
     const clearAll = async () => {
       try {
         await clearAllPendingBookings({ userId, centerId });
-        console.log("Cleared all pending bookings on mount");
       } catch (error) {
-        console.error("Error clearing all pending bookings on mount:", error);
+        console.error("Error clearing pending bookings on mount:", error);
       }
     };
     clearAll();
   }, [userId, centerId]);
 
-  // Đồng hồ đếm ngược: Lấy thời gian bắt đầu nếu chưa có
+  // Đồng hồ đếm ngược: Nếu localStorage có bookingExpiresAt thì dùng nó,
+  // nếu không thì dùng paymentStartTime (được set khi vào trang BookingSchedule)
   useEffect(() => {
-    if (!localStorage.getItem("paymentStartTime")) {
-      localStorage.setItem("paymentStartTime", Date.now());
-    }
+    const getExpiresAt = () => {
+      const expiresAtStr = localStorage.getItem("bookingExpiresAt");
+      console.log("bookingExpiresAt from localStorage:", expiresAtStr);
+      if (expiresAtStr) {
+        return new Date(expiresAtStr).getTime();
+      }
+      return null;
+    };
+  
+    const startCountdown = () => {
+      const expiresAt = getExpiresAt();
+      if (expiresAt) {
+        const updateCountdown = () => {
+          const now = Date.now();
+          const remaining = Math.floor((expiresAt - now) / 1000);
+          console.log("Updating countdown using expiresAt. Remaining seconds:", remaining);
+          setTimeLeft(remaining > 0 ? remaining : 0);
+        };
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+        return () => clearInterval(interval);
+      } else {
+        const startTime = parseInt(localStorage.getItem("paymentStartTime"), 10) || Date.now();
+        console.log("Using paymentStartTime for countdown. Start time:", startTime);
+        const updateCountdown = () => {
+          const now = Date.now();
+          const elapsed = Math.floor((now - startTime) / 1000);
+          const remaining = 300 - elapsed;
+          console.log("Updating countdown using paymentStartTime. Elapsed:", elapsed, "Remaining:", remaining);
+          setTimeLeft(remaining > 0 ? remaining : 0);
+        };
+        updateCountdown();
+        const interval = setInterval(updateCountdown, 1000);
+        return () => clearInterval(interval);
+      }
+    };
+  
+    const cleanup = startCountdown();
+    return cleanup;
   }, []);
 
-  // Đồng hồ đếm ngược: Cập nhật mỗi giây
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const startTime = parseInt(localStorage.getItem("paymentStartTime"), 10) || Date.now();
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const remaining = TTL - elapsed;
-      setTimeLeft(remaining > 0 ? remaining : 0);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [TTL]);
+  
 
   const formatTime = (t) => {
     const m = Math.floor(t / 60);
@@ -56,23 +104,19 @@ const PaymentPage = () => {
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Nếu người dùng thay đổi ngày qua DatePicker, cập nhật selectedDate
-  const handleDateChange = (newDate) => {
-    console.log("DatePicker selected date:", newDate);
-    setSelectedDate(newDate);
-    // Khi đổi ngày, cũng xóa toàn bộ cache pending
-    clearAllPendingBookings({ userId, centerId })
-      .then(() => console.log("Cleared all pending bookings on date change"))
-      .catch((error) => console.error("Error clearing pending bookings on date change:", error));
+  const handleCopyAccount = () => {
+    navigator.clipboard.writeText("0357843333");
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 1500);
   };
 
-  // Xác nhận booking: gọi API confirmBooking với userId, centerId và selectedDate
   const handleConfirmOrder = async () => {
     try {
       const { success } = await confirmBooking({ userId, centerId, date: selectedDate });
       if (success) {
         alert("Đơn hàng của bạn đã được xác nhận (booked).");
         localStorage.removeItem("paymentStartTime");
+        localStorage.removeItem("bookingExpiresAt");
         navigate("/");
       }
     } catch (error) {
@@ -80,7 +124,7 @@ const PaymentPage = () => {
     }
   };
 
-  // Xử lý khi nhấn back (popstate): Clear toàn bộ pending booking và điều hướng về Home
+  // Xử lý khi nhấn back (popstate)
   useEffect(() => {
     window.history.pushState(null, "", window.location.href);
     const handlePopState = () => {
@@ -98,64 +142,135 @@ const PaymentPage = () => {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [navigate, userId, centerId]);
 
-  // Khi component unmount, Clear toàn bộ pending booking
+  // Clear pending bookings khi component unmount
   useEffect(() => {
     return () => {
       clearAllPendingBookings({ userId, centerId })
-        .then(() => localStorage.removeItem("paymentStartTime"))
+        .then(() => {
+          localStorage.removeItem("paymentStartTime");
+        })
         .catch((err) => console.error("Error clearing pending bookings on unmount:", err));
     };
   }, [userId, centerId]);
+  
+  if (timeLeft == 0) {
+    return <SessionExpired />;
+  }
 
   return (
-    <div className="min-h-screen w-screen bg-green-900 text-white p-4 flex flex-col items-center">
-      <div className="text-center text-2xl font-bold mb-4">Thanh toán</div>
-      <div className="bg-green-700 p-6 rounded-lg max-w-4xl w-full flex flex-col md:flex-row justify-between">
-        <div className="bg-white text-black p-4 rounded md:w-1/2">
-          <h2 className="text-lg font-bold mb-2">1. Tài khoản ngân hàng</h2>
-          <p>Tên TK: CHU THANH MINH</p>
-          <p>Số TK: 0123456789</p>
-          <p>Ngân hàng: MB Bank</p>
-          <hr className="my-2" />
-          <p className="text-red-600 font-bold">
-            Chuyển khoản 225.000 đ, ghi "Thanh toán booking".
+    <div className="min-h-screen w-full flex flex-col bg-green-700 text-white">
+      {/* Header */}
+      <PaymentHeader title="Payment" />
+
+      {/* Nội dung chính */}
+      <div className="flex flex-1 p-4 gap-4">
+        {/* Cột trái: Thông tin thanh toán */}
+        <div className="flex-1 flex flex-col gap-4 border-r border-white/50 pr-4">
+          <div className="p-4 bg-green-700 flex gap-4">
+            <div className="flex-1">
+              <h2 className="text-lg font-bold mb-2" style={{ color: "#CEE86B" }}>
+                1. Bank Account
+              </h2>
+              <p>
+                Account name: <span className="font-semibold">BUI ANH CHIEN</span>
+              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p>
+                  Account number: <span className="font-semibold">0982451906</span>
+                </p>
+                <div className="relative">
+                  <button
+                    onClick={handleCopyAccount}
+                    className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded flex items-center gap-1"
+                  >
+                    <Copy size={16} /> Copy
+                  </button>
+                  {showCopied && (
+                    <div className="absolute top-full left-0 mt-1 text-green-600 text-sm bg-white px-2 py-1 rounded shadow">
+                      Copied!
+                    </div>
+                  )}
+                </div>
+              </div>
+              <p>
+                Bank name: <span className="font-semibold">MBBank</span>
+              </p>
+            </div>
+            <div className="flex items-start justify-center">
+              <img
+                src="/images/Tiền.jpg"
+                alt="QR Code"
+                className="border border-gray-300 w-32 h-32 object-contain rounded"
+              />
+            </div>
+          </div>
+
+          <div className="bg-[#00a95c] text-white font-semibold rounded p-3 flex items-center gap-2">
+            <span className="text-xl text-yellow-600">🚨</span>
+            <span className="leading-tight">
+              Please transfer{" "}
+              <span className="text-yellow-200 font-bold">{totalPrice.toLocaleString("vi-VN")} đ</span>{" "}
+              and send payment images in the boxes below to complete the booking!
+            </span>
+          </div>
+
+          <p className="text-sm" style={{ color: "#CEE86B" }}>
+            After transferring, please check your booking status in the "Account" tab until the owner confirms.
           </p>
-          <p className="mt-2">Sau khi chuyển, nhấn "Xác nhận đặt".</p>
-          <div className="bg-gray-200 p-2 mt-2">
-            Booking còn giữ chỗ:{" "}
-            <span className="text-red-500 font-bold ml-2">{formatTime(timeLeft)}</span>
+
+          <div className="text-center">
+            <p>Your booking will be reserved for</p>
+            <h3 className="text-2xl font-bold mt-1">{formatTime(timeLeft)}</h3>
+          </div>
+
+          <div className="flex gap-4 justify-center">
+            <div className="border-2 border-white rounded w-40 h-40 flex flex-col items-center justify-center text-center p-2">
+              <p className="text-sm">Click to upload payment image (*)</p>
+            </div>
+            <div className="border-2 border-white rounded w-40 h-40 flex flex-col items-center justify-center text-center p-2">
+              <p className="text-sm">Click to upload student/discount proof</p>
+            </div>
+          </div>
+
+          <div className="mt-auto">
+            <button
+              onClick={handleConfirmOrder}
+              className="bg-[#F1C40F] hover:bg-[#e1b70d] text-black font-bold w-full py-3 rounded text-lg"
+            >
+              CONFIRM BOOKING
+            </button>
           </div>
         </div>
-        <div className="bg-white text-black p-4 rounded md:w-1/2 flex flex-col items-center">
-          <img
-            src="https://via.placeholder.com/150?text=QR+Code"
-            alt="QR code"
-            className="border border-gray-300"
-          />
-          <div className="text-sm font-bold text-center mt-2">
-            <p>SP001 - 2h (Pickleball 18-20)</p>
-            <p>SP002 - 1h (Badminton 8-9)</p>
-            <p>Tổng thanh toán: 225.000 đ</p>
-          </div>
+
+        {/* Cột phải: Thông tin booking */}
+        <div className="w-80 h-1/2 bg-green-900 rounded p-4 flex flex-col gap-1">
+          <p>
+            <strong>Name:</strong> {userInfo.name || "Loading..."}
+          </p>
+          <p>
+            <strong>Phone:</strong> {userInfo.phone || "Loading..."}
+          </p>
+          <p>
+            <strong>Booking Code:</strong> #646
+          </p>
+          <p>
+            <strong>Detail:</strong> {selectedDate} <br />
+            {/* Các slot chi tiết có thể được thêm vào sau */}
+          </p>
+          <p>
+            <strong>Total:</strong>{" "}
+            <span className="text-yellow-300">
+              {totalPrice.toLocaleString("vi-VN")} đ
+            </span>
+          </p>
+          <p>
+            <strong>Need payment:</strong>{" "}
+            <span className="text-yellow-300">
+              {totalPrice.toLocaleString("vi-VN")} đ
+            </span>
+          </p>
         </div>
-      </div>
-
-      {/* Cho phép người dùng thay đổi ngày thanh toán qua DatePicker */}
-      <div className="mt-4">
-        <label className="text-lg font-bold">Chọn ngày thanh toán:</label>
-        <DatePicker value={selectedDate} onDateChange={handleDateChange} />
-      </div>
-
-      <div className="mt-4">
-        <button
-          onClick={handleConfirmOrder}
-          className="bg-yellow-500 text-black font-bold px-6 py-2 rounded hover:bg-yellow-600"
-        >
-          Xác nhận đặt
-        </button>
       </div>
     </div>
   );
-};
-
-export default PaymentPage;
+}
