@@ -1,16 +1,16 @@
 // src/components/SessionExpired.jsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import PaymentHeader from "../components/paymentHeader";
+import BookingHeader from "../components/BookingHeader";
 
 const SessionExpired = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-green-700 text-white">
+    <div className="min-h-screen w-full flex flex-col bg-green-800 text-white">
       {/* Header luôn nằm ở trên cùng */}
-      <PaymentHeader title="Payment" />
-      
+      <BookingHeader title="Payment" />
+
       {/* Nội dung chính, căn giữa theo chiều dọc và ngang */}
       <div className="flex flex-col items-center justify-center flex-1 p-4">
         <h1 className="text-3xl font-bold mb-4">Phiên đặt sân đã hết hạn</h1>

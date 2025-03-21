@@ -5,7 +5,8 @@ import { clearAllPendingBookings, confirmBooking } from "../apis/booking";
 import { getUserById } from "../apis/users";
 import { Copy } from "lucide-react";
 import SessionExpired from "./SessionExpired";
-import PaymentHeader from "../components/paymentHeader";
+import BookingHeader from "../components/BookingHeader";
+
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { search } = useLocation();
@@ -52,8 +53,7 @@ export default function PaymentPage() {
     clearAll();
   }, [userId, centerId]);
 
-  // Đồng hồ đếm ngược: Nếu localStorage có bookingExpiresAt thì dùng nó,
-  // nếu không thì dùng paymentStartTime (được set khi vào trang BookingSchedule)
+  // Đồng hồ đếm ngược
   useEffect(() => {
     const getExpiresAt = () => {
       const expiresAtStr = localStorage.getItem("bookingExpiresAt");
@@ -63,7 +63,7 @@ export default function PaymentPage() {
       }
       return null;
     };
-  
+
     const startCountdown = () => {
       const expiresAt = getExpiresAt();
       if (expiresAt) {
@@ -91,12 +91,10 @@ export default function PaymentPage() {
         return () => clearInterval(interval);
       }
     };
-  
+
     const cleanup = startCountdown();
     return cleanup;
   }, []);
-
-  
 
   const formatTime = (t) => {
     const m = Math.floor(t / 60);
@@ -105,14 +103,20 @@ export default function PaymentPage() {
   };
 
   const handleCopyAccount = () => {
-    navigator.clipboard.writeText("0357843333");
+    navigator.clipboard.writeText("0982451906");
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 1500);
   };
 
   const handleConfirmOrder = async () => {
     try {
-      const { success } = await confirmBooking({ userId, centerId, date: selectedDate });
+      // Gọi API xác nhận booking và truyền thêm totalPrice
+      const { success } = await confirmBooking({
+        userId,
+        centerId,
+        date: selectedDate,
+        totalPrice
+      });
       if (success) {
         alert("Đơn hàng của bạn đã được xác nhận (booked).");
         localStorage.removeItem("paymentStartTime");
@@ -152,21 +156,24 @@ export default function PaymentPage() {
         .catch((err) => console.error("Error clearing pending bookings on unmount:", err));
     };
   }, [userId, centerId]);
-  
-  if (timeLeft == 0) {
+
+  if (timeLeft === 0) {
     return <SessionExpired />;
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-green-700 text-white">
-      {/* Header */}
-      <PaymentHeader title="Payment" />
+    <div className="min-h-screen w-full flex flex-col bg-green-800 text-white">
+      {/* Header: dùng AppHeader với callback onBack */}
+      <BookingHeader
+        title="Payment"
+        onBack={() => navigate("/")} // Khi nhấn mũi tên, về trang Home
+      />
 
       {/* Nội dung chính */}
       <div className="flex flex-1 p-4 gap-4">
         {/* Cột trái: Thông tin thanh toán */}
         <div className="flex-1 flex flex-col gap-4 border-r border-white/50 pr-4">
-          <div className="p-4 bg-green-700 flex gap-4">
+          <div className="p-4 bg-green-800 flex gap-4">
             <div className="flex-1">
               <h2 className="text-lg font-bold mb-2" style={{ color: "#CEE86B" }}>
                 1. Bank Account
@@ -176,7 +183,8 @@ export default function PaymentPage() {
               </p>
               <div className="flex items-center gap-2 mt-1">
                 <p>
-                  Account number: <span className="font-semibold">0982451906</span>
+                  Account number:{" "}
+                  <span className="font-semibold">0982451906</span>
                 </p>
                 <div className="relative">
                   <button
@@ -198,24 +206,27 @@ export default function PaymentPage() {
             </div>
             <div className="flex items-start justify-center">
               <img
-                src="/images/Tiền.jpg"
+                src={qrCode}
                 alt="QR Code"
                 className="border border-gray-300 w-32 h-32 object-contain rounded"
               />
             </div>
           </div>
 
-          <div className="bg-[#00a95c] text-white font-semibold rounded p-3 flex items-center gap-2">
+          <div className="bg-green-800 text-white font-semibold rounded p-3 flex items-center gap-2">
             <span className="text-xl text-yellow-600">🚨</span>
             <span className="leading-tight">
               Please transfer{" "}
-              <span className="text-yellow-200 font-bold">{totalPrice.toLocaleString("vi-VN")} đ</span>{" "}
+              <span className="text-yellow-200 font-bold">
+                {totalPrice.toLocaleString("vi-VN")} đ
+              </span>{" "}
               and send payment images in the boxes below to complete the booking!
             </span>
           </div>
 
           <p className="text-sm" style={{ color: "#CEE86B" }}>
-            After transferring, please check your booking status in the "Account" tab until the owner confirms.
+            After transferring, please check your booking status in the "Account"
+            tab until the owner confirms.
           </p>
 
           <div className="text-center">

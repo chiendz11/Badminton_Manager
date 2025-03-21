@@ -32,8 +32,8 @@ export const pendingBookingToDBController = async (req, res) => {
 
 export const bookedBookingInDBController = async (req, res) => {
   try {
-    const { userId, centerId, date } = req.body;
-    const booking = await bookedBookingInDB(userId, centerId, date);
+    const { userId, centerId, date, totalPrice } = req.body;
+    const booking = await bookedBookingInDB(userId, centerId, date, totalPrice);
     res.json({ success: true, booking });
   } catch (error) {
     console.error("Error confirming booking in DB (Controller):", error);
