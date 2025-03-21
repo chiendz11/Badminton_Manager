@@ -24,12 +24,12 @@ export const getPendingMapping = async (centerId, date) => {
   }
 };
 
-export const confirmBookingToDB = async ({ userId, centerId, date }) => {
+export const confirmBookingToDB = async ({ userId, centerId, date}) => {
   try {
     const response = await axios.post(`${API_URL}/api/booking/pending/pendingBookingToDB`, {
       userId,
       centerId,
-      date
+      date // Thêm trường này vào body request
     });
     return response.data;
   } catch (error) {
@@ -38,12 +38,14 @@ export const confirmBookingToDB = async ({ userId, centerId, date }) => {
   }
 };
 
-export const confirmBooking = async ({ userId, centerId, date }) => {
+
+export const confirmBooking = async ({ userId, centerId, date, totalPrice }) => {
   try {
     const response = await axios.post(`${API_URL}/api/booking/pending/bookedBookingInDB`, {
       userId,
       centerId,
-      date
+      date,
+      totalPrice
     });
     return response.data;
   } catch (error) {

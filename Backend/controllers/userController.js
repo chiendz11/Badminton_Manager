@@ -38,7 +38,7 @@ const generateToken = (id) => {
 };
 
 // Đăng ký user
-const registerUser = async (req, res) => {
+export const registerUser = async (req, res) => {
     console.log("📩 Dữ liệu từ frontend:", req.body);
     try {
         const { name, email, phone_number, address, username, password, avatar_image_path } = req.body;
@@ -104,5 +104,19 @@ const registerUser = async (req, res) => {
     }
 };
 
-// Export hàm
-export { registerUser };
+export const getUserById = async (req, res) => {
+  const { userId } = req.params; // Lấy userId từ URL
+  try {
+    const user = await User.findById(userId); // Truy vấn vào database
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Trả về các trường cần thiết
+    res.json({ name: user.name, phone: user.phone_number });
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+

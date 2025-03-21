@@ -7,7 +7,7 @@ export const watchBookingChanges = (io) => {
     const changeStream = Booking.watch([], { fullDocument: "updateLookup" });
     changeStream.on("change", async (change) => {
       console.log("Change detected in Booking collection:", change.operationType);
-      // Nếu document bị xóa hoặc nếu status được cập nhật mà không còn là "pending"
+      // Xử lý các trường hợp: xóa, cập nhật (nếu status không còn là "pending")
       if (
         change.operationType === "delete" ||
         (change.operationType === "update" &&
@@ -15,17 +15,14 @@ export const watchBookingChanges = (io) => {
           change.updateDescription.updatedFields.status &&
           change.updateDescription.updatedFields.status !== "pending")
       ) {
-        // Lấy thông tin centerId và date
         let centerId, date;
         if (change.fullDocument) {
           centerId = change.fullDocument.centerId.toString();
           date = change.fullDocument.date;
         } else {
-          // Với delete, không có fullDocument, bạn có thể sử dụng giá trị mặc định
-          // Hoặc nếu có thể lưu trữ thông tin trong key, bạn có thể parse nó
-          // Ví dụ: key format: pending:{centerId}:{date}:{userId}
-          // Nếu không, ta sẽ dùng ngày hiện tại
-          centerId = "67ca6e3cfc964efa218ab7d7"; // hoặc giá trị cụ thể
+          // Với delete, không có fullDocument; bạn có thể lấy thông tin từ documentKey (nếu có lưu)
+          // Ở đây sử dụng giá trị mặc định để demo
+          centerId = "67ca6e3cfc964efa218ab7d7";
           date = new Date().toISOString().split("T")[0];
         }
         console.log(`Change event for center=${centerId} date=${date}`);
