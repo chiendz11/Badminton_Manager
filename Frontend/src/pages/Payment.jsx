@@ -1,9 +1,9 @@
 // src/pages/PaymentPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { clearAllPendingBookings, confirmBooking } from "../apis/booking";
 import { getUserById } from "../apis/users";
-import { Copy } from "lucide-react";
+import { Copy, Image as ImageIcon, Plus } from "lucide-react"; // Sử dụng icon từ lucide-react
 import SessionExpired from "./SessionExpired";
 import BookingHeader from "../components/BookingHeader";
 
@@ -25,6 +25,10 @@ export default function PaymentPage() {
   const [timeLeft, setTimeLeft] = useState(300);
   const [showCopied, setShowCopied] = useState(false);
   const qrCode = "/images/Tiền.jpg"; // Đường dẫn QR code
+
+  // Thêm ref cho các input file ẩn
+  const paymentFileInputRef = useRef(null);
+  const discountFileInputRef = useRef(null);
 
   // Lấy thông tin user khi component mount
   useEffect(() => {
@@ -115,7 +119,7 @@ export default function PaymentPage() {
         userId,
         centerId,
         date: selectedDate,
-        totalPrice
+        totalPrice,
       });
       if (success) {
         alert("Đơn hàng của bạn đã được xác nhận (booked).");
@@ -162,27 +166,27 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-green-800 text-white">
-      {/* Header: dùng AppHeader với callback onBack */}
+    <div className="min-h-screen w-full flex flex-col bg-green-800 text-white font-mono">
+      {/* Header: dùng BookingHeader với callback onBack */}
       <BookingHeader
-        title="Payment"
+        title="Thanh toán"
         onBack={() => navigate("/")} // Khi nhấn mũi tên, về trang Home
       />
 
       {/* Nội dung chính */}
       <div className="flex flex-1 p-4 gap-4">
         {/* Cột trái: Thông tin thanh toán */}
-        <div className="flex-1 flex flex-col gap-4 border-r border-white/50 pr-4">
+        <div className="flex-1 flex flex-col gap-4 border-r border-white/50">
           <div className="p-4 bg-green-800 flex gap-4">
             <div className="flex-1">
-              <h2 className="text-lg font-bold mb-2" style={{ color: "#CEE86B" }}>
+              <h2 className="text-2xl font-bold mb-2" style={{ color: "#CEE86B" }}>
                 1. Bank Account
               </h2>
-              <p>
+              <p className="text-xl">
                 Account name: <span className="font-semibold">BUI ANH CHIEN</span>
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <p>
+                <p className="text-xl">
                   Account number:{" "}
                   <span className="font-semibold">0982451906</span>
                 </p>
@@ -200,7 +204,7 @@ export default function PaymentPage() {
                   )}
                 </div>
               </div>
-              <p>
+              <p className="text-xl">
                 Bank name: <span className="font-semibold">MBBank</span>
               </p>
             </div>
@@ -213,7 +217,7 @@ export default function PaymentPage() {
             </div>
           </div>
 
-          <div className="bg-green-800 text-white font-semibold rounded p-3 flex items-center gap-2">
+          <div className="bg-green-800 text-white font-semibold text-xl rounded flex items-center gap-2 p-3">
             <span className="text-xl text-yellow-600">🚨</span>
             <span className="leading-tight">
               Please transfer{" "}
@@ -224,29 +228,46 @@ export default function PaymentPage() {
             </span>
           </div>
 
-          <p className="text-sm" style={{ color: "#CEE86B" }}>
-            After transferring, please check your booking status in the "Account"
-            tab until the owner confirms.
+          <p className="text-xl" style={{ color: "#CEE86B" }}>
+            After transferring, please check your booking status in the "Account" tab until the owner confirms.
           </p>
 
           <div className="text-center">
-            <p>Your booking will be reserved for</p>
-            <h3 className="text-2xl font-bold mt-1">{formatTime(timeLeft)}</h3>
+            <p className="text-xl">Your booking will be reserved for</p>
+            <h3 className="text-3xl font-bold mt-1">{formatTime(timeLeft)}</h3>
           </div>
 
           <div className="flex gap-4 justify-center">
-            <div className="border-2 border-white rounded w-40 h-40 flex flex-col items-center justify-center text-center p-2">
-              <p className="text-sm">Click to upload payment image (*)</p>
+            {/* Box cho payment image */}
+            <div
+              className="border-2 border-white rounded w-40 h-40 flex flex-col items-center justify-center text-center p-2 cursor-pointer gap-2"
+              onClick={() =>
+                paymentFileInputRef.current && paymentFileInputRef.current.click()
+              }
+            >
+              {/* Icon ảnh */}
+              <ImageIcon size={28} />
+              {/* Icon dấu cộng */}
+              <Plus size={24} />
+              <p className="text-xl">Click to upload payment image (*)</p>
             </div>
-            <div className="border-2 border-white rounded w-40 h-40 flex flex-col items-center justify-center text-center p-2">
-              <p className="text-sm">Click to upload student/discount proof</p>
+            {/* Box cho student/discount proof */}
+            <div
+              className="border-2 border-white rounded w-40 h-40 flex flex-col items-center justify-center text-center p-2 cursor-pointer gap-2"
+              onClick={() =>
+                discountFileInputRef.current && discountFileInputRef.current.click()
+              }
+            >
+              <ImageIcon size={28} />
+              <Plus size={24} />
+              <p className="text-xl">Click to upload student/discount proof</p>
             </div>
           </div>
 
           <div className="mt-auto">
             <button
               onClick={handleConfirmOrder}
-              className="bg-[#F1C40F] hover:bg-[#e1b70d] text-black font-bold w-full py-3 rounded text-lg"
+              className="bg-[#F1C40F] hover:bg-[#e1b70d] text-black font-bold w-full py-3 rounded text-xl"
             >
               CONFIRM BOOKING
             </button>
@@ -254,7 +275,7 @@ export default function PaymentPage() {
         </div>
 
         {/* Cột phải: Thông tin booking */}
-        <div className="w-80 h-1/2 bg-green-900 rounded p-4 flex flex-col gap-1">
+        <div className="w-80 h-1/2 bg-green-900 rounded p-4 flex flex-col gap-1 text-xl">
           <p>
             <strong>Name:</strong> {userInfo.name || "Loading..."}
           </p>
@@ -282,6 +303,38 @@ export default function PaymentPage() {
           </p>
         </div>
       </div>
+
+      {/* Input file ẩn cho payment image */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={paymentFileInputRef}
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            console.log("Payment image được chọn:", file.name);
+            // Thực hiện upload file hoặc xử lý file theo yêu cầu của bạn
+          }
+        }}
+      />
+
+      {/* Input file ẩn cho discount/student proof */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={discountFileInputRef}
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            console.log("Discount/Student proof image được chọn:", file.name);
+            // Thực hiện upload file hoặc xử lý file theo yêu cầu của bạn
+          }
+        }}
+      />
     </div>
   );
 }
+
+
