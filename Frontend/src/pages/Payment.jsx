@@ -4,24 +4,24 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { clearAllPendingBookings, confirmBooking } from "../apis/booking";
 import { getUserById } from "../apis/users";
 import { Copy, Image as ImageIcon, Plus } from "lucide-react"; // Sử dụng icon từ lucide-react
-import SessionExpired from "./SessionExpired";
+import SessionExpired from "../components/SessionExpired";
 import BookingHeader from "../components/BookingHeader";
 
-export default function PaymentPage() {
+const PaymentPage = () => {
   const navigate = useNavigate();
-  const { search } = useLocation();
-  const query = new URLSearchParams(search);
+  const { state } = useLocation();
 
-  // Lấy các query parameter từ URL
-  const userId = query.get("user") || "000000000000000000000001";
-  const centerId = query.get("centerId") || "67ca6e3cfc964efa218ab7d7";
-  const initialDate = query.get("date") || new Date().toISOString().split("T")[0];
-  // Tổng tiền được truyền từ BookingSchedule
-  const totalPrice = query.get("total") ? Number(query.get("total")) : 0;
+  // Nếu state không có, lấy từ localStorage
+  const userId = state?.user ||  "000000000000000000000001";
+  const centerId = state?.centerId || localStorage.getItem("centerId") || "67ca6e3cfc964efa218ab7d7";
+  const initialDate = state?.date || localStorage.getItem("date") || new Date().toISOString().split("T")[0];
+  const totalPrice = state?.total || Number(localStorage.getItem("totalPrice")) || 0;
+
+  
 
   const [selectedDate] = useState(initialDate);
   const [userInfo, setUserInfo] = useState({ name: "", phone: "" });
-  // timeLeft sẽ được tính dựa trên bookingExpiresAt (nếu có) hoặc fallback 300 giây
+  // timeLeft: tính dựa trên bookingExpiresAt hoặc fallback 300 giây
   const [timeLeft, setTimeLeft] = useState(300);
   const [showCopied, setShowCopied] = useState(false);
   const qrCode = "/images/Tiền.jpg"; // Đường dẫn QR code
@@ -37,6 +37,7 @@ export default function PaymentPage() {
         const user = await getUserById(userId);
         if (user) {
           setUserInfo(user);
+          console.log("User info fetched:", user);
         }
       } catch (error) {
         console.error("Error fetching user info:", error);
@@ -70,16 +71,22 @@ export default function PaymentPage() {
 
     const startCountdown = () => {
       const expiresAt = getExpiresAt();
+      let animationFrameId; // Khai báo biến ở đây
       if (expiresAt) {
         const updateCountdown = () => {
-          const now = Date.now();
-          const remaining = Math.floor((expiresAt - now) / 1000);
-          console.log("Updating countdown using expiresAt. Remaining seconds:", remaining);
-          setTimeLeft(remaining > 0 ? remaining : 0);
+          if (expiresAt) {
+            const now = Date.now();
+            const remaining = Math.floor((expiresAt - now) / 1000).toFixed(1);
+            setTimeLeft(remaining > 0 ? remaining : 0);
+            if (remaining > 0) {
+              animationFrameId = requestAnimationFrame(updateCountdown);
+            }
+          }
         };
+
         updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
-        return () => clearInterval(interval);
+
+        return () => cancelAnimationFrame(animationFrameId);
       } else {
         const startTime = parseInt(localStorage.getItem("paymentStartTime"), 10) || Date.now();
         console.log("Using paymentStartTime for countdown. Start time:", startTime);
@@ -91,7 +98,7 @@ export default function PaymentPage() {
           setTimeLeft(remaining > 0 ? remaining : 0);
         };
         updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
+        const interval = setInterval(updateCountdown, 250);
         return () => clearInterval(interval);
       }
     };
@@ -170,7 +177,7 @@ export default function PaymentPage() {
       {/* Header: dùng BookingHeader với callback onBack */}
       <BookingHeader
         title="Thanh toán"
-        onBack={() => navigate("/")} // Khi nhấn mũi tên, về trang Home
+        onBack={() => navigate("/")}
       />
 
       {/* Nội dung chính */}
@@ -245,9 +252,7 @@ export default function PaymentPage() {
                 paymentFileInputRef.current && paymentFileInputRef.current.click()
               }
             >
-              {/* Icon ảnh */}
               <ImageIcon size={28} />
-              {/* Icon dấu cộng */}
               <Plus size={24} />
               <p className="text-xl">Click to upload payment image (*)</p>
             </div>
@@ -287,7 +292,6 @@ export default function PaymentPage() {
           </p>
           <p>
             <strong>Detail:</strong> {selectedDate} <br />
-            {/* Các slot chi tiết có thể được thêm vào sau */}
           </p>
           <p>
             <strong>Total:</strong>{" "}
@@ -336,5 +340,5 @@ export default function PaymentPage() {
     </div>
   );
 }
-
+export default PaymentPage;
 

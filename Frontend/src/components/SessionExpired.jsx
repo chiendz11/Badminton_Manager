@@ -1,7 +1,7 @@
 // src/components/SessionExpired.jsx
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import BookingHeader from "../components/BookingHeader";
+import BookingHeader from "./BookingHeader";
 
 const SessionExpired = () => {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ const SessionExpired = () => {
     <div className="min-h-screen w-full flex flex-col bg-green-800 text-white">
       {/* Header luôn nằm ở trên cùng */}
       <BookingHeader title="Thanh toán" onBack={() => navigate("/")} />
-  
+
       {/* Nội dung chính, căn giữa theo chiều dọc và ngang */}
       <div className="flex flex-col items-center justify-center flex-1 p-4">
         {/* Hiển thị ảnh phiên hết hạn */}

@@ -100,12 +100,11 @@ function groupSelectedSlots(selectedSlots, courts) {
 
 const BookingSchedule = () => {
   const navigate = useNavigate();
-  const { search } = useLocation();
-  const query = new URLSearchParams(search);
+  const { state } = useLocation();
 
-  const userId = query.get("user") || "000000000000000000000001";
-  const centerId = query.get("centerId") || "67ca6e3cfc964efa218ab7d7";
-  const initialDate = query.get("date") || new Date().toISOString().split("T")[0];
+  const userId = state?.user || "000000000000000000000001";
+  const centerId = state?.centerId || "67ca6e3cfc964efa218ab7d7";
+  const initialDate = state?.date || new Date().toISOString().split("T")[0];
 
   // Các state cơ bản
   const [selectedDate, setSelectedDate] = useState(initialDate);
@@ -298,17 +297,34 @@ const BookingSchedule = () => {
     setShowModal(true);
   };
 
-  // 12. Xử lý modal: "pay" để xác nhận booking, "edit" để hủy
   const handleModalAction = async (action) => {
     if (action === "pay") {
       try {
         const { success, booking } = await confirmBookingToDB({ userId, centerId, date: selectedDate });
         if (success) {
           console.log("Booking pending lưu vào DB:", booking);
+
+          // Lưu toàn bộ thông tin vào localStorage
           localStorage.setItem("bookingExpiresAt", booking.expiresAt);
+          localStorage.setItem("bookingId", booking._id);
+          localStorage.setItem("userId", userId);
+          localStorage.setItem("centerId", centerId);
+          localStorage.setItem("selectedDate", selectedDate);
+          localStorage.setItem("totalAmount", totalAmount);
+
           console.log("Stored bookingExpiresAt:", localStorage.getItem("bookingExpiresAt"));
+
           alert(`Booking pending đã được lưu vào DB.\nBooking ID: ${booking._id}`);
-          navigate(`/payment?user=${userId}&centerId=${centerId}&date=${selectedDate}&total=${totalAmount}`);
+
+          // Điều hướng sang Payment với state, không dùng query parameters
+          navigate('/payment', {
+            state: {
+              user: userId,
+              centerId: centerId,
+              date: selectedDate,
+              total: totalAmount,
+            },
+          });
         }
       } catch (error) {
         console.error("Lỗi khi xác nhận booking:", error);
@@ -318,6 +334,7 @@ const BookingSchedule = () => {
       setShowModal(false);
     }
   };
+
 
   const formatMoney = (val) => val.toLocaleString("vi-VN") + " đ";
 

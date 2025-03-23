@@ -67,7 +67,7 @@ export const pendingBookingToDB = async (userId, centerId, date) => {
   }
   const now = new Date();
   // Giả sử TTL 5 phút (ở đây sử dụng 1 phút để test, bạn có thể điều chỉnh lại)
-  const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
+  const fiveMinutesLater = new Date(now.getTime() + 1 * 60 * 1000);
   const dbBooking = new Booking({
     userId: cachedBooking.userId,
     centerId: cachedBooking.centerId,

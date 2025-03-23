@@ -5,6 +5,7 @@ import '../styles/header.css';
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const logo = "/images/shuttleCock.png";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,7 +31,9 @@ const Header = () => {
       <div className="container header-container">
         <Link to="/" className="logo">
           <div className="logo-icon">
-            <i className="fas fa-volleyball-ball"></i>
+            <img
+              src={logo}
+            />
           </div>
           ĐẶT<span>SÂN</span>247
         </Link>
@@ -47,8 +50,8 @@ const Header = () => {
             </div>
           </div>
 
-          <button 
-            className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`} 
+          <button
+            className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <span></span>

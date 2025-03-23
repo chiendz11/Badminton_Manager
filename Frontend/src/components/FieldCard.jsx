@@ -23,12 +23,18 @@ const FieldCard = ({ field }) => {
 
   const goToBooking = async (userId) => {
     try {
-      const { exists } = await checkPendingExists({ userId, centerId});
+      const { exists } = await checkPendingExists({ userId, centerId });
       if (exists) {
         alert(`User ${userId} đã có booking pending cho trung tâm này. Vui lòng chờ hết 5 phút.`);
       } else {
-        // Điều hướng sang BookingSchedule với các query parameters
-        navigate(`/booking?user=${userId}&centerId=${centerId}&date=${today}`);
+        // Điều hướng sang BookingSchedule với state, không dùng query parameters
+        navigate('/booking', {
+          state: {
+            user: userId,
+            centerId: centerId,
+            date: today,
+          },
+        });
       }
     } catch (error) {
       alert("Lỗi kiểm tra booking pending: " + error.message);

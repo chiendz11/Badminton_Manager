@@ -1,7 +1,27 @@
-import React from "react";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import CenterStatus from './pages/centerStatus';
+
+
 
 function App() {
-  return <h1 className="text-3xl font-bold text-blue-500">Hello Vite + React!</h1>;
+  return (
+    <Router>
+      <Routes>
+        <Route
+          path="/ava"
+          element={
+            <>
+              <Header />
+              <Home />
+              <Footer />
+            </>
+          }
+        />
+        <Route path="/" element={<CenterStatus />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;

@@ -22,9 +22,9 @@ const checkEmailExists = async (email) => {
             return { success: false, message: "Email bị chặn hoặc thuộc danh sách đen!" };
         }
 
-        return { 
-            success: true, 
-            message: `Email hợp lệ! (Độ tin cậy: ${data.score}%)` 
+        return {
+            success: true,
+            message: `Email hợp lệ! (Độ tin cậy: ${data.score}%)`
         };
     } catch (error) {
         console.error("❌ Lỗi kiểm tra email:", error.response?.data || error.message);
@@ -105,18 +105,18 @@ export const registerUser = async (req, res) => {
 };
 
 export const getUserById = async (req, res) => {
-  const { userId } = req.params; // Lấy userId từ URL
-  try {
-    const user = await User.findById(userId); // Truy vấn vào database
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    const { userId } = req.query; // Lấy userId từ query parameter
+    try {
+        const user = await User.findById(userId); // Truy vấn vào database
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        // Trả về các trường cần thiết
+        res.json({ name: user.name, phone: user.phone_number });
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
-    // Trả về các trường cần thiết
-    res.json({ name: user.name, phone: user.phone_number });
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
 };
 
 
