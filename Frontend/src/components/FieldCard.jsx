@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { checkPendingExists } from "../apis/booking";
 
 const FieldCard = ({ field }) => {
-  const Id = "000000000000000000000001";
+  const Id = "67bd323489acfa439c4d7945";
   const centerId = "67ca6e3cfc964efa218ab7d7"; // Trung tâm hiện tại
   const today = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const FieldCard = ({ field }) => {
 
   const goToBooking = async (userId) => {
     try {
-      const { exists } = await checkPendingExists({ userId, centerId, date: today });
+      const { exists } = await checkPendingExists({ userId, centerId});
       if (exists) {
         alert(`User ${userId} đã có booking pending cho trung tâm này. Vui lòng chờ hết 5 phút.`);
       } else {

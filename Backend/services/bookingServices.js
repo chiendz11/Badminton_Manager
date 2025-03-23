@@ -2,6 +2,7 @@
 import inMemoryCache from "../config/inMemoryCache.js";
 import Booking from "../models/bookings.js";
 import mongoose from "mongoose";
+import Bill from "../models/bills.js";
 
 const TIMES = [5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
 
@@ -62,9 +63,10 @@ export const pendingBookingToDB = async (userId, centerId, date) => {
   const key = getPendingKey(centerId, date, userId);
   const cachedBooking = inMemoryCache.get(key);
   if (!cachedBooking) {
-    throw new Error("No pending booking found in cache");
+    throw new Error("Không tìm thấy booking pending trong cache");
   }
   const now = new Date();
+  // Giả sử TTL 5 phút (ở đây sử dụng 1 phút để test, bạn có thể điều chỉnh lại)
   const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
   const dbBooking = new Booking({
     userId: cachedBooking.userId,
@@ -76,13 +78,12 @@ export const pendingBookingToDB = async (userId, centerId, date) => {
   });
   await dbBooking.save();
   inMemoryCache.del(key);
-  console.log(`Booking pending saved to DB for date ${date} (TTL 5 phút), _id=${dbBooking._id}`);
+  console.log(`Booking pending lưu vào DB cho ngày ${date} (TTL 5 phút), _id=${dbBooking._id}`);
   
-  // Giả sử service getFullPendingMapping được gọi sau đó để cập nhật realtime (không cần trả về trong service này)
   return dbBooking;
 };
 
-export const bookedBookingInDB = async (userId, centerId, date) => {
+export const bookedBookingInDB = async (userId, centerId, date, totalPrice) => {
   const query = {
     userId: new mongoose.Types.ObjectId(userId),
     centerId: new mongoose.Types.ObjectId(centerId),
@@ -99,15 +100,22 @@ export const bookedBookingInDB = async (userId, centerId, date) => {
       status: "booked"
     });
     if (booking) {
-      console.log("Booking already confirmed as booked.");
+      console.log("Booking đã được xác nhận là booked.");
       return booking;
     }
-    throw new Error("No pending booking found in DB");
+    throw new Error("Không tìm thấy booking pending trong DB");
   }
+  // Chuyển trạng thái từ pending sang booked
   booking.status = "booked";
   await booking.save();
-  console.log(`Booking pending for date ${date} updated to booked. _id=${booking._id}`);
-  return booking;
+  console.log(`Booking pending cho ngày ${date} chuyển sang booked. _id=${booking._id}`);
+  
+  // Sau khi booking chuyển sang booked, tạo Bill tương ứng
+  const bill = await createBill(userId, centerId, booking._id, totalPrice);
+  console.log(`Bill được tạo với _id=${bill._id} cho booking ${booking._id}`);
+  
+  // Trả về đối tượng chứa booking và bill (nếu cần dùng từ FE)
+  return { booking, bill };
 };
 
 export const clearAllPendingBookings = async (userId, centerId) => {
@@ -120,7 +128,7 @@ export const clearAllPendingBookings = async (userId, centerId) => {
       deletedCount++;
     }
   });
-  console.log(`Cleared ${deletedCount} pending booking keys for user ${userId} at center ${centerId}`);
+  console.log(`Đã xóa ${deletedCount} keys của booking pending cho user ${userId} tại center ${centerId}`);
   return { deletedCount };
 };
 
@@ -150,9 +158,10 @@ export const getPendingMappingMemory = async (centerId, date) => {
 };
 
 export const getPendingMappingDB = async (centerId, date) => {
-  const pendingBookings = await Booking.find({ centerId, date, status: "pending" });
+  // Bao gồm cả booking có status "pending" và "booked"
+  const bookings = await Booking.find({ centerId, date, status: { $in: ["pending", "booked"] } });
   const mapping = {};
-  pendingBookings.forEach(booking => {
+  bookings.forEach(booking => {
     booking.courts.forEach(courtBooking => {
       const courtKey = courtBooking.courtId.toString();
       if (!mapping[courtKey]) {
@@ -161,7 +170,10 @@ export const getPendingMappingDB = async (centerId, date) => {
       courtBooking.timeslots.forEach(slot => {
         const idx = slot - TIMES[0];
         if (idx >= 0 && idx < mapping[courtKey].length) {
-          mapping[courtKey][idx] = { status: "pending", userId: booking.userId.toString() };
+          // Nếu booking đã được chuyển sang booked thì hiển thị "đã đặt"
+          mapping[courtKey][idx] = booking.status === "booked"
+            ? "đã đặt"
+            : { status: "pending", userId: booking.userId.toString() };
         }
       });
     });
@@ -179,6 +191,7 @@ export const getFullPendingMapping = async (centerId, date) => {
     const dbArray = mappingDB[courtId] || Array(TIMES.length - 1).fill("trống");
     const mergedArray = [];
     for (let i = 0; i < cacheArray.length; i++) {
+      // Ưu tiên thông tin từ DB (bao gồm cả "đã đặt")
       if (dbArray[i] !== "trống") {
         mergedArray[i] = dbArray[i];
       } else if (cacheArray[i] !== "trống") {
@@ -190,4 +203,21 @@ export const getFullPendingMapping = async (centerId, date) => {
     merged[courtId] = mergedArray;
   });
   return merged;
+};
+
+
+export const createBill = async (userId, centerId, bookingId, totalAmount) => {
+  // Tạo một hóa đơn mới từ model Bill
+  const newBill = new Bill({
+    userId: new mongoose.Types.ObjectId(userId),
+    centerId: new mongoose.Types.ObjectId(centerId),
+    bookings: [bookingId],
+    totalAmount, // Tổng tiền được truyền từ FE
+    paymentMethod: "banking",
+    paymentStatus: "paid",
+    orderType: "daily",
+    note: ""
+  });
+  await newBill.save();
+  return newBill;
 };

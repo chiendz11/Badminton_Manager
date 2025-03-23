@@ -19,7 +19,7 @@ const billSchema = new Schema({
   paymentStatus: { type: String, enum: ["pending", "paid"], default: "pending", index: true },
 
   // Mã hóa đơn (tự động sinh)
-  billCode: { type: String, unique: true, required: true, index: true },
+  billCode: { type: String, unique: true, required: false, index: true },
 
   // Kiểu đơn: "fixed" cho đơn cố định, "daily" cho đơn theo ngày
   orderType: { type: String, enum: ["fixed", "daily"], default: "daily", index: true },
@@ -33,20 +33,20 @@ const billSchema = new Schema({
 // Middleware tạo billCode tự động nếu chưa có
 billSchema.pre("save", async function (next) {
   if (!this.billCode) {
+    console.log("BillCode chưa có, tự tạo mới...");
     let isUnique = false;
     while (!isUnique) {
       const now = new Date();
       const formattedDate = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 12);
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000); // Random 4 số cuối để tránh trùng
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
       const newBillCode = `#Bill${formattedDate}${randomSuffix}`;
-
-      // Kiểm tra xem billCode có bị trùng không
       const existingBill = await mongoose.models.Bill.findOne({ billCode: newBillCode });
       if (!existingBill) {
         this.billCode = newBillCode;
         isUnique = true;
       }
     }
+    console.log("billCode mới được tạo:", this.billCode);
   }
   next();
 });

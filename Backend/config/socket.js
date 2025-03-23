@@ -25,6 +25,7 @@ export const initSocket = (io) => {
     });
   });
 
+  // Khi một key trong cache hết hạn, emit update
   inMemoryCache.on("expired", async (key, value) => {
     const parts = key.split(":");
     if (parts.length === 4) {

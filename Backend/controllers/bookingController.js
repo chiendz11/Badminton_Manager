@@ -32,8 +32,8 @@ export const pendingBookingToDBController = async (req, res) => {
 
 export const bookedBookingInDBController = async (req, res) => {
   try {
-    const { userId, centerId, date } = req.body;
-    const booking = await bookedBookingInDB(userId, centerId, date);
+    const { userId, centerId, date, totalPrice } = req.body;
+    const booking = await bookedBookingInDB(userId, centerId, date, totalPrice);
     res.json({ success: true, booking });
   } catch (error) {
     console.error("Error confirming booking in DB (Controller):", error);
@@ -46,7 +46,7 @@ export const clearAllPendingBookingsController = async (req, res) => {
     const { userId, centerId } = req.body;
     const result = await clearAllPendingBookings(userId, centerId);
     const currentDate = new Date().toISOString().split("T")[0];
-    const mapping = await getFullPendingMappingService(centerId, currentDate);
+    const mapping = await getFullPendingMapping(centerId, currentDate);
     if (global.io) {
       global.io.emit("updateBookings", { date: currentDate, mapping });
     }
@@ -70,11 +70,10 @@ export const getPendingMappingController = async (req, res) => {
 
 export const checkPendingExistsController = async (req, res) => {
   try {
-    const { userId, centerId, date } = req.query;
+    const { userId, centerId} = req.query;
     const exists = await Booking.findOne({
       userId,
       centerId,
-      date,
       status: "pending"
     });
     res.json({ success: true, exists: !!exists });
