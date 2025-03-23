@@ -20,7 +20,7 @@ const Footer = () => {
             <div className="contact-info">
               <p><strong>Địa chỉ:</strong> Dịch Vọng Hậu, Cầu Giấy, Hà Nội</p>
               <p><strong>Hotline:</strong> 1900 1809</p>
-              <p><strong>Email:</strong> information@datsan247.vn</p>
+              <p><strong>Email:</strong> 23021710@vnu.edu.vn</p>
             </div>
             
             <div className="social-media">
@@ -52,9 +52,9 @@ const Footer = () => {
           <div className="footer-categories">
             <h3>Khám phá</h3>
             <ul className="footer-links">
-              <li><Link to="/fields/5">Sân 5 người</Link></li>
-              <li><Link to="/fields/7">Sân 7 người</Link></li>
-              <li><Link to="/fields/11">Sân 11 người</Link></li>
+              <li><Link to="/fields/5">Sân tiêu chuẩn</Link></li>
+              <li><Link to="/fields/7">Sân thi đấu</Link></li>
+              <li><Link to="/fields/7">Dịch vụ</Link></li>
               <li><Link to="/promotions">Khuyến mãi</Link></li>
               <li><Link to="/blog">Tin tức cầu lông</Link></li>
             </ul>
@@ -64,7 +64,7 @@ const Footer = () => {
       
       <div className="copyright">
         <div className="container">
-          <p>© {new Date().getFullYear()} ĐẶT SÂN 247. Tất cả quyền được bảo lưu.</p>
+          <p>© {new Date().getFullYear()} ĐẶT SÂN 247. Sự hài lòng của bạn là nhiệm vụ của chúng tôi.</p>
         </div>
       </div>
       
