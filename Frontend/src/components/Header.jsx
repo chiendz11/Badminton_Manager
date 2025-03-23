@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/header.css';
+import LoginModal from '../pages/Login';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const logo = "/images/shuttleCock.png";
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,63 +28,67 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const openLoginModal = (e) => {
+    e.preventDefault();
+    setIsLoginModalOpen(true);
+    closeMenu(); 
+  };
+
   return (
-    <header className={isScrolled ? 'scrolled' : ''}>
-      <div className="container header-container">
-        <Link to="/" className="logo">
-          <div className="logo-icon">
-            <img
-              src={logo}
-            />
-          </div>
-          ĐẶT<span>SÂN</span>247
-        </Link>
-
-        <div className="header-right">
-          <div className="header-contact">
-            <div className="contact-item">
-              <i className="fas fa-phone-alt"></i>
-              <span>1900 8247</span>
+    <>
+      <header className={isScrolled ? 'scrolled' : ''}>
+        <div className="container header-container">
+          <Link to="/" className="logo">
+            <div className="logo-icon">
+              <i className="fas fa-table-tennis"></i>
             </div>
-            <div className="contact-item">
-              <i className="fas fa-envelope"></i>
-              <span>23021710@vnu.edu.vn</span>
+            ĐẶT<span>SÂN</span>247
+          </Link>
+
+          <div className="header-right">
+            <div className="header-contact">
+              <div className="contact-item">
+                <i className="fas fa-phone-alt"></i>
+                <span>1900 1809</span>
+              </div>
+              <div className="contact-item">
+                <i className="fas fa-envelope"></i>
+                <span>23021710@vnu.edu.vn</span>
+              </div>
             </div>
+
+            <button 
+              className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`} 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+
+            <nav className={isMobileMenuOpen ? 'active' : ''}>
+              <ul className="header-links">
+                <li><Link to="/" onClick={closeMenu}>Trang Chủ</Link></li>
+                <li><Link to="/centers" onClick={closeMenu}>Đặt Sân</Link></li>
+                <li><Link to="/news" onClick={closeMenu}>Tin Tức</Link></li>
+                <li><Link to="/policy" onClick={closeMenu}>Chính Sách</Link></li>
+                <li><Link to="/contact" onClick={closeMenu}>Liên Hệ</Link></li>
+                <li className="login-btn">
+                  <a href="#login" onClick={openLoginModal}>
+                    <i className="fas fa-user"></i> Đăng Nhập
+                  </a>
+                </li>
+              </ul>
+            </nav>
           </div>
-
-          <button
-            className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-
-          <nav className={isMobileMenuOpen ? 'active' : ''}>
-            <ul className="header-links">
-              <li><Link to="/" onClick={closeMenu}>Trang Chủ</Link></li>
-              <li><Link to="/search" onClick={closeMenu}>Tìm Sân</Link></li>
-              <li className="dropdown">
-                <span className="dropdown-toggle">Đặt Sân <i className="fas fa-chevron-down"></i></span>
-                <ul className="dropdown-menu">
-                  <li><Link to="/booking/badminton" onClick={closeMenu}>Sân Cầu Lông</Link></li>
-                  <li><Link to="/booking/football" onClick={closeMenu}>Sân Bóng Đá</Link></li>
-                  <li><Link to="/booking/tennis" onClick={closeMenu}>Sân Tennis</Link></li>
-                </ul>
-              </li>
-              <li><Link to="/news" onClick={closeMenu}>Tin Tức</Link></li>
-              <li><Link to="/contact" onClick={closeMenu}>Liên Hệ</Link></li>
-              <li className="login-btn">
-                <Link to="/login" onClick={closeMenu}>
-                  <i className="fas fa-user"></i> Đăng Nhập
-                </Link>
-              </li>
-            </ul>
-          </nav>
         </div>
-      </div>
-    </header>
+      </header>
+    
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
+    </>
   );
 };
 
