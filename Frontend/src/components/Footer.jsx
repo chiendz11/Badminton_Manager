@@ -26,13 +26,13 @@ const Footer = () => {
             <div className="social-media">
               <h3>Social Media</h3>
               <div className="social-icons">
-                <a href="#" className="social-icon facebook">
+                <a href="https://facebook.com" className="social-icon facebook">
                   <i className="fab fa-facebook-f"></i>
                 </a>
-                <a href="#" className="social-icon instagram">
+                <a href="https://instagram.com" className="social-icon instagram">
                   <i className="fab fa-instagram"></i>
                 </a>
-                <a href="#" className="social-icon twitter">
+                <a href="https://twitter.com" className="social-icon twitter">
                   <i className="fab fa-twitter"></i>
                 </a>
               </div>
@@ -43,9 +43,9 @@ const Footer = () => {
             <h3>Giới thiệu</h3>
             <p className="about-desc">Đặt sân 247 cung cấp các tiện ích thông minh giúp cho bạn tìm sân bãi và đặt sân một cách hiệu quả nhất.</p>
             <ul className="footer-links">
-              <li><Link to="/privacy-policy">Chính sách bảo mật</Link></li>
-              <li><Link to="/payment-policy">Chính sách thanh toán</Link></li>
-              <li><Link to="/cancellation-policy">Chính sách huỷ</Link></li>
+              <li><Link to="/policy">Chính sách bảo mật</Link></li>
+              <li><Link to="/policy">Chính sách thanh toán</Link></li>
+              <li><Link to="/policy">Chính sách huỷ</Link></li>
             </ul>
           </div>
           
@@ -56,7 +56,7 @@ const Footer = () => {
               <li><Link to="/fields/7">Sân thi đấu</Link></li>
               <li><Link to="/fields/7">Dịch vụ</Link></li>
               <li><Link to="/promotions">Khuyến mãi</Link></li>
-              <li><Link to="/blog">Tin tức cầu lông</Link></li>
+              <li><Link to="/news">Tin tức cầu lông</Link></li>
             </ul>
           </div>
         </div>

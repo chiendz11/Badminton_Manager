@@ -6,7 +6,11 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import './styles/global.css';
 import BookingSchedule from './pages/Booking';
+import News from './pages/News';
 import PaymentPage from './pages/Payment';
+import Centers from "./pages/Centers";
+import Policy from "./pages/Policy";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
@@ -22,6 +26,10 @@ function App() {
             </>
           }
         />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/policy" element={<Policy />} />
+        <Route path="/centers" element={<Centers />} />
+        <Route path="/news" element={<News />} />
         <Route path="/booking" element={<BookingSchedule />} />
         <Route path="/payment" element={< PaymentPage/>} />
       </Routes>

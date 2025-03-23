@@ -1,28 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import SearchBox from '../components/SearchBox';
-import FieldCard from '../components/FieldCard';
 import HowItWorks from '../components/HowItWorks';
+import HeroBanner from '../components/HeroBanner';
 
 const Home = () => {
   return (
     <>
-      <section className="hero">
-        <div className="container">
-          <h1>Đặt Sân cầu lông Nhanh Chóng và Tiện Lợi</h1>
-          <p>Tìm kiếm và đặt sân cầu lông ở bất kỳ đâu, bất kỳ lúc nào</p>
-          <SearchBox />
-        </div>
-      </section>
-
-      {/* <section className="featured-fields container">
-        <h2 className="section-title">Sân cầu</h2>
-        <div className="fields-grid">
-          {featuredFields.map((field) => (
-            <FieldCard key={field.id} field={field} />
-          ))}
-        </div>
-      </section> */}
+      <HeroBanner />
       <div className="container mt-5">
         <div className="section-header text-center">
           <h2 className="section-title">Khám Phá Sân Cầu Lông</h2>
