@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/centers.css';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import CenterDetailModal from '../pages/CenterDetailModal';
 
 const Centers = () => {
+  const [selectedCenter, setSelectedCenter] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const openModal = (center) => {
+    setSelectedCenter(center);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
   const centers = [
     {
       _id: "67ca6e3cfc964efa218ab7d7",
@@ -53,10 +66,6 @@ const Centers = () => {
       ratings: 4.7,
       openHours: "6:30 - 21:30",
       facilities: ["Giữ xe miễn phí", "Cho thuê vợt", "Dịch vụ đan cước vợt", "Nước uống miễn phí"]
-
-      /*
-      Gọi database vào mảng này thay cho phần ví dụ trên, nội dung cứ lấy y hệt tôi là được
-      */ 
     }
   ];
 
@@ -126,12 +135,13 @@ const Centers = () => {
       </div>
 
       <div className="centers-header">
-        <h2>Các Cơ Sở Cầu Lông Đối Tác</h2>
+        <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
         <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
       </div>
 
       <div className="centers-grid">
         {centers.map(center => (
+          
           <div key={center._id} className="center-card">
             <div className="center-image">
               <img 
@@ -190,13 +200,22 @@ const Centers = () => {
                   </span>
                 </div>
 
-                <Link 
-                  to={`/booking?centerId=${center._id}&user=000000000000000000000001`} 
-                  className="book-center-btn"
-                >
-                  <span>Đặt Sân Ngay</span>
-                  <i className="fas fa-arrow-right"></i>
-                </Link>
+                <div className="center-action-buttons">
+                  <button 
+                    className="view-details-btn" 
+                    onClick={() => openModal(center)}
+                    title="Xem chi tiết"
+                  >
+                    <i className="fas fa-eye"></i>
+                  </button>
+                  <Link 
+                    to={`/booking?centerId=${center._id}&user=000000000000000000000001`} 
+                    className="book-center-btn"
+                  >
+                    <span>Đặt Sân Ngay</span>
+                    <i className="fas fa-arrow-right"></i>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -226,6 +245,15 @@ const Centers = () => {
           <p>Tất cả các cơ sở đều được đánh giá và kiểm duyệt chất lượng</p>
         </div>
       </div>
+
+      {/* Modal component */}
+      {selectedCenter && (
+        <CenterDetailModal 
+          center={selectedCenter}
+          isOpen={modalOpen}
+          onClose={closeModal}
+        />
+      )}
     </div>
 
     <Footer />

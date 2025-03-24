@@ -137,7 +137,7 @@ const News = () => {
   return (
     <>
     < Header/>
-    <div className="news-categories-wrapper"></div>
+
     <div className="news-page">
       <div className="news-content container">
         <div className="news-categories">

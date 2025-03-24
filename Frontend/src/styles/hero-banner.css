@@ -61,7 +61,7 @@
   .slide {
     position: absolute;
     width: 100%;
-    transition: transform 0.8s ease-in-out;
+    transition: transform 2s ease-in-out;
     padding: 0 20px;
     opacity: 0;
     visibility: hidden;
@@ -70,7 +70,7 @@
   .slide.active {
     opacity: 1;
     visibility: visible;
-    animation: fadeInUp 0.8s ease-out;
+    animation: fadeInUp 2s ease-out;
   }
   
   @keyframes fadeInUp {

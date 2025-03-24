@@ -1,0 +1,409 @@
+.competitions-page {
+    padding: 0 0 60px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+  }
+  
+  /* Hero Section */
+  .competitions-hero {
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+                url('/images/tournament-bg.jpg') center/cover no-repeat;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+  }
+  
+  .competitions-hero-content {
+    max-width: 900px;
+    padding: 0 20px;
+  }
+  
+  .competitions-hero-content h1 {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    animation: fadeInDown 1s ease-out;
+  }
+  
+  .competitions-hero-content p {
+    font-size: 20px;
+    margin-bottom: 30px;
+    opacity: 0.9;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 1s ease-out;
+  }
+  
+  /* Main Container */
+  .competitions-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  /* Competitions Header */
+  .competitions-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .competitions-header h2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .competitions-header h2:after {
+    content: '';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background-color: #0c8040;
+    border-radius: 3px;
+  }
+  
+  .competitions-header p {
+    font-size: 18px;
+    color: #666;
+    max-width: 700px;
+    margin: 0 auto;
+    margin-top: 25px;
+  }
+  
+  /* Empty Competitions */
+  .empty-competitions {
+    text-align: center;
+    background-color: white;
+    border-radius: 15px;
+    padding: 60px 40px;
+    margin-bottom: 60px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 1s ease-out;
+  }
+  
+  .empty-competitions-icon {
+    font-size: 70px;
+    color: #0c8040;
+    margin-bottom: 25px;
+    animation: trophyWave 4s ease-in-out infinite;
+    display: inline-block;
+  }
+  
+  .empty-competitions h3 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .empty-competitions p {
+    font-size: 18px;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto 30px;
+  }
+  
+  .empty-competitions-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .back-home-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: #f5f5f5;
+    color: #444;
+    padding: 14px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+  }
+  
+  .back-home-btn:hover {
+    background-color: #e9e9e9;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  }
+  
+  .notify-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background-color: #0c8040;
+    color: white;
+    padding: 14px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    border: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(12, 128, 64, 0.2);
+  }
+  
+  .notify-btn:hover {
+    background-color: #0a6b35;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(12, 128, 64, 0.3);
+  }
+  
+  /* Info Section */
+  .competitions-info {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 60px;
+    flex-wrap: wrap;
+  }
+  
+  .info-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    flex: 1;
+    min-width: 280px;
+    max-width: 350px;
+    transition: all 0.3s ease;
+    border-top: 4px solid #0c8040;
+  }
+  
+  .info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .info-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #f0f9f4;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: #0c8040;
+    font-size: 32px;
+    transition: all 0.3s ease;
+  }
+  
+  .info-card:hover .info-icon {
+    background-color: #0c8040;
+    color: white;
+    transform: rotateY(180deg);
+  }
+  
+  .info-card h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .info-card p {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  /* CTA Section */
+  .competitions-cta {
+    background: linear-gradient(rgba(12, 128, 64, 0.9), rgba(12, 128, 64, 0.9)),
+                url('/images/cta-bg.jpg') center/cover no-repeat;
+    border-radius: 15px;
+    padding: 60px 40px;
+    color: white;
+    box-shadow: 0 15px 30px rgba(12, 128, 64, 0.2);
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .competitions-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/images/pattern.png');
+    opacity: 0.05;
+  }
+  
+  .cta-content {
+    max-width: 600px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .competitions-cta h2 {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+  
+  .competitions-cta p {
+    font-size: 18px;
+    margin-bottom: 30px;
+    opacity: 0.9;
+  }
+  
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: white;
+    color: #0c8040;
+    padding: 15px 35px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .cta-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .cta-button i {
+    transition: transform 0.3s ease;
+  }
+  
+  .cta-button:hover i {
+    transform: translateX(5px);
+  }
+  
+  /* Animations */
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes trophyWave {
+    0% {
+      transform: translateY(0) rotate(0);
+    }
+    25% {
+      transform: translateY(-10px) rotate(-5deg);
+    }
+    50% {
+      transform: translateY(0) rotate(0);
+    }
+    75% {
+      transform: translateY(-5px) rotate(5deg);
+    }
+    100% {
+      transform: translateY(0) rotate(0);
+    }
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .competitions-hero {
+      height: 250px;
+    }
+    
+    .competitions-hero-content h1 {
+      font-size: 32px;
+    }
+    
+    .competitions-hero-content p {
+      font-size: 18px;
+    }
+    
+    .competitions-header h2 {
+      font-size: 28px;
+    }
+    
+    .empty-competitions {
+      padding: 40px 20px;
+    }
+    
+    .empty-competitions-icon {
+      font-size: 60px;
+    }
+    
+    .empty-competitions h3 {
+      font-size: 22px;
+    }
+    
+    .empty-competitions p {
+      font-size: 16px;
+    }
+    
+    .empty-competitions-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .back-home-btn, .notify-btn {
+      width: 100%;
+    }
+    
+    .competitions-cta {
+      padding: 40px 20px;
+    }
+    
+    .competitions-cta h2 {
+      font-size: 24px;
+    }
+    
+    .competitions-cta p {
+      font-size: 16px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .competitions-hero-content h1 {
+      font-size: 28px;
+    }
+    
+    .empty-competitions-icon {
+      font-size: 50px;
+    }
+  }

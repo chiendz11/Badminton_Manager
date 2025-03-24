@@ -1,12 +1,17 @@
-import React, { useState, useRef, useEffect } from "react";
-import "../styles/login.css";
+import React, { useState, useEffect, useRef } from 'react';
+import '../styles/login.css';
 
 const LoginModal = ({ isOpen, onClose }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const modalRef = useRef(null);
+  
+  const handleRegisterClick = () => {
+    setIsActive(true);
+  };
+  
+  const handleLoginClick = () => {
+    setIsActive(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -16,114 +21,99 @@ const LoginModal = ({ isOpen, onClose }) => {
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.body.style.overflow = "hidden";
+      document.addEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'hidden';
     }
     
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.body.style.overflow = "auto";
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'auto';
     };
   }, [isOpen, onClose]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Login attempt with:", { email, password, rememberMe });
-    onClose();
-  };
-
   if (!isOpen) return null;
-
+  
   return (
     <div className="modal-overlay">
-      <div ref={modalRef} className="login-modal">
-        <div className="modal-header">
-          <h2>Đăng Nhập</h2>
-          <button onClick={onClose} className="close-button">
-            <i className="fas fa-times"></i>
-          </button>
+      <div ref={modalRef} className={`container ${isActive ? 'active' : ''}`}>
+        <button className="close-modal-btn" onClick={onClose}>
+          <i className='fas fa-times'></i>
+        </button>
+        
+        <div className="form-box login">
+          <form action="#">
+            <h1>Đăng nhập</h1>
+            <div className="input-box">
+              <input type="text" placeholder="Username" required />
+              <i className='bx bxs-user'></i>
+            </div>
+            <div className="input-box">
+              <input type="password" placeholder="Password" required />
+              <i className='bx bxs-lock-alt'></i>
+            </div>
+            <div className="forgot-link">
+              <a href="#">Quên mật khẩu?</a>
+            </div>
+            <button type="submit" className="btn">Đăng nhập</button>
+            <p className="social-text">Đăng nhập khác</p>
+            <div className="social-icons">
+               <a href="https://facebook.com" className="social-icon facebook">
+                  <i className="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://instagram.com" className="social-icon instagram">
+                  <i className="fab fa-instagram"></i>
+                </a>
+                <a href="https://twitter.com" className="social-icon twitter">
+                  <i className="fab fa-twitter"></i>
+                </a>
+            </div>
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-form">
-          <div className="form-group">
-            <label htmlFor="email">Email/Số điện thoại</label>
-            <div className="input-icon-wrapper">
-              <i className="fas fa-user"></i>
-              <input
-                id="email"
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Nhập email hoặc số điện thoại"
-                required
-              />
+        <div className="form-box register">
+          <form action="#">
+            <h1>Đăng kí</h1>
+            <div className="input-box">
+              <input type="text" placeholder="Username" required />
+              <i className='bx bxs-user'></i>
             </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Mật khẩu</label>
-            <div className="input-icon-wrapper">
-              <i className="fas fa-lock"></i>
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Nhập mật khẩu"
-                required
-              />
-              <button
-                type="button"
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                <i className={`fas ${showPassword ? "fa-eye-slash" : "fa-eye"}`}></i>
-              </button>
+            <div className="input-box">
+              <input type="email" placeholder="Email" required />
+              <i className='bx bxs-envelope'></i>
             </div>
-          </div>
-
-          <div className="form-options">
-            <div className="remember-me">
-              <input
-                id="remember-me"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-              />
-              <label htmlFor="remember-me">Ghi nhớ đăng nhập</label>
+            <div className="input-box">
+              <input type="password" placeholder="Password" required />
+              <i className='bx bxs-lock-alt'></i>
             </div>
-            
-            <a href="#forgot-password" className="forgot-password">
-              Quên mật khẩu?
-            </a>
+            <button type="submit" className="btn">Đăng kí</button>
+            <p className="social-text">Đăng kí khác</p>
+            <div className="social-icons">
+              <a href="https://facebook.com" className="social-icon facebook">
+                <i className="fab fa-facebook-f"></i>
+              </a>
+              <a href="https://instagram.com" className="social-icon instagram">
+                <i className="fab fa-instagram"></i>
+              </a>
+              <a href="https://twitter.com" className="social-icon twitter">
+                <i className="fab fa-twitter"></i>
+              </a>
+            </div>
+          </form>
+        </div>
+
+        <div className="toggle-box">
+          <div className="toggle-panel toggle-left">
+            <h1>Xin chào bạn!</h1>
+            <p>Không có tài khoản?</p>
+            <button className="btn register-btn" onClick={handleRegisterClick}>Đăng kí</button>
           </div>
 
-          <button type="submit" className="login-button">
-            Đăng Nhập
-          </button>
-
-          <div className="divider">
-            <span>hoặc</span>
+          <div className="toggle-panel toggle-right">
+            <h1>Chào mừng bạn</h1>
+            <p>Đã có tài khoản?</p>
+            <button className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
           </div>
-
-          <div className="social-login">
-            <button type="button" className="facebook-btn">
-              <i className="fab fa-facebook-f"></i>
-              Facebook
-            </button>
-            <button type="button" className="google-btn">
-              <i className="fab fa-google"></i>
-              Google
-            </button>
-          </div>
-
-          <div className="register-link">
-            <p>
-              Chưa có tài khoản?{" "}
-              <a href="#register">Đăng ký ngay</a>
-            </p>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );
