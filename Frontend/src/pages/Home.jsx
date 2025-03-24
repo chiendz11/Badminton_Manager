@@ -2,11 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import HowItWorks from '../components/HowItWorks';
 import HeroBanner from '../components/HeroBanner';
+import FeatureCards from '../pages/FeatureCards'
 
 const Home = () => {
   return (
     <>
       <HeroBanner />
+      <FeatureCards />
       <div className="container mt-5">
         <div className="section-header text-center">
           <h2 className="section-title">Khám Phá Sân Cầu Lông</h2>
@@ -20,7 +22,7 @@ const Home = () => {
           <div className="caption_banner">
             <span>Sân đấu chuẩn thi đấu</span>
             <h3>Hiện đại</h3>
-            <Link to="/fields/premium" className="explore-link">Xem ngay</Link>
+            <Link to="/centers" className="explore-link">Xem ngay</Link>
           </div>
           <div className="overlay"></div>
         </div>
@@ -30,7 +32,7 @@ const Home = () => {
           <div className="caption_banner">
             <span>Sân đấu phổ thông</span>
             <h3>Tiêu chuẩn</h3>
-            <Link to="/fields/premium" className="explore-link">Xem ngay</Link>
+            <Link to="/centers" className="explore-link">Xem ngay</Link>
           </div>
           <div className="overlay"></div>
         </div>
@@ -40,7 +42,7 @@ const Home = () => {
           <div className="caption_banner">
             <span>Giải thi đấu mở rộng</span>
             <h3>Thu hút</h3>
-            <Link to="/fields/premium" className="explore-link">Xem ngay</Link>
+            <Link to="/competition" className="explore-link">Xem ngay</Link>
           </div>
           <div className="overlay"></div>
         </div>

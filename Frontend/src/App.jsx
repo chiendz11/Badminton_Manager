@@ -11,6 +11,7 @@ import PaymentPage from './pages/Payment';
 import Centers from "./pages/Centers";
 import Policy from "./pages/Policy";
 import Contact from "./pages/Contact";
+import Competition from "./pages/Competition";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             </>
           }
         />
+        <Route path="/competition" element={<Competition />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/policy" element={<Policy />} />
         <Route path="/centers" element={<Centers />} />
