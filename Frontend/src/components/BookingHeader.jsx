@@ -15,7 +15,7 @@ const BookingHeader = ({ title, onBack }) => {
       >
         <FaArrowLeft className="text-3xl font-bold" />
       </button>
-      <h1 className="text-2xl font-bold" style={{ color: "#fff" }}>
+      <h1 className="text-3xl font-bold font-mono" style={{ color: "#fff" }}>
         {title}
       </h1>
     </header>

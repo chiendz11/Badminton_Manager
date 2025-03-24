@@ -287,34 +287,38 @@
 // }
 
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { clearAllPendingBookings, confirmBooking } from "../apis/booking";
 import { getUserById } from "../apis/users";
 import { Copy, Clock, AlertTriangle, Upload, User, Phone, Hash, Calendar, DollarSign } from "lucide-react";
-import SessionExpired from "./SessionExpired";
+import SessionExpired from "../components/SessionExpired";
 import BookingHeader from "../components/BookingHeader";
 
-export default function PaymentPage() {
+const PaymentPage = () => {
   const navigate = useNavigate();
-  const { search } = useLocation();
-  const query = new URLSearchParams(search);
+  const { state } = useLocation();
 
-  // Lấy các query parameter từ URL
-  const userId = query.get("user") || "000000000000000000000001";
-  const centerId = query.get("centerId") || "67ca6e3cfc964efa218ab7d7";
-  const initialDate = query.get("date") || new Date().toISOString().split("T")[0];
-  // Tổng tiền được truyền từ BookingSchedule
-  const totalPrice = query.get("total") ? Number(query.get("total")) : 0;
+  // Nếu state không có, lấy từ localStorage
+  const userId = state?.user ||  "000000000000000000000001";
+  const centerId = state?.centerId || localStorage.getItem("centerId") || "67ca6e3cfc964efa218ab7d7";
+  const initialDate = state?.date || localStorage.getItem("date") || new Date().toISOString().split("T")[0];
+  const totalPrice = state?.total || Number(localStorage.getItem("totalPrice")) || 0;
+
+  
 
   const [selectedDate] = useState(initialDate);
   const [userInfo, setUserInfo] = useState({ name: "", phone: "" });
-  // timeLeft sẽ được tính dựa trên bookingExpiresAt (nếu có) hoặc fallback 300 giây
+  // timeLeft: tính dựa trên bookingExpiresAt hoặc fallback 300 giây
   const [timeLeft, setTimeLeft] = useState(300);
   const [showCopied, setShowCopied] = useState(false);
   const qrCode = "/images/Tiền.jpg"; // Đường dẫn QR code
   const [paymentImage, setPaymentImage] = useState(null);
   const [discountImage, setDiscountImage] = useState(null);
+
+  // Thêm ref cho các input file ẩn
+  const paymentFileInputRef = useRef(null);
+  const discountFileInputRef = useRef(null);
 
   // Lấy thông tin user khi component mount
   useEffect(() => {
@@ -323,6 +327,7 @@ export default function PaymentPage() {
         const user = await getUserById(userId);
         if (user) {
           setUserInfo(user);
+          console.log("User info fetched:", user);
         }
       } catch (error) {
         console.error("Error fetching user info:", error);
@@ -356,16 +361,22 @@ export default function PaymentPage() {
 
     const startCountdown = () => {
       const expiresAt = getExpiresAt();
+      let animationFrameId; // Khai báo biến ở đây
       if (expiresAt) {
         const updateCountdown = () => {
-          const now = Date.now();
-          const remaining = Math.floor((expiresAt - now) / 1000);
-          console.log("Updating countdown using expiresAt. Remaining seconds:", remaining);
-          setTimeLeft(remaining > 0 ? remaining : 0);
+          if (expiresAt) {
+            const now = Date.now();
+            const remaining = Math.floor((expiresAt - now) / 1000).toFixed(1);
+            setTimeLeft(remaining > 0 ? remaining : 0);
+            if (remaining > 0) {
+              animationFrameId = requestAnimationFrame(updateCountdown);
+            }
+          }
         };
+
         updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
-        return () => clearInterval(interval);
+
+        return () => cancelAnimationFrame(animationFrameId);
       } else {
         const startTime = parseInt(localStorage.getItem("paymentStartTime"), 10) || Date.now();
         console.log("Using paymentStartTime for countdown. Start time:", startTime);
@@ -377,7 +388,7 @@ export default function PaymentPage() {
           setTimeLeft(remaining > 0 ? remaining : 0);
         };
         updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
+        const interval = setInterval(updateCountdown, 250);
         return () => clearInterval(interval);
       }
     };
@@ -405,7 +416,7 @@ export default function PaymentPage() {
         userId,
         centerId,
         date: selectedDate,
-        totalPrice
+        totalPrice,
       });
       if (success) {
         alert("Đơn hàng của bạn đã được xác nhận (booked).");
@@ -684,6 +695,38 @@ export default function PaymentPage() {
           </div>
         </div>
       </div>
+
+      {/* Input file ẩn cho payment image */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={paymentFileInputRef}
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            console.log("Payment image được chọn:", file.name);
+            // Thực hiện upload file hoặc xử lý file theo yêu cầu của bạn
+          }
+        }}
+      />
+
+      {/* Input file ẩn cho discount/student proof */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={discountFileInputRef}
+        style={{ display: "none" }}
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (file) {
+            console.log("Discount/Student proof image được chọn:", file.name);
+            // Thực hiện upload file hoặc xử lý file theo yêu cầu của bạn
+          }
+        }}
+      />
     </div>
   );
 }
+export default PaymentPage;
+
