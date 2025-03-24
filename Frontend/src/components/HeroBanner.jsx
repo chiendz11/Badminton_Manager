@@ -22,7 +22,6 @@ const HeroBanner = () => {
     }
   ];
 
-  // Auto rotate slides
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveSlide((prevSlide) => (prevSlide + 1) % slogans.length);
@@ -30,8 +29,6 @@ const HeroBanner = () => {
     
     return () => clearInterval(interval);
   }, [slogans.length]);
-
-  // Handle manual navigation
   const goToSlide = (index) => {
     setActiveSlide(index);
   };
@@ -52,7 +49,6 @@ const HeroBanner = () => {
           <div className="line line-1"></div>
         </div>
         
-        {/* Sliding Content */}
         <div className="banner-content">
           {slogans.map((slogan, index) => (
             <div 
@@ -68,8 +64,6 @@ const HeroBanner = () => {
             </div>
           ))}
         </div>
-        
-        {/* Slide Indicators */}
         <div className="slide-indicators">
           {slogans.map((_, index) => (
             <button 

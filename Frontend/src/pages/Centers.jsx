@@ -1,3 +1,4 @@
+
 import React from 'react';
 import '../styles/centers.css';
 import Footer from '../components/Footer';
@@ -9,6 +10,21 @@ const Centers = () => {
   const Id = "67bd323489acfa439c4d7945"
   const today = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
+import CenterDetailModal from '../pages/CenterDetailModal';
+
+const Centers = () => {
+  const [selectedCenter, setSelectedCenter] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const openModal = (center) => {
+    setSelectedCenter(center);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+  };
+
   const centers = [
     {
       _id: "67ca6e3cfc964efa218ab7d7",
@@ -58,9 +74,11 @@ const Centers = () => {
       openHours: "5 - 24:00",
       facilities: ["Giữ xe miễn phí", "Cho thuê vợt", "Dịch vụ đan cước vợt", "Nước uống miễn phí"]
 
+
       /*
       Gọi database vào mảng này thay cho phần ví dụ trên, nội dung cứ lấy y hệt tôi là được
       */
+
     }
   ];
 
@@ -148,22 +166,34 @@ const Centers = () => {
           </div>
         </div>
 
-        <div className="centers-header">
-          <h2>Các Cơ Sở Cầu Lông Đối Tác</h2>
-          <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
-        </div>
 
-        <div className="centers-grid">
-          {centers.map(center => (
-            <div key={center._id} className="center-card">
-              <div className="center-image">
-                <img
-                  src={center.imgUrl || "/images/default.png"}
-                  alt={center.name}
-                  onError={(e) => { e.target.src = "/images/default.png" }}
-                />
-                <div className="center-badge">
-                  <i className="fas fa-table-tennis"></i> {center.courtCount} sân
+      <div className="centers-header">
+        <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
+        <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
+      </div>
+
+      <div className="centers-grid">
+        {centers.map(center => (
+          
+          <div key={center._id} className="center-card">
+            <div className="center-image">
+              <img 
+                src={center.imgUrl || "/images/default.png"} 
+                alt={center.name} 
+                onError={(e) => {e.target.src = "/images/default.png"}}
+              />
+              <div className="center-badge">
+                <i className="fas fa-table-tennis"></i> {center.courtCount} sân
+              </div>
+              {center.popularity && (
+                <div className="center-popular-tag">
+                  <i className="fas fa-fire"></i> {center.popularity}
+                </div>
+              )}
+              {center.promotion && (
+                <div className="center-promo-badge">
+                  <i className="fas fa-tags"></i> {center.promotion}
+
                 </div>
                 {center.popularity && (
                   <div className="center-popular-tag">
@@ -217,6 +247,7 @@ const Centers = () => {
                     <span>Đặt Sân Ngay</span>
                     <i className="fas fa-arrow-right"></i>
                   </button>
+
                 </div>
               </div>
             </div>
@@ -247,6 +278,18 @@ const Centers = () => {
           </div>
         </div>
       </div>
+
+
+      {/* Modal component */}
+      {selectedCenter && (
+        <CenterDetailModal 
+          center={selectedCenter}
+          isOpen={modalOpen}
+          onClose={closeModal}
+        />
+      )}
+    </div>
+
 
       <Footer />
     </>
