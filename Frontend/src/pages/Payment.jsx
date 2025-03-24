@@ -287,12 +287,12 @@
 // }
 
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { clearAllPendingBookings, confirmBooking } from "../apis/booking";
 import { getUserById } from "../apis/users";
 import { Copy, Clock, AlertTriangle, Upload, User, Phone, Hash, Calendar, DollarSign } from "lucide-react";
-import SessionExpired from "./SessionExpired";
+import SessionExpired from "../components/SessionExpired";
 import BookingHeader from "../components/BookingHeader";
 
 const PaymentPage = () => {

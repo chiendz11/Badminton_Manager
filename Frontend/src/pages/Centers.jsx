@@ -1,10 +1,14 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import '../styles/centers.css';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import { checkPendingExists } from '../apis/booking';
+import { useNavigate } from 'react-router-dom';
 
 const Centers = () => {
+  const Id = "67bd323489acfa439c4d7945"
+  const today = new Date().toISOString().split("T")[0];
+  const navigate = useNavigate();
   const centers = [
     {
       _id: "67ca6e3cfc964efa218ab7d7",
@@ -15,7 +19,7 @@ const Centers = () => {
       imgUrl: "/images/center1.png",
       courtCount: 5,
       ratings: 4.8,
-      openHours: "6:00 - 22:00",
+      openHours: "5 - 24:00",
       facilities: ["Phòng thay đồ", "Wifi miễn phí", "Máy lạnh", "Căn tin"]
     },
     {
@@ -27,7 +31,7 @@ const Centers = () => {
       imgUrl: "/images/center2.png",
       courtCount: 4,
       ratings: 4.6,
-      openHours: "6:00 - 23:00",
+      openHours: "5 - 24:00",
       facilities: ["Bãi đỗ xe rộng", "Huấn luyện viên", "Dịch vụ đánh giá kỹ thuật", "Shop dụng cụ"]
     },
     {
@@ -39,7 +43,7 @@ const Centers = () => {
       imgUrl: "/images/center3.jpg",
       courtCount: 6,
       ratings: 4.5,
-      openHours: "6:00 - 22:00",
+      openHours: "5 - 24:00",
       facilities: ["Đèn LED cao cấp", "Sàn gỗ chuyên nghiệp", "Căn tin", "Phòng y tế"]
     },
     {
@@ -51,20 +55,39 @@ const Centers = () => {
       imgUrl: "/images/center4.jpg",
       courtCount: 4,
       ratings: 4.7,
-      openHours: "6:30 - 21:30",
+      openHours: "5 - 24:00",
       facilities: ["Giữ xe miễn phí", "Cho thuê vợt", "Dịch vụ đan cước vợt", "Nước uống miễn phí"]
 
       /*
       Gọi database vào mảng này thay cho phần ví dụ trên, nội dung cứ lấy y hệt tôi là được
-      */ 
+      */
     }
   ];
 
+  const goToBooking = async (userId, centerId) => {
+    try {
+      const { exists } = await checkPendingExists({ userId, centerId });
+      if (exists) {
+        alert(`User ${userId} đã có booking pending cho trung tâm này. Vui lòng chờ hết 5 phút.`);
+      } else {
+        // Điều hướng sang BookingSchedule với state, không dùng query parameters
+        navigate('/booking', {
+          state: {
+            user: userId,
+            centerId: centerId,
+            date: today,
+          },
+        });
+      }
+    } catch (error) {
+      alert("Lỗi kiểm tra booking pending: " + error.message);
+    }
+  };
   const renderRatingStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
         stars.push(<i key={i} className="fas fa-star"></i>);
@@ -74,7 +97,7 @@ const Centers = () => {
         stars.push(<i key={i} className="far fa-star"></i>);
       }
     }
-    
+
     return stars;
   };
 
@@ -92,143 +115,140 @@ const Centers = () => {
 
   return (
     <>
-    <Header />
+      <Header />
 
-    <div className="centers-page">
-      <div className="hero-section">
-        <div className="hero-content">
-          <h1>Chọn Cơ Sở Yêu Thích Của Bạn</h1>
-          <p>Tìm và đặt sân cầu lông tốt nhất tại Hà Nội</p>
-          <div className="hero-stats">
-            <div className="stat-item">
-              <i className="fas fa-medal"></i>
-              <div className="stat-info">
-                <span className="stat-number">4</span>
-                <span className="stat-label">Cơ sở hàng đầu</span>
+      <div className="centers-page">
+        <div className="hero-section">
+          <div className="hero-content">
+            <h1>Chọn Cơ Sở Yêu Thích Của Bạn</h1>
+            <p>Tìm và đặt sân cầu lông tốt nhất tại Hà Nội</p>
+            <div className="hero-stats">
+              <div className="stat-item">
+                <i className="fas fa-medal"></i>
+                <div className="stat-info">
+                  <span className="stat-number">4</span>
+                  <span className="stat-label">Cơ sở hàng đầu</span>
+                </div>
               </div>
-            </div>
-            <div className="stat-item">
-              <i className="fas fa-table-tennis"></i>
-              <div className="stat-info">
-                <span className="stat-number">20</span>
-                <span className="stat-label">Sân cầu lông</span>
+              <div className="stat-item">
+                <i className="fas fa-table-tennis"></i>
+                <div className="stat-info">
+                  <span className="stat-number">20</span>
+                  <span className="stat-label">Sân cầu lông</span>
+                </div>
               </div>
-            </div>
-            <div className="stat-item">
-              <i className="fas fa-users"></i>
-              <div className="stat-info">
-                <span className="stat-number">1000+</span>
-                <span className="stat-label">Đặt sân/tháng</span>
+              <div className="stat-item">
+                <i className="fas fa-users"></i>
+                <div className="stat-info">
+                  <span className="stat-number">1000+</span>
+                  <span className="stat-label">Đặt sân/tháng</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="centers-header">
-        <h2>Các Cơ Sở Cầu Lông Đối Tác</h2>
-        <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
-      </div>
+        <div className="centers-header">
+          <h2>Các Cơ Sở Cầu Lông Đối Tác</h2>
+          <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
+        </div>
 
-      <div className="centers-grid">
-        {centers.map(center => (
-          <div key={center._id} className="center-card">
-            <div className="center-image">
-              <img 
-                src={center.imgUrl || "/images/default.png"} 
-                alt={center.name} 
-                onError={(e) => {e.target.src = "/images/default.png"}}
-              />
-              <div className="center-badge">
-                <i className="fas fa-table-tennis"></i> {center.courtCount} sân
-              </div>
-              {center.popularity && (
-                <div className="center-popular-tag">
-                  <i className="fas fa-fire"></i> {center.popularity}
+        <div className="centers-grid">
+          {centers.map(center => (
+            <div key={center._id} className="center-card">
+              <div className="center-image">
+                <img
+                  src={center.imgUrl || "/images/default.png"}
+                  alt={center.name}
+                  onError={(e) => { e.target.src = "/images/default.png" }}
+                />
+                <div className="center-badge">
+                  <i className="fas fa-table-tennis"></i> {center.courtCount} sân
                 </div>
-              )}
-              {center.promotion && (
-                <div className="center-promo-badge">
-                  <i className="fas fa-tags"></i> {center.promotion}
-                </div>
-              )}
-            </div>
-
-            <div className="center-info">
-              <div className="center-header">
-                <h2>{center.name}</h2>
-                <div className="center-rating">
-                  <div className="stars">
-                    {renderRatingStars(center.ratings)}
+                {center.popularity && (
+                  <div className="center-popular-tag">
+                    <i className="fas fa-fire"></i> {center.popularity}
                   </div>
-                  <span>{center.ratings}/5</span>
-                </div>
+                )}
+                {center.promotion && (
+                  <div className="center-promo-badge">
+                    <i className="fas fa-tags"></i> {center.promotion}
+                  </div>
+                )}
               </div>
 
-              <div className="center-booking-stats">
-                <i className="fas fa-calendar-check"></i>
-                <span>{center.bookingsLastMonth}+ lượt đặt tháng này</span>
-              </div>
-
-              <p className="center-address">
-                <i className="fas fa-map-marker-alt"></i> {center.address}
-              </p>
-
-              <div className="center-divider"></div>
-
-              <p className="center-description">{center.description}</p>
-              
-              {renderFacilities(center.facilities)}
-              
-              <div className="center-footer">
-                <div className="center-details">
-                  <span>
-                    <i className="fas fa-clock"></i> {center.openHours}
-                  </span>
-                  <span>
-                    <i className="fas fa-phone"></i> {center.phone}
-                  </span>
+              <div className="center-info">
+                <div className="center-header">
+                  <h2>{center.name}</h2>
+                  <div className="center-rating">
+                    <div className="stars">
+                      {renderRatingStars(center.ratings)}
+                    </div>
+                    <span>{center.ratings}/5</span>
+                  </div>
                 </div>
 
-                <Link 
-                  to={`/booking?centerId=${center._id}&user=000000000000000000000001`} 
-                  className="book-center-btn"
-                >
-                  <span>Đặt Sân Ngay</span>
-                  <i className="fas fa-arrow-right"></i>
-                </Link>
+                <div className="center-booking-stats">
+                  <i className="fas fa-calendar-check"></i>
+                  <span>{center.bookingsLastMonth}+ lượt đặt tháng này</span>
+                </div>
+
+                <p className="center-address">
+                  <i className="fas fa-map-marker-alt"></i> {center.address}
+                </p>
+
+                <div className="center-divider"></div>
+
+                <p className="center-description">{center.description}</p>
+
+                {renderFacilities(center.facilities)}
+
+                <div className="center-footer">
+                  <div className="center-details">
+                    <span>
+                      <i className="fas fa-clock"></i> {center.openHours}
+                    </span>
+                    <span>
+                      <i className="fas fa-phone"></i> {center.phone}
+                    </span>
+                  </div>
+
+                  <button onClick={() => goToBooking(Id, center._id)} className="book-center-btn">
+                    <span>Đặt Sân Ngay</span>
+                    <i className="fas fa-arrow-right"></i>
+                  </button>
+                </div>
               </div>
             </div>
+          ))}
+        </div>
+
+        <div className="centers-info-section">
+          <div className="info-card">
+            <div className="info-icon">
+              <i className="fas fa-shield-alt"></i>
+            </div>
+            <h3>Đặt Sân An Toàn</h3>
+            <p>Thanh toán bảo mật và đảm bảo hoàn tiền nếu có vấn đề</p>
           </div>
-        ))}
+          <div className="info-card">
+            <div className="info-icon">
+              <i className="fas fa-bolt"></i>
+            </div>
+            <h3>Đặt Sân Nhanh Chóng</h3>
+            <p>Chỉ mất vài phút để hoàn tất đặt sân và nhận xác nhận</p>
+          </div>
+          <div className="info-card">
+            <div className="info-icon">
+              <i className="fas fa-chart-line"></i>
+            </div>
+            <h3>Trải Nghiệm Chất Lượng</h3>
+            <p>Tất cả các cơ sở đều được đánh giá và kiểm duyệt chất lượng</p>
+          </div>
+        </div>
       </div>
 
-      <div className="centers-info-section">
-        <div className="info-card">
-          <div className="info-icon">
-            <i className="fas fa-shield-alt"></i>
-          </div>
-          <h3>Đặt Sân An Toàn</h3>
-          <p>Thanh toán bảo mật và đảm bảo hoàn tiền nếu có vấn đề</p>
-        </div>
-        <div className="info-card">
-          <div className="info-icon">
-            <i className="fas fa-bolt"></i>
-          </div>
-          <h3>Đặt Sân Nhanh Chóng</h3>
-          <p>Chỉ mất vài phút để hoàn tất đặt sân và nhận xác nhận</p>
-        </div>
-        <div className="info-card">
-          <div className="info-icon">
-            <i className="fas fa-chart-line"></i>
-          </div>
-          <h3>Trải Nghiệm Chất Lượng</h3>
-          <p>Tất cả các cơ sở đều được đánh giá và kiểm duyệt chất lượng</p>
-        </div>
-      </div>
-    </div>
-
-    <Footer />
+      <Footer />
     </>
   );
 };
