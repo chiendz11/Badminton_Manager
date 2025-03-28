@@ -83,6 +83,10 @@ const CenterSchema = new Schema(
         required: true,
       },
     },
+    bookingCount: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

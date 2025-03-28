@@ -117,7 +117,7 @@
 // export default PricingTableModal;
 
 import React, { useState, useEffect } from "react";
-import { getCenterPricing } from "../apis/courts";
+import { getCenterPricing } from "../apis/centers";
 
 const PricingTable = ({ centerId, onClose }) => {
   const [pricing, setPricing] = useState(null);
@@ -153,7 +153,7 @@ const PricingTable = ({ centerId, onClose }) => {
             <i className="fas fa-times"></i>
           </button>
         </div>
-        
+
         <div className="price-table-body">
           {loading ? (
             <div className="loading-state">
@@ -171,7 +171,7 @@ const PricingTable = ({ centerId, onClose }) => {
           ) : pricing ? (
             <>
               <h3>{pricing.title || "Cầu lông"}</h3>
-              
+
               <div className="price-section">
                 <h4>Ngày thường (Thứ 2 - Thứ 6)</h4>
                 <table className="price-table">
@@ -193,7 +193,7 @@ const PricingTable = ({ centerId, onClose }) => {
                   </tbody>
                 </table>
               </div>
-              
+
               <div className="price-section">
                 <h4>Cuối tuần (Thứ 7 - Chủ nhật)</h4>
                 <table className="price-table">
@@ -215,7 +215,7 @@ const PricingTable = ({ centerId, onClose }) => {
                   </tbody>
                 </table>
               </div>
-              
+
               <div className="note-section">
                 <h4>Lưu ý:</h4>
                 <ul>

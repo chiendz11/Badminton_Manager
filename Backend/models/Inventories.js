@@ -20,9 +20,6 @@ const inventorySchema = new mongoose.Schema({
   importPrice: { type: Number, required: true }, // Giá nhập 1 thùng
   price: { type: Number, required: true }, // Giá bán lẻ (mỗi đơn vị bán)
   bulkPrice: { type: Number, required: true }, // Giá bán theo thùng
-
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
 });
 
 const Inventory = mongoose.model("Inventory", inventorySchema);

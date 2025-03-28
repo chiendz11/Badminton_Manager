@@ -1,20 +1,26 @@
-
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import '../styles/centers.css';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import { checkPendingExists } from '../apis/booking';
 import { useNavigate } from 'react-router-dom';
+import CenterDetailModal from '../pages/CenterDetailModal';
+import { getAllCenters } from '../apis/centers'; // Import hàm gọi API lấy centers
+import { AuthContext } from '../contexts/AuthContext';
+import LoginModal from '../pages/Login';
 
 const Centers = () => {
-  const Id = "67bd323489acfa439c4d7945"
+  const { user } = useContext(AuthContext);
+  const openHours = "05:00 - 24:00";
   const today = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
-import CenterDetailModal from '../pages/CenterDetailModal';
 
-const Centers = () => {
+  const [centers, setCenters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedCenter, setSelectedCenter] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const openModal = (center) => {
     setSelectedCenter(center);
@@ -25,87 +31,49 @@ const Centers = () => {
     setModalOpen(false);
   };
 
-  const centers = [
-    {
-      _id: "67ca6e3cfc964efa218ab7d7",
-      name: "Cơ sở Mỹ Đình",
-      address: "Số 12 Đường Lê Đức Thọ, Mỹ Đình, Nam Từ Liêm, Hà Nội",
-      description: "Hệ thống 5 sân cầu lông tiêu chuẩn quốc tế, trang bị thảm chống trượt và hệ thống đèn LED cao cấp. Phòng thay đồ, phòng tắm được trang bị đầy đủ tiện nghi.",
-      phone: "0972.628.815",
-      imgUrl: "/images/center1.png",
-      courtCount: 5,
-      ratings: 4.8,
-      openHours: "5 - 24:00",
-      facilities: ["Phòng thay đồ", "Wifi miễn phí", "Máy lạnh", "Căn tin"]
-    },
-    {
-      _id: "67ca6e3cfc964efa218ab7d8",
-      name: "Cơ sở Cầu Giấy",
-      address: "Số 25 Trần Thái Tông, Dịch Vọng, Cầu Giấy, Hà Nội",
-      description: "Khu phức hợp thể thao với 4 sân cầu lông chất lượng cao. Tất cả các sân đều được thiết kế theo tiêu chuẩn thi đấu, với không gian rộng rãi và ánh sáng tối ưu.",
-      phone: "0972.628.815",
-      imgUrl: "/images/center2.png",
-      courtCount: 4,
-      ratings: 4.6,
-      openHours: "5 - 24:00",
-      facilities: ["Bãi đỗ xe rộng", "Huấn luyện viên", "Dịch vụ đánh giá kỹ thuật", "Shop dụng cụ"]
-    },
-    {
-      _id: "67ca6e3cfc964efa218ab7d9",
-      name: "Cơ sở Thanh Xuân",
-      address: "Số 76 Nguyễn Trãi, Thanh Xuân Trung, Thanh Xuân, Hà Nội",
-      description: "Trung tâm thể thao hiện đại với 6 sân cầu lông tiêu chuẩn. Môi trường chuyên nghiệp, thân thiện và đầy đủ tiện nghi cho người chơi ở mọi cấp độ.",
-      phone: "0972.628.815",
-      imgUrl: "/images/center3.jpg",
-      courtCount: 6,
-      ratings: 4.5,
-      openHours: "5 - 24:00",
-      facilities: ["Đèn LED cao cấp", "Sàn gỗ chuyên nghiệp", "Căn tin", "Phòng y tế"]
-    },
-    {
-      _id: "67ca6e3cfc964efa218ab7da",
-      name: "Cơ sở Hà Đông",
-      address: "Số 38 Nguyễn Khuyến, Văn Quán, Hà Đông, Hà Nội",
-      description: "Khu thể thao đầy đủ tiện nghi với 4 sân cầu lông chuyên nghiệp. Không gian thoáng đãng, dịch vụ chu đáo, phù hợp cho cả gia đình và những người đam mê cầu lông.",
-      phone: "0972.628.815",
-      imgUrl: "/images/center4.jpg",
-      courtCount: 4,
-      ratings: 4.7,
-      openHours: "5 - 24:00",
-      facilities: ["Giữ xe miễn phí", "Cho thuê vợt", "Dịch vụ đan cước vợt", "Nước uống miễn phí"]
-
-
-      /*
-      Gọi database vào mảng này thay cho phần ví dụ trên, nội dung cứ lấy y hệt tôi là được
-      */
-
-    }
-  ];
-
-  const goToBooking = async (userId, centerId) => {
+  const fetchCenters = async () => {
     try {
-      const { exists } = await checkPendingExists({ userId, centerId });
+      setLoading(true);
+      const data = await getAllCenters();
+      setCenters(data);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCenters();
+  }, []);
+
+  // Hàm goToBooking: nếu user chưa đăng nhập, hiện thông báo và mở modal đăng nhập
+  const goToBooking = async (centerId) => {
+    if (!user || !user._id) {
+      alert("Hãy đăng nhập hoặc đăng ký để đặt sân");
+      setIsLoginModalOpen(true);
+      return;
+    }
+    try {
+      const { exists } = await checkPendingExists({ userId: user._id, centerId });
       if (exists) {
-        alert(`User ${userId} đã có booking pending cho trung tâm này. Vui lòng chờ hết 5 phút.`);
+        alert("Bạn đã có booking pending cho trung tâm này. Vui lòng chờ hết 5 phút.");
       } else {
-        // Điều hướng sang BookingSchedule với state, không dùng query parameters
-        navigate('/booking', {
-          state: {
-            user: userId,
-            centerId: centerId,
-            date: today,
-          },
-        });
+        // Lưu thông tin booking vào localStorage
+        const bookingData = { centerId, date: today };
+        localStorage.setItem("bookingData", JSON.stringify(bookingData));
+        // Điều hướng mà không truyền state qua navigate
+        navigate("/booking");
       }
     } catch (error) {
       alert("Lỗi kiểm tra booking pending: " + error.message);
     }
   };
+
   const renderRatingStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-
     for (let i = 1; i <= 5; i++) {
       if (i <= fullStars) {
         stars.push(<i key={i} className="fas fa-star"></i>);
@@ -115,7 +83,6 @@ const Centers = () => {
         stars.push(<i key={i} className="far fa-star"></i>);
       }
     }
-
     return stars;
   };
 
@@ -166,93 +133,96 @@ const Centers = () => {
           </div>
         </div>
 
-
-      <div className="centers-header">
-        <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
-        <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
-      </div>
-
-      <div className="centers-grid">
-        {centers.map(center => (
-          
-          <div key={center._id} className="center-card">
-            <div className="center-image">
-              <img 
-                src={center.imgUrl || "/images/default.png"} 
-                alt={center.name} 
-                onError={(e) => {e.target.src = "/images/default.png"}}
-              />
-              <div className="center-badge">
-                <i className="fas fa-table-tennis"></i> {center.courtCount} sân
-              </div>
-              {center.popularity && (
-                <div className="center-popular-tag">
-                  <i className="fas fa-fire"></i> {center.popularity}
-                </div>
-              )}
-              {center.promotion && (
-                <div className="center-promo-badge">
-                  <i className="fas fa-tags"></i> {center.promotion}
-
-                </div>
-                {center.popularity && (
-                  <div className="center-popular-tag">
-                    <i className="fas fa-fire"></i> {center.popularity}
-                  </div>
-                )}
-                {center.promotion && (
-                  <div className="center-promo-badge">
-                    <i className="fas fa-tags"></i> {center.promotion}
-                  </div>
-                )}
-              </div>
-
-              <div className="center-info">
-                <div className="center-header">
-                  <h2>{center.name}</h2>
-                  <div className="center-rating">
-                    <div className="stars">
-                      {renderRatingStars(center.ratings)}
-                    </div>
-                    <span>{center.ratings}/5</span>
-                  </div>
-                </div>
-
-                <div className="center-booking-stats">
-                  <i className="fas fa-calendar-check"></i>
-                  <span>{center.bookingsLastMonth}+ lượt đặt tháng này</span>
-                </div>
-
-                <p className="center-address">
-                  <i className="fas fa-map-marker-alt"></i> {center.address}
-                </p>
-
-                <div className="center-divider"></div>
-
-                <p className="center-description">{center.description}</p>
-
-                {renderFacilities(center.facilities)}
-
-                <div className="center-footer">
-                  <div className="center-details">
-                    <span>
-                      <i className="fas fa-clock"></i> {center.openHours}
-                    </span>
-                    <span>
-                      <i className="fas fa-phone"></i> {center.phone}
-                    </span>
-                  </div>
-
-                  <button onClick={() => goToBooking(Id, center._id)} className="book-center-btn">
-                    <span>Đặt Sân Ngay</span>
-                    <i className="fas fa-arrow-right"></i>
-                  </button>
-
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="centers-header">
+          <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
+          <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
         </div>
+
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <p>Error: {error}</p>
+        ) : (
+          <div className="centers-grid">
+            {centers.map((center) => (
+              <div key={center._id} className="center-card">
+                <div className="center-image">
+                  <img
+                    src={center.imgUrl[0] || "/images/default.png"}
+                    alt={center.name}
+                    onError={(e) => { e.target.src = "/images/default.png" }}
+                  />
+                  <div className="center-badge">
+                    <i className="fas fa-table-tennis"></i> {center.totalCourts} sân
+                  </div>
+                  {center.popularity && (
+                    <div className="center-popular-tag">
+                      <i className="fas fa-fire"></i> {center.popularity}
+                    </div>
+                  )}
+                  {center.promotion && (
+                    <div className="center-promo-badge">
+                      <i className="fas fa-tags"></i> {center.promotion}
+                    </div>
+                  )}
+                </div>
+
+                <div className="center-info">
+                  <div className="center-header">
+                    <h2>{center.name}</h2>
+                    <div className="center-rating">
+                      <div className="stars">{renderRatingStars(center.avgRating)}</div>
+                      <span>{center.avgRating}/5</span>
+                    </div>
+                  </div>
+
+                  <div className="center-booking-stats">
+                    <i className="fas fa-calendar-check"></i>
+                    <span>{center.bookingCount || 0}+ lượt đặt tháng này</span>
+                  </div>
+
+                  <p className="center-address">
+                    <i className="fas fa-map-marker-alt"></i> {center.address}
+                  </p>
+
+                  <div className="center-divider"></div>
+
+                  <p className="center-description">{center.description}</p>
+
+                  {renderFacilities(center.facilities)}
+
+                  <div className="center-footer">
+                    <div className="center-details">
+                      <span>
+                        <i className="fas fa-clock"></i> {openHours}
+                      </span>
+                      <span>
+                        <i className="fas fa-phone"></i> {center.phone}
+                      </span>
+                    </div>
+
+                    <div className="center-action-buttons">
+                      <button
+                        className="view-details-btn"
+                        onClick={() => openModal(center)}
+                        title="Xem chi tiết"
+                      >
+                        <i className="fas fa-eye"></i>
+                      </button>
+                      <button
+                        onClick={() => goToBooking(center._id)}
+                        className="book-center-btn"
+                      >
+                        <span>Đặt Sân Ngay</span>
+                        <i className="fas fa-arrow-right"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="centers-info-section">
           <div className="info-card">
@@ -277,21 +247,19 @@ const Centers = () => {
             <p>Tất cả các cơ sở đều được đánh giá và kiểm duyệt chất lượng</p>
           </div>
         </div>
+
+        {selectedCenter && (
+          <CenterDetailModal center={selectedCenter} isOpen={modalOpen} onClose={closeModal} />
+        )}
       </div>
 
-
-      {/* Modal component */}
-      {selectedCenter && (
-        <CenterDetailModal 
-          center={selectedCenter}
-          isOpen={modalOpen}
-          onClose={closeModal}
-        />
-      )}
-    </div>
-
-
       <Footer />
+
+      {/* Modal đăng nhập nếu chưa đăng nhập */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </>
   );
 };
