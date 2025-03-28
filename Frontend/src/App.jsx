@@ -12,6 +12,8 @@ import Centers from "./pages/Centers";
 import Policy from "./pages/Policy";
 import Contact from "./pages/Contact";
 import Competition from "./pages/Competition";
+import UserProfile from "./pages/UserProfile";
+
 import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
@@ -29,6 +31,7 @@ function App() {
               </>
             }
           />
+<Route path="/profile" element={<UserProfile />} />
           <Route path="/competition" element={<Competition />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/policy" element={<Policy />} />
@@ -39,6 +42,7 @@ function App() {
         </Routes>
       </Router>
     </AuthProvider>
+
   );
 }
 

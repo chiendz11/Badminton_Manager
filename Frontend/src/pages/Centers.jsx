@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useContext } from 'react';
 import '../styles/centers.css';
 import Footer from '../components/Footer';
@@ -15,6 +16,7 @@ const Centers = () => {
   const today = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
 
+
   const [centers, setCenters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,6 +32,7 @@ const Centers = () => {
   const closeModal = () => {
     setModalOpen(false);
   };
+
 
   const fetchCenters = async () => {
     try {
@@ -70,6 +73,7 @@ const Centers = () => {
     }
   };
 
+
   const renderRatingStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -100,38 +104,38 @@ const Centers = () => {
 
   return (
     <>
-      <Header />
+    <Header />
 
-      <div className="centers-page">
-        <div className="hero-section">
-          <div className="hero-content">
-            <h1>Chọn Cơ Sở Yêu Thích Của Bạn</h1>
-            <p>Tìm và đặt sân cầu lông tốt nhất tại Hà Nội</p>
-            <div className="hero-stats">
-              <div className="stat-item">
-                <i className="fas fa-medal"></i>
-                <div className="stat-info">
-                  <span className="stat-number">4</span>
-                  <span className="stat-label">Cơ sở hàng đầu</span>
-                </div>
+    <div className="centers-page">
+      <div className="hero-section">
+        <div className="hero-content">
+          <h1>Chọn Cơ Sở Yêu Thích Của Bạn</h1>
+          <p>Tìm và đặt sân cầu lông tốt nhất tại Hà Nội</p>
+          <div className="hero-stats">
+            <div className="stat-item">
+              <i className="fas fa-medal"></i>
+              <div className="stat-info">
+                <span className="stat-number">4</span>
+                <span className="stat-label">Cơ sở hàng đầu</span>
               </div>
-              <div className="stat-item">
-                <i className="fas fa-table-tennis"></i>
-                <div className="stat-info">
-                  <span className="stat-number">20</span>
-                  <span className="stat-label">Sân cầu lông</span>
-                </div>
+            </div>
+            <div className="stat-item">
+              <i className="fas fa-table-tennis"></i>
+              <div className="stat-info">
+                <span className="stat-number">20</span>
+                <span className="stat-label">Sân cầu lông</span>
               </div>
-              <div className="stat-item">
-                <i className="fas fa-users"></i>
-                <div className="stat-info">
-                  <span className="stat-number">1000+</span>
-                  <span className="stat-label">Đặt sân/tháng</span>
-                </div>
+            </div>
+            <div className="stat-item">
+              <i className="fas fa-users"></i>
+              <div className="stat-info">
+                <span className="stat-number">1000+</span>
+                <span className="stat-label">Đặt sân/tháng</span>
               </div>
             </div>
           </div>
         </div>
+
 
         <div className="centers-header">
           <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
@@ -224,29 +228,30 @@ const Centers = () => {
           </div>
         )}
 
-        <div className="centers-info-section">
-          <div className="info-card">
-            <div className="info-icon">
-              <i className="fas fa-shield-alt"></i>
-            </div>
-            <h3>Đặt Sân An Toàn</h3>
-            <p>Thanh toán bảo mật và đảm bảo hoàn tiền nếu có vấn đề</p>
+
+      <div className="centers-info-section">
+        <div className="info-card">
+          <div className="info-icon">
+            <i className="fas fa-shield-alt"></i>
           </div>
-          <div className="info-card">
-            <div className="info-icon">
-              <i className="fas fa-bolt"></i>
-            </div>
-            <h3>Đặt Sân Nhanh Chóng</h3>
-            <p>Chỉ mất vài phút để hoàn tất đặt sân và nhận xác nhận</p>
-          </div>
-          <div className="info-card">
-            <div className="info-icon">
-              <i className="fas fa-chart-line"></i>
-            </div>
-            <h3>Trải Nghiệm Chất Lượng</h3>
-            <p>Tất cả các cơ sở đều được đánh giá và kiểm duyệt chất lượng</p>
-          </div>
+          <h3>Đặt Sân An Toàn</h3>
+          <p>Thanh toán bảo mật và đảm bảo hoàn tiền nếu có vấn đề</p>
         </div>
+        <div className="info-card">
+          <div className="info-icon">
+            <i className="fas fa-bolt"></i>
+          </div>
+          <h3>Đặt Sân Nhanh Chóng</h3>
+          <p>Chỉ mất vài phút để hoàn tất đặt sân và nhận xác nhận</p>
+        </div>
+        <div className="info-card">
+          <div className="info-icon">
+            <i className="fas fa-chart-line"></i>
+          </div>
+          <h3>Trải Nghiệm Chất Lượng</h3>
+          <p>Tất cả các cơ sở đều được đánh giá và kiểm duyệt chất lượng</p>
+        </div>
+
 
         {selectedCenter && (
           <CenterDetailModal center={selectedCenter} isOpen={modalOpen} onClose={closeModal} />
@@ -260,6 +265,7 @@ const Centers = () => {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+
     </>
   );
 };

@@ -40,10 +40,10 @@ const HeroBanner = () => {
         
         <div className="animated-elements">
           <div className="shuttlecock shuttlecock-1">
-            <img src="/images/shuttlecock.png" alt="Shuttlecock" className="icon-img" />
+            <img src="/images/shuttleCock.png" alt="Shuttlecock" className="icon-img" />
           </div>
           <div className="shuttlecock shuttlecock-2">
-            <img src="/images/shuttlecock.png" alt="Shuttlecock" className="icon-img" />
+            <img src="/images/shuttleCock.png" alt="Shuttlecock" className="icon-img" />
           </div>
           
           <div className="line line-1"></div>
