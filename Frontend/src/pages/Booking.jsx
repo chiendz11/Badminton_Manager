@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import React, { useState, useEffect, useCallback, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import DatePicker from "../components/datepicker";
 import Legend from "../components/legend";
 import BookingTable from "../components/bookingTable";
-import PricingTable from "../components/pricingTable";
+import PricingTable from "../components/PricingTable";
 import ModalConfirmation from "../components/ModalConfirmation";
 import socket from "../socket";
+import { AuthContext } from "../contexts/AuthContext";
 
-import { getCourtsByCenter, getPriceForTimeslot } from "../apis/courts";
-// Sử dụng API getPendingMapping (backend đã merge dữ liệu: booked, pending, myPending)
+import { getCourtsByCenter, getPriceForTimeslot, getCenterInfoById } from "../apis/centers";
 import { getPendingMapping, confirmBookingToDB, clearAllPendingBookings } from "../apis/booking";
 
 import "../styles/booking.css";
@@ -29,108 +29,117 @@ function calculateTotal(slots) {
 }
 
 /**
- * Hàm applyLockedLogic:
- * Nếu selectedDate là hôm nay và một timeslot chưa "đã đặt" mà giờ của slot đã vượt,
- * thì chuyển trạng thái đó thành "locked".
- * (Nếu trạng thái pending thuộc của currentUser, giữ lại là "myPending")
+ * Nếu selectedDate là hôm nay và timeslot đã qua, chuyển trạng thái thành "locked".
+ * Nếu trạng thái pending thuộc currentUser, giữ lại là "myPending".
  */
 function applyLockedLogic(mapping, selectedDate, currentUserId) {
-  const updatedMapping = JSON.parse(JSON.stringify(mapping)); // copy sâu
+  const updatedMapping = JSON.parse(JSON.stringify(mapping));
   const todayStr = new Date().toISOString().split("T")[0];
   const now = new Date();
   const currentHour = now.getHours();
   const currentMinute = now.getMinutes();
 
-  if (selectedDate === todayStr) {
-    Object.keys(updatedMapping).forEach((courtId) => {
-      const arr = updatedMapping[courtId] || Array(slotCount).fill("trống");
-      updatedMapping[courtId] = arr.map((status, i) => {
-        if (typeof status === "object" && status.userId === currentUserId) {
-          return "myPending";
+  Object.keys(updatedMapping).forEach((courtId) => {
+    const arr = updatedMapping[courtId] || Array(slotCount).fill("trống");
+    updatedMapping[courtId] = arr.map((status, i) => {
+      // Nếu status undefined, trả về mặc định "trống"
+      if (status === undefined) return "trống";
+
+      const slotHour = times[i];
+      if (selectedDate === todayStr) {
+        if (slotHour < currentHour || (slotHour === currentHour && currentMinute > 0)) {
+          return "locked";
         }
-        if (status !== "đã đặt") {
-          const slotHour = times[i];
-          if (slotHour < currentHour || (slotHour === currentHour && currentMinute > 0)) {
-            return "locked";
-          }
-        }
-        return status;
-      });
+      }
+      if (typeof status === "object" && status.userId != null) {
+        return status.userId.toString().trim() === currentUserId?.toString().trim()
+          ? "myPending"
+          : "pending";
+      }
+      return status;
     });
-  }
+  });
   return updatedMapping;
 }
 
-
-
 const BookingSchedule = () => {
   const navigate = useNavigate();
-  const { state } = useLocation();
+  const { user } = useContext(AuthContext);
+  // Sử dụng optional chaining để tránh lỗi nếu user là null
+  const userId = user?._id;
 
-  const userId = state?.user || "000000000000000000000001";
-  const centerId = state?.centerId || "67ca6e3cfc964efa218ab7d7";
-  const initialDate = state?.date || new Date().toISOString().split("T")[0];
+  const openHours = "05:00 - 24:00";
+  const bookingData = JSON.parse(localStorage.getItem("bookingData") || "{}");
+  const centerId = bookingData.centerId || "default_centerId";
+  const initialDate = bookingData.date || new Date().toISOString().split("T")[0];
 
-  // Các state cơ bản
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [courts, setCourts] = useState([]);
-
-  // baseMapping: dữ liệu gốc từ API; displayMapping: sau khi áp dụng locked
   const [baseMapping, setBaseMapping] = useState({});
   const [displayMapping, setDisplayMapping] = useState({});
-
   const [centerInfo, setCenterInfo] = useState(null);
-
-  // State cho các ô đã chọn
   const [selectedSlots, setSelectedSlots] = useState([]);
   const { totalHours, totalAmount } = calculateTotal(selectedSlots);
-
-  // Modal xác nhận và bảng giá
   const [showModal, setShowModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [initialMappingLoaded, setInitialMappingLoaded] = useState(false);
 
-  // useRef để tránh race condition
-  const fetchTokenRef = useRef(0);
-
+  // Lấy thông tin trung tâm
   useEffect(() => {
-    // Giả lập lấy thông tin center
-    const centerData = {
-      name: "Cơ sở Mỹ Đình",
-      address: "Số 12 Đường Lê Đức Thọ, Mỹ Đình, Nam Từ Liêm, Hà Nội",
-      phone: "0918.773.883",
-      openHours: "5:00 - 24:00",
-      totalCourts: 5,
+    const fetchCenterInfo = async () => {
+      try {
+        const response = await getCenterInfoById(centerId);
+        if (response && response.success) {
+          setCenterInfo(response.center);
+        }
+      } catch (error) {
+        console.error("Error fetching center info:", error);
+      }
     };
-    setCenterInfo(centerData);
+    if (centerId) {
+      fetchCenterInfo();
+    }
   }, [centerId]);
 
-  // 1. Lấy danh sách sân từ API
+  // Fetch danh sách sân và ngay sau đó fetch mapping
   useEffect(() => {
-    const fetchCourts = async () => {
+    const fetchCourtsAndMapping = async () => {
       try {
         const data = await getCourtsByCenter(centerId);
-        setCourts(Array.isArray(data) ? data : data.data);
+        const courtsData = Array.isArray(data) ? data : data.data;
+        setCourts(courtsData);
+        if (courtsData.length > 0) {
+          // Gọi mapping ngay khi danh sách sân có dữ liệu
+          const mapping = await getPendingMapping(centerId, selectedDate);
+          const completeMapping = {};
+          courtsData.forEach((court) => {
+            completeMapping[court._id] =
+              mapping[court._id] || Array(slotCount).fill("trống");
+          });
+          setBaseMapping(completeMapping);
+          const finalMapping = applyLockedLogic(completeMapping, selectedDate, userId);
+          setDisplayMapping(finalMapping);
+          setInitialMappingLoaded(true);
+        }
       } catch (error) {
         console.error("Lỗi khi lấy danh sách sân:", error);
       }
     };
-    fetchCourts();
-  }, [centerId]);
+    fetchCourtsAndMapping();
+  }, [centerId, selectedDate, userId]);
 
-  // 2. Clear pending khi load trang
   useEffect(() => {
-    clearAllPendingBookings({ userId, centerId })
-      .then(() => console.log("Clear pending thành công khi load"))
-      .catch((err) => console.error("Lỗi clear pending khi load:", err));
+    if (!userId) return;
+    clearAllPendingBookings({ userId, centerId }).catch((err) =>
+      console.error("Lỗi clear pending khi load:", err)
+    );
   }, [userId, centerId]);
 
-  // 3. Khi đổi ngày, reset dữ liệu và cập nhật selectedDate
   const handleDateChange = async (newDate) => {
+    if (!userId) return;
     try {
       await clearAllPendingBookings({ userId, centerId });
-      console.log("Clear pending thành công khi đổi ngày");
     } catch (error) {
       console.error("Lỗi clear pending khi đổi ngày:", error);
     }
@@ -138,68 +147,64 @@ const BookingSchedule = () => {
     setDisplayMapping({});
     setSelectedSlots([]);
     setInitialMappingLoaded(false);
-    fetchTokenRef.current++;
     setSelectedDate(newDate);
   };
 
-  // 4. Khi component unmount, clear pending
   useEffect(() => {
     return () => {
-      clearAllPendingBookings({ userId, centerId })
-        .then(() => console.log("Clear pending thành công khi unmount"))
-        .catch((err) => console.error("Lỗi clear pending khi unmount:", err));
+      if (!userId) return;
+      clearAllPendingBookings({ userId, centerId }).catch((err) =>
+        console.error("Lỗi clear pending khi unmount:", err)
+      );
     };
   }, [userId, centerId]);
 
-  // 5. Hàm reFetchMapping: gọi API getPendingMapping, lưu vào baseMapping và tính displayMapping
-  const reFetchMapping = useCallback(
-    async (targetDate, isInitial = false) => {
-      if (courts.length === 0) return;
-      const currentToken = ++fetchTokenRef.current;
-      if (isInitial) setInitialMappingLoaded(false);
+  // Cập nhật mapping mỗi khi selectedDate thay đổi
+  useEffect(() => {
+    if (!userId || courts.length === 0) return;
+    (async () => {
       try {
-        const mapping = await getPendingMapping(centerId, targetDate);
-        console.log("Mapping nhận từ API:", mapping);
-        // Đảm bảo mỗi sân có mảng trạng thái đầy đủ
+        const mapping = await getPendingMapping(centerId, selectedDate);
         const completeMapping = {};
         courts.forEach((court) => {
           completeMapping[court._id] =
             mapping[court._id] || Array(slotCount).fill("trống");
         });
-        console.log("Complete mapping:", completeMapping);
-        if (currentToken === fetchTokenRef.current) {
-          setBaseMapping(completeMapping);
-          const finalMapping = applyLockedLogic(completeMapping, targetDate, userId);
-          console.log("Display mapping sau applyLockedLogic:", finalMapping);
-          setDisplayMapping(finalMapping);
-          if (isInitial) setInitialMappingLoaded(true);
-        }
+        setBaseMapping(completeMapping);
+        const finalMapping = applyLockedLogic(completeMapping, selectedDate, userId);
+        setDisplayMapping(finalMapping);
       } catch (error) {
         console.error("Lỗi khi fetch mapping:", error);
       }
-    },
-    [centerId, courts, userId]
-  );
+    })();
+  }, [selectedDate, courts, userId]);
 
-  // 6. Khi selectedDate thay đổi, load mapping mới
   useEffect(() => {
-    setBaseMapping({});
-    setDisplayMapping({});
-    reFetchMapping(selectedDate, true);
-  }, [selectedDate, reFetchMapping]);
-
-  // 7. Realtime qua Socket.IO: luôn gọi reFetchMapping cho ngày đang chọn
-  useEffect(() => {
-    const handleUpdateBookings = (data) => {
-      reFetchMapping(selectedDate);
+    const handleUpdateBookings = () => {
+      if (userId && courts.length > 0) {
+        (async () => {
+          try {
+            const mapping = await getPendingMapping(centerId, selectedDate);
+            const completeMapping = {};
+            courts.forEach((court) => {
+              completeMapping[court._id] =
+                mapping[court._id] || Array(slotCount).fill("trống");
+            });
+            setBaseMapping(completeMapping);
+            const finalMapping = applyLockedLogic(completeMapping, selectedDate, userId);
+            setDisplayMapping(finalMapping);
+          } catch (error) {
+            console.error("Lỗi khi fetch mapping:", error);
+          }
+        })();
+      }
     };
     socket.on("updateBookings", handleUpdateBookings);
     return () => {
       socket.off("updateBookings", handleUpdateBookings);
     };
-  }, [selectedDate, reFetchMapping]);
+  }, [selectedDate, courts, userId, centerId]);
 
-  // 8. (Nếu cần) Định kỳ cập nhật lại trạng thái locked mỗi phút dựa trên baseMapping
   useEffect(() => {
     const interval = setInterval(() => {
       setDisplayMapping(applyLockedLogic(baseMapping, selectedDate, userId));
@@ -207,10 +212,11 @@ const BookingSchedule = () => {
     return () => clearInterval(interval);
   }, [baseMapping, selectedDate, userId]);
 
-  // 9. Khi user click vào ô timeslot: thao tác nếu ô không bị locked
   const toggleBookingStatus = async (rowIndex, colIndex) => {
     if (!initialMappingLoaded) return;
-    const courtId = courts[rowIndex]._id;
+    const court = courts[rowIndex];
+    if (!court) return;
+    const courtId = court._id;
     const slotVal = times[colIndex];
     const todayStr = new Date().toISOString().split("T")[0];
     if (selectedDate === todayStr) {
@@ -226,7 +232,6 @@ const BookingSchedule = () => {
         foundIndex > -1
           ? prev.filter((_, idx) => idx !== foundIndex)
           : [...prev, { courtId, slotVal, price: 0 }];
-      console.log("SelectedSlots đã cập nhật sau khi click:", newSlots);
       return newSlots;
     });
     try {
@@ -242,10 +247,7 @@ const BookingSchedule = () => {
       console.error("Lỗi khi lấy giá cho timeslot:", error);
     }
   };
-  /**
-   * Hàm groupSelectedSlots:
-   * Nhóm các timeslot theo từng sân và tách nhóm nếu không liên tiếp.
-   */
+
   function groupSelectedSlots(selectedSlots, courts) {
     const groups = [];
     const slotsByCourt = {};
@@ -266,76 +268,53 @@ const BookingSchedule = () => {
       }
       if (group.length) groups.push({ courtId, slots: group });
     });
-    const result = groups.map(({ courtId, slots }) => {
+    return groups.map(({ courtId, slots }) => {
       const courtObj = courts.find((c) => c._id === courtId);
       const courtName = courtObj ? courtObj.name : `Court ${courtId}`;
-      if (slots.length === 1) {
-        return { courtName, timeStr: formatSlot(slots[0]) };
-      } else {
-        return { courtName, timeStr: `${formatSlot(slots[0])} - ${formatSlot(slots[slots.length - 1] + 1)}` };
-      }
+      return slots.length === 1
+        ? { courtName, timeStr: formatSlot(slots[0]) }
+        : { courtName, timeStr: `${formatSlot(slots[0])} - ${formatSlot(slots[slots.length - 1] + 1)}` };
     });
-    return result;
   }
 
-
-  // 11. Khi nhấn nút CONTINUE, hiển thị modal xác nhận
   const handleConfirm = () => {
     setShowModal(true);
   };
 
   const handleModalAction = async (action) => {
-    if (action === "pay") {
+    if (action === "confirm") {
       try {
         const { success, booking } = await confirmBookingToDB({ userId, centerId, date: selectedDate });
         if (success) {
-          console.log("Booking pending lưu vào DB:", booking);
-
-          // Lưu toàn bộ thông tin vào localStorage
           localStorage.setItem("bookingExpiresAt", booking.expiresAt);
           localStorage.setItem("bookingId", booking._id);
           localStorage.setItem("userId", userId);
           localStorage.setItem("centerId", centerId);
           localStorage.setItem("selectedDate", selectedDate);
           localStorage.setItem("totalAmount", totalAmount);
-
-          console.log("Stored bookingExpiresAt:", localStorage.getItem("bookingExpiresAt"));
-
           alert(`Booking pending đã được lưu vào DB.\nBooking ID: ${booking._id}`);
-
-          // Điều hướng sang Payment với state, không dùng query parameters
           navigate("/payment", {
-            state: {
-              user: userId,
-              centerId: centerId,
-              date: selectedDate,
-              total: totalAmount,
-            },
+            state: { centerId, date: selectedDate, total: totalAmount },
           });
         }
       } catch (error) {
         console.error("Lỗi khi xác nhận booking:", error);
         alert("Lỗi khi xác nhận booking: " + error.message);
       }
-    } else if (action === "edit") {
+    } else if (action === "cancel") {
       setShowModal(false);
     }
   };
 
   const formatMoney = (val) => val.toLocaleString("vi-VN") + " đ";
-
   const handleGoBack = () => {
     navigate("/centers");
   };
-
-  // Format ngày hiển thị
   const formatDisplayDate = (dateString) => {
     const date = new Date(dateString);
     const day = date.getDate();
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
-
-    // Xác định thứ trong tuần
     const days = [
       "Chủ Nhật",
       "Thứ Hai",
@@ -346,168 +325,177 @@ const BookingSchedule = () => {
       "Thứ Bảy",
     ];
     const dayOfWeek = days[date.getDay()];
-
     return `${dayOfWeek}, ${day}/${month}/${year}`;
   };
-  
+
   useEffect(() => {
-    // Tính lại mảng filteredSlots từ displayMapping
     const newFiltered = selectedSlots.filter(({ courtId, slotVal }) => {
       const mapping = displayMapping[courtId];
       const index = times.indexOf(slotVal);
-      if (!mapping || index === -1) return false;
-      return mapping[index] === "myPending";
+      return mapping && index !== -1 && mapping[index] === "myPending";
     });
-  
-    // So sánh nếu newFiltered khác (ví dụ bằng cách so sánh chiều dài)
     if (newFiltered.length !== selectedSlots.length) {
-      console.log("Syncing selectedSlots với mapping:", newFiltered);
       setSelectedSlots(newFiltered);
     }
-  }, [displayMapping]); // Chỉ phụ thuộc vào displayMapping
+  }, [displayMapping]);
 
-  
   return (
     <div className="booking-page">
-      <div className="booking-header">
-        <button onClick={handleGoBack} className="back-button">
-          <i className="fas fa-arrow-left"></i> Quay lại
-        </button>
-        <h1>Đặt sân</h1>
-        <div></div> {/* Empty div to balance the flex layout */}
-      </div>
-
-      {centerInfo && (
-        <div className="center-info-bar">
-          <div className="center-name">
-            <i className="fas fa-building"></i> {centerInfo.name}
-          </div>
-          <div className="center-details">
-            <span>
-              <i className="fas fa-map-marker-alt"></i> {centerInfo.address}
-            </span>
-            <span>
-              <i className="fas fa-phone-alt"></i> {centerInfo.phone}
-            </span>
-            <span>
-              <i className="fas fa-clock"></i> {centerInfo.openHours}
-            </span>
-            <span>
-              <i className="fas fa-table-tennis"></i> {centerInfo.totalCourts} sân
-            </span>
-          </div>
-        </div>
-      )}
-
-      <div className="date-legend-container">
-        <div className="current-date">
-          <i className="fas fa-calendar-alt"></i>
-          <span>{formatDisplayDate(selectedDate)}</span>
-        </div>
-
-        <div className="control-panel">
-          <Legend />
-          <div className="date-price-controls">
-            <DatePicker value={selectedDate} onDateChange={handleDateChange} />
-            <button
-              onClick={() => setShowPricingModal(true)}
-              className="price-list-button"
-            >
-              <i className="fas fa-tags"></i> Xem bảng giá
-            </button>
-          </div>
-        </div>
-
-        <div className="booking-reminder">
-          <i className="fas fa-info-circle"></i>
-          <p>
-            Nếu bạn cần đặt lịch cố định, vui lòng liên hệ:{" "}
-            <a href="tel:0918773883">0972.628.815</a> để được hỗ trợ.
-          </p>
-        </div>
-      </div>
-
-      {/* Hiển thị "Đang tải dữ liệu..." nếu mapping chưa load */}
-      {!initialMappingLoaded && (
+      {!user ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Đang tải dữ liệu...</p>
+          <p>Loading user data...</p>
         </div>
-      )}
-
-      {/* Bảng booking */}
-      {initialMappingLoaded && courts.length > 0 ? (
-        <BookingTable
-          key={selectedDate}
-          courts={courts}
-          bookingData={displayMapping}
-          toggleBookingStatus={toggleBookingStatus}
-          times={times}
-          slotCount={slotCount}
-          currentUserId={userId}
-          disableBooking={!initialMappingLoaded}
-        />
       ) : (
-        initialMappingLoaded && (
-          <div className="no-data-message">Không tìm thấy dữ liệu sân</div>
-        )
-      )}
-
-      {selectedSlots.length > 0 && (
-        <div className="booking-footer">
-          <div className="expand-button-container">
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="expand-button"
-              aria-label={isExpanded ? "Thu gọn" : "Mở rộng"}
-            >
-              <i className={`fas fa-chevron-${isExpanded ? "down" : "up"}`}></i>
+        <>
+          <div className="booking-header">
+            <button onClick={handleGoBack} className="back-button">
+              <i className="fas fa-arrow-left"></i> Quay lại
             </button>
+            <h1>Đặt sân</h1>
+            <div></div>
           </div>
 
-          {isExpanded && (
-            <div className="booking-details">
-              <h3>Chi tiết đặt sân:</h3>
-              <div className="selected-slots">
-                {groupSelectedSlots(selectedSlots, courts).map(
-                  (item, idx) => (
-                    <div key={idx} className="slot-item">
-                      <span className="court-name">{item.courtName}:</span>
-                      <span className="slot-time">{item.timeStr}</span>
-                    </div>
-                  )
-                )}
+          {centerInfo && (
+            <div className="center-info-bar">
+              <div className="center-name">
+                <i className="fas fa-building"></i> {centerInfo.name}
               </div>
-              <div className="divider"></div>
+              <div className="center-details">
+                <span>
+                  <i className="fas fa-map-marker-alt"></i> {centerInfo.address}
+                </span>
+                <span>
+                  <i className="fas fa-phone-alt"></i> {centerInfo.phone}
+                </span>
+                <span>
+                  <i className="fas fa-clock"></i> {openHours}
+                </span>
+                <span>
+                  <i className="fas fa-table-tennis"></i> {centerInfo.totalCourts} sân
+                </span>
+              </div>
             </div>
           )}
 
-          <div className="booking-summary">
-            <div className="summary-item">
-              <span>Tổng thời gian:</span>
-              <span className="hours-value">{totalHours} giờ</span>
+          <div className="date-legend-container">
+            <div className="current-date">
+              <i className="fas fa-calendar-alt"></i>
+              <span>{formatDisplayDate(selectedDate)}</span>
             </div>
-            <div className="summary-item">
-              <span>Tổng tiền:</span>
-              <span className="amount-value">{formatMoney(totalAmount)}</span>
+
+            <div className="control-panel">
+              <Legend />
+              <div className="date-price-controls">
+                <DatePicker value={selectedDate} onDateChange={handleDateChange} />
+                <button
+                  onClick={() => setShowPricingModal(true)}
+                  className="price-list-button"
+                >
+                  <i className="fas fa-tags"></i> Xem bảng giá
+                </button>
+              </div>
+            </div>
+
+            <div className="booking-reminder">
+              <i className="fas fa-info-circle"></i>
+              <p>
+                Nếu bạn cần đặt lịch cố định, vui lòng liên hệ:{" "}
+                <a href="tel:0918773883">0972.628.815</a> để được hỗ trợ.
+              </p>
             </div>
           </div>
 
-          <button onClick={handleConfirm} className="continue-button">
-            <span>Tiếp tục</span>
-            <i className="fas fa-arrow-right"></i>
-          </button>
-        </div>
-      )}
+          {!initialMappingLoaded && (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Đang tải dữ liệu...</p>
+            </div>
+          )}
 
-      {/* Modal xác nhận */}
-      {showModal && (
-        <ModalConfirmation onAction={handleModalAction} totalAmount={totalAmount} />
-      )}
+          {initialMappingLoaded && courts.length > 0 ? (
+            <BookingTable
+              key={selectedDate}
+              courts={courts}
+              bookingData={displayMapping}
+              toggleBookingStatus={toggleBookingStatus}
+              times={times}
+              slotCount={slotCount}
+              currentUserId={userId}
+              disableBooking={!initialMappingLoaded}
+            />
+          ) : (
+            initialMappingLoaded && (
+              <div className="no-data-message">Không tìm thấy dữ liệu sân</div>
+            )
+          )}
 
-      {/* Modal bảng giá */}
-      {showPricingModal && (
-        <PricingTable centerId={centerId} onClose={() => setShowPricingModal(false)} />
+          {selectedSlots.length > 0 && (
+            <div className="booking-footer">
+              <div className="expand-button-container">
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="expand-button"
+                  aria-label={isExpanded ? "Thu gọn" : "Mở rộng"}
+                >
+                  <i className={`fas fa-chevron-${isExpanded ? "down" : "up"}`}></i>
+                </button>
+              </div>
+
+              {isExpanded && (
+                <div className="booking-details">
+                  <h3>Chi tiết đặt sân:</h3>
+                  <div className="selected-slots">
+                    {groupSelectedSlots(selectedSlots, courts).map((item, idx) => (
+                      <div key={idx} className="slot-item">
+                        <span className="court-name">{item.courtName}:</span>
+                        <span className="slot-time">{item.timeStr}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="divider"></div>
+                </div>
+              )}
+
+              <div className="booking-summary">
+                <div className="summary-item">
+                  <span>Tổng thời gian:</span>
+                  <span className="hours-value">{totalHours} giờ</span>
+                </div>
+                <div className="summary-item">
+                  <span>Tổng tiền:</span>
+                  <span className="amount-value">{formatMoney(totalAmount)}</span>
+                </div>
+              </div>
+
+              <button onClick={handleConfirm} className="continue-button">
+                <span>Tiếp tục</span>
+                <i className="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          )}
+
+          {showModal && (
+            <ModalConfirmation
+              onAction={handleModalAction}
+              title="Xác nhận thanh toán"
+              message={
+                <>
+                  Tổng số tiền thanh toán là{" "}
+                  <span className="font-bold text-yellow-500">
+                    {totalAmount.toLocaleString("vi-VN")} đ
+                  </span>
+                  . Nếu bạn xác nhận thanh toán, bạn sẽ có 5 phút để thanh toán (trong 5 phút đó không thể đặt sân tại trung tâm bạn vừa đặt nếu bạn thoát ra khỏi trang thanh toán, trừ khi bạn xóa thanh toán đó tại lịch sử thanh toán). Bạn có chắc chắn muốn thanh toán không?!{" "}
+                  <span role="img" aria-label="thinking">🧐</span>
+                </>
+              }
+            />
+          )}
+
+          {showPricingModal && (
+            <PricingTable centerId={centerId} onClose={() => setShowPricingModal(false)} />
+          )}
+        </>
       )}
     </div>
   );

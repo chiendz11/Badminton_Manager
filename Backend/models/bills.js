@@ -4,7 +4,7 @@ const { Schema, model } = mongoose;
 const billSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
-  centerId: { type: Schema.Types.ObjectId, ref: "Center", required: true, index: true }, // Thêm CenterId
+  centerId: { type: Schema.Types.ObjectId, ref: "Center", required: true, index: true },
 
   // Danh sách các booking đã xác nhận
   bookings: [{ type: Schema.Types.ObjectId, ref: "Booking", required: true }],
@@ -27,6 +27,9 @@ const billSchema = new Schema({
   // Ghi chú (nếu có)
   note: { type: String, default: "" },
 
+  // Trường lưu ảnh thanh toán dưới dạng nhị phân (Buffer)
+  paymentImage: { type: Buffer, default: null },
+  imageType: { type: String, default: "image/jpeg" },
   createdAt: { type: Date, default: Date.now, index: true }
 });
 

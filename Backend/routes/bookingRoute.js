@@ -6,10 +6,13 @@ import {
   bookedBookingInDBController,
   clearAllPendingBookingsController,
   getPendingMappingController,
-  checkPendingExistsController
+  checkPendingExistsController,
+  createBillController,
+  getBillController
 } from "../controllers/bookingController.js";
 
 const router = express.Router();
+router.get("/:billId", getBillController);
 
 router.post("/pending/toggle", togglePendingTimeslotController);
 
@@ -23,5 +26,6 @@ router.post("/pending/clear-all", clearAllPendingBookingsController);
 router.get("/pending/mapping", getPendingMappingController);
 
 router.get("/pending/exists", checkPendingExistsController);
+router.post("/bills", createBillController);
 
 export default router;

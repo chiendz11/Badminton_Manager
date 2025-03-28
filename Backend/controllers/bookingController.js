@@ -4,7 +4,9 @@ import {
   pendingBookingToDB,
   bookedBookingInDB,
   clearAllPendingBookings,
-  getFullPendingMapping
+  getFullPendingMapping,
+  createBillService,
+  getBillService
 } from "../services/bookingServices.js";
 import Booking from "../models/bookings.js"; // Cho hàm checkPendingExists
 
@@ -80,5 +82,30 @@ export const checkPendingExistsController = async (req, res) => {
   } catch (error) {
     console.error("Error checking pending booking existence (Controller):", error);
     res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
+export const createBillController = async (req, res) => {
+  try {
+    const { userId, centerId, bookingId, totalAmount, paymentImage } = req.body;
+    const bill = await createBillService({ userId, centerId, bookingId, totalAmount, paymentImage });
+    return res.status(201).json({ success: true, bill });
+  } catch (error) {
+    console.error("Error creating bill:", error);
+    return res.status(500).json({ success: false, message: "Error creating bill" });
+  }
+};
+export const getBillController = async (req, res) => {
+  try {
+    const { billId } = req.params;
+    const bill = await getBillService(billId);
+    if (!bill) {
+      return res.status(404).json({ success: false, message: "Bill not found" });
+    }
+    return res.status(200).json({ success: true, bill });
+  } catch (error) {
+    console.error("Error getting bill:", error);
+    return res.status(500).json({ success: false, message: "Error getting bill" });
   }
 };

@@ -48,7 +48,6 @@
     height: 100%;
     background: #fff;
     display: flex;
-    align-items: center;
     color: #333;
     text-align: center;
     padding: 40px;
@@ -59,41 +58,70 @@
 
 .modal-overlay .container.active .form-box { right: 50%; }
 
-.modal-overlay .form-box.register { visibility: hidden; }
-.modal-overlay .container.active .form-box.register { visibility: visible; }
+.modal-overlay .form-box.register { visibility: hidden}
+.modal-overlay .container.active .form-box.register { visibility: visible; overflow-y: auto; }
 
-/* Input Box */
+/* Các input-box cơ bản */
 .modal-overlay .input-box {
     position: relative;
     margin: 30px 0;
-}
-
-.modal-overlay .input-box input {
+  }
+  
+  /* Input cơ bản */
+  .modal-overlay .input-box input {
     width: 100%;
     padding: 13px 50px 13px 20px;
     background: #eee;
     border-radius: 8px;
-    border: none;
+    border: 1px solid transparent;
     outline: none;
     font-size: 16px;
     color: #333;
     font-weight: 500;
     font-family: "Poppins", sans-serif;
-}
-
-.modal-overlay .input-box input::placeholder {
+    transition: border-color 0.3s ease;
+  }
+  
+  /* Placeholder */
+  .modal-overlay .input-box input::placeholder {
     color: #888;
     font-weight: 400;
-}
-
-.modal-overlay .input-box i {
+  }
+  
+  /* Icon mặc định */
+  .modal-overlay .input-box i {
     position: absolute;
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 20px;
-}
-
+  }
+  
+  /* Trường hợp invalid: viền đỏ */
+  .modal-overlay .input-box.invalid input {
+    border-color: red;
+  }
+  
+  /* Trường hợp valid: viền xanh */
+  .modal-overlay .input-box.valid input {
+    border-color: green;
+  }
+  
+  /* Field error hiển thị dưới input-box */
+  .field-error {
+    color: red;
+    font-size: 14px;
+    margin-top: 5px;
+    font-family: "Poppins", sans-serif;
+  }
+  
+  /* Tùy chọn: nếu input-box có lỗi, giảm margin-bottom, và thêm khoảng cách cho field-error */
+  .modal-overlay .input-box.invalid {
+    margin-bottom: 0;
+  }
+  .modal-overlay .input-box.invalid + .field-error {
+    margin-bottom: 20px;
+  }
 /* Forgot Link */
 .modal-overlay .forgot-link { margin: -15px 0 15px; }
 .modal-overlay .forgot-link a {
@@ -355,4 +383,15 @@
 .modal-overlay .social-icon.twitter:hover {
   background: linear-gradient(45deg, #0e71c8, #1da1f2);
   box-shadow: 0 6px 12px rgba(29, 161, 242, 0.3);
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.loading-spinner i {
+  font-size: 2rem;
+  color: #333;
 }

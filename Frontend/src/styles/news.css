@@ -32,125 +32,114 @@
   }
   
   /* Categories filter */
-  .news-categories {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
+ /* Cấu hình chung cho các nút filter */
+.news-categories {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.news-categories button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  color: white;
+}
+
+/* Hiệu ứng Pulse/Ripple chung cho các nút */
+.news-categories button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: 50% 50%;
+}
+
+.news-categories button:hover::after {
+  animation: pulse 0.8s ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0);
   }
-  
-  .news-categories button {
-    padding: 10px 20px;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    position: relative;
-    overflow: hidden;
-    transform: translate3d(0, 0, 0);
-    border: none;
-  }
-  
-  /* Button 1 - Pulse Effect */
-  .news-categories button:nth-child(1) {
-    background-color: #2e7d32;
-    color: white;
-    transition: background-color 0.3s ease;
-  }
-  
-  .news-categories button:nth-child(1):hover {
-    background-color: #1b5e20;
-  }
-  
-  .news-categories button:nth-child(1)::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 5px;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.5);
+  100% {
     opacity: 0;
-    border-radius: 100%;
-    transform: scale(1, 1) translate(-50%, -50%);
-    transform-origin: 50% 50%;
+    transform: translate(-50%, -50%) scale(15);
   }
-  
-  .news-categories button:nth-child(1):hover::after {
-    animation: pulse 0.8s ease-out;
-  }
-  
-  @keyframes pulse {
-    0% {
-      opacity: 1;
-      transform: scale(0, 0) translate(-50%, -50%);
-    }
-    100% {
-      opacity: 0;
-      transform: scale(15, 15) translate(-50%, -50%);
-    }
-  }
-  
-  /* Button 2 - Bounce Effect */
-  .news-categories button:nth-child(2) {
-    background-color: #ff9800;
-    color: white;
-    box-shadow: 0 3px 0 #e65100;
-    position: relative;
-    top: 0;
-    transition: all 0.3s ease;
-  }
-  
-  .news-categories button:nth-child(2):hover {
-    background-color: #f57c00;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 0 #e65100;
-  }
-  
-  .news-categories button:nth-child(2):active {
-    transform: translateY(2px);
-    box-shadow: 0 1px 0 #e65100;
-  }
-  
-  /* Button 3 - Ripple Effect */
-  .news-categories button:nth-child(3) {
-    background-color: #2196f3;
-    color: white;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .news-categories button:nth-child(3):hover {
-    background-color: #1976d2;
-  }
-  
-  .news-categories button:nth-child(3) span.ripple {
-    position: absolute;
-    border-radius: 50%;
-    transform: scale(0);
-    animation: ripple 0.6s linear;
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-  
-  @keyframes ripple {
-    to {
-      transform: scale(4);
-      opacity: 0;
-    }
-  }
-  
-  /* Active state for all buttons */
-  .news-categories button.active {
-    background-color: #2e7d32;
-    color: white;
-    box-shadow: none;
-    transform: none;
-  }
-  
-  .news-categories button:hover {
-    outline: none;
-  }
+}
+
+/* Màu sắc riêng cho từng nút */
+/* Nút 1: Ví dụ "Tất cả" */
+.news-categories button:nth-child(1) {
+  background-color: #2e7d32;
+}
+.news-categories button:nth-child(1):hover {
+  background-color: #1b5e20;
+}
+
+/* Nút 2: Ví dụ "Giải đấu" */
+.news-categories button:nth-child(2) {
+  background-color: #ff9800;
+}
+.news-categories button:nth-child(2):hover {
+  background-color: #f57c00;
+}
+
+/* Nút 3: Ví dụ "Sức khỏe" */
+.news-categories button:nth-child(3) {
+  background-color: #2196f3;
+}
+.news-categories button:nth-child(3):hover {
+  background-color: #1976d2;
+}
+
+/* Nút 4: Category 4 (nếu có) */
+.news-categories button:nth-child(4) {
+  background-color: #9c27b0;
+}
+.news-categories button:nth-child(4):hover {
+  background-color: #7b1fa2;
+}
+
+/* Nút 5: Category 5 (nếu có) */
+.news-categories button:nth-child(5) {
+  background-color: #f44336;
+}
+.news-categories button:nth-child(5):hover {
+  background-color: #d32f2f;
+}
+
+/* Nút 6: Category 6 (nếu có) */
+.news-categories button:nth-child(6) {
+  background-color: #009688;
+}
+.news-categories button:nth-child(6):hover {
+  background-color: #00796b;
+}
+
+/* Active state cho tất cả các nút */
+.news-categories button.active {
+  /* Ví dụ: đổi màu khi active (có thể tùy chỉnh) */
+  box-shadow: none;
+  transform: none;
+  /* Bạn có thể đặt lại màu nền active nếu cần */
+}
+
   
   /* News List */
   .news-list {

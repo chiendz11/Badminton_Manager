@@ -101,13 +101,41 @@ export const getTimeslotPrice = async (centerId, date, timeslot) => {
 };
 
 
-export const getCenterDetail = async (centerId) => {
+export const getCenterDetailById = async (centerId) => {
     if (!centerId) {
-      throw new Error("Missing centerId");
+        throw new Error("Missing centerId");
     }
     const center = await Center.findById(centerId);
     if (!center) {
-      throw new Error("Center not found");
+        throw new Error("Center not found");
     }
     return center;
+};
+
+export const getAllCenters = async () => {
+    try {
+        console.log("🔍 Nhận request lấy toàn bộ các trung tâm");
+        const centers = await Center.find({});
+        console.log("✅ Danh sách các trung tâm:", centers);
+        return centers;
+    } catch (error) {
+        console.error("❌ Lỗi lấy danh sách trung tâm:", error);
+        throw error;
+    }
+};
+
+export const updateBookingCountForCenter = async (centerId) => {
+    try {
+      // Đếm số booking với status "booked" cho center đã cho
+      const count = await Booking.countDocuments({
+        centerId: new mongoose.Types.ObjectId(centerId),
+        status: "booked",
+      });
+      // Cập nhật trường bookingCount của center
+      await Center.findByIdAndUpdate(centerId, { bookingCount: count });
+      return count;
+    } catch (error) {
+      console.error("Error updating booking count for center:", error);
+      throw error;
+    }
   };

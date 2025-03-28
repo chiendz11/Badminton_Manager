@@ -5,6 +5,7 @@ import HeroBanner from '../components/HeroBanner';
 import FeatureCards from '../pages/FeatureCards'
 
 const Home = () => {
+  
   return (
     <>
       <HeroBanner />

@@ -14,30 +14,35 @@ import Contact from "./pages/Contact";
 import Competition from "./pages/Competition";
 import UserProfile from "./pages/UserProfile";
 
+import { AuthProvider } from './contexts/AuthContext';
+
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <>
-              <Header />
-              <Home />
-              <Footer />
-            </>
-          }
-        />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/competition" element={<Competition />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/policy" element={<Policy />} />
-        <Route path="/centers" element={<Centers />} />
-        <Route path="/news" element={<News />} />
-        <Route path="/booking" element={<BookingSchedule />} />
-        <Route path="/payment" element={< PaymentPage/>} />
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <Header />
+                <Home />
+                <Footer />
+              </>
+            }
+          />
+<Route path="/profile" element={<UserProfile />} />
+          <Route path="/competition" element={<Competition />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/policy" element={<Policy />} />
+          <Route path="/centers" element={<Centers />} />
+          <Route path="/news" element={<News />} />
+          <Route path="/booking" element={<BookingSchedule />} />
+          <Route path="/payment" element={< PaymentPage />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+
   );
 }
 
