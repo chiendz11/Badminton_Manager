@@ -10,6 +10,9 @@
     import { initSocket } from "./config/socket.js";
     import bookingPendingRoute from "./routes/bookingRoute.js";
     import adminRoute from "./routes/adminRoutes.js";
+    import inventoriesRoute from "./routes/inventoryRoutes.js";
+    import addstockRoutes from './routes/addstockRoutes.js';
+    import userRoute from "./routes/userRoute.js";
 
     // Kết nối tới MongoDB
     connectDB();
@@ -23,6 +26,9 @@
     app.use("/api/booking", courtStatusRoute);
     app.use("/api/booking", bookingPendingRoute);
     app.use("/api/admin", adminRoute);
+    app.use("/api/inventories", inventoriesRoute);
+    app.use('/api/addstock', addstockRoutes);
+    app.use("/api/user", userRoute);
 
     const server = http.createServer(app);
     const io = new SocketIOServer(server, { cors: { origin: "*" } });

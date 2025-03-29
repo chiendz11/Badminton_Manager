@@ -1,57 +1,107 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import pic2 from '../image/pig2.jpg';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
+  const goToFields = () => navigate('/fields');
+  const goToShop = () => navigate('/shop');  // Đảm bảo hàm này gọi /shop
+  const goToUsers = () => navigate('/users');
+  const goToStore = () => navigate('/store');
+  const goToBill = () => navigate('/bill');
+
   return (
-    <div className="p-6 space-y-4">
-      <div className="bg-white shadow rounded-lg p-4">
-        <h2 className="text-2xl font-bold mb-4">Thống kê</h2>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="p-4 bg-blue-100 rounded-lg text-center">
-            <h3 className="text-lg font-semibold">Tổng số người dùng</h3>
-            <p className="text-3xl font-bold text-blue-600">150</p>
+    <div
+      className="relative min-h-screen bg-cover bg-center"
+      style={{
+        backgroundImage: `url(${pic2})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Lớp overlay mờ trên ảnh nền */}
+      <div className="absolute inset-0 bg-black/40"></div>
+
+      {/* Nội dung chính (đặt relative để nằm trên overlay) */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        
+        {/* Header */}
+        <header className="flex items-center space-x-4 p-4 sm:p-8">
+          <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-black">
+            avatar
           </div>
-          <div className="p-4 bg-green-100 rounded-lg text-center">
-            <h3 className="text-lg font-semibold">Tổng số sân đã đặt</h3>
-            <p className="text-3xl font-bold text-green-600">320</p>
+          <h1 className="text-white text-2xl sm:text-3xl font-bold">
+            Sân cầu lông DA
+          </h1>
+        </header>
+
+        {/* Khung trắng chứa các ô chức năng */}
+        <main className="flex-grow flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-4xl p-6 sm:p-8 rounded-xl shadow-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              
+              {/* Ô 1: Xem trạng thái sân -> Fields */}
+              <div
+                className="p-6 bg-pink-100 rounded-lg text-center cursor-pointer hover:shadow-md transition-shadow"
+                onClick={goToFields}
+              >
+                <h3 className="text-pink-600 font-semibold text-lg mb-3">
+                  Xem trạng thái sân
+                </h3>
+                <div className="text-pink-700 text-2xl">icon1</div>
+              </div>
+
+              {/* Ô 2: Bán hàng -> Shop */}              
+              <div
+                className="p-6 bg-pink-200 rounded-lg text-center cursor-pointer hover:shadow-md transition-shadow"
+                onClick={goToShop}
+              >
+                <h3 className="text-pink-700 font-semibold text-lg mb-3">
+                  Bán hàng
+                </h3>
+                <div className="text-pink-800 text-2xl">icon2</div>
+              </div>
+
+              {/* Ô 3: Quản lý khách hàng -> Users */}
+              <div
+                className="p-6 bg-green-200 rounded-lg text-center cursor-pointer hover:shadow-md transition-shadow"
+                onClick={goToUsers}
+              >
+                <h3 className="text-green-700 font-semibold text-lg mb-3">
+                  Quản lý khách hàng
+                </h3>
+                <div className="text-green-800 text-2xl">icon6</div>
+              </div>
+
+              {/* Ô 4: Kho & dịch vụ -> Store */}
+              <div
+                className="p-6 bg-red-100 rounded-lg text-center cursor-pointer hover:shadow-md transition-shadow"
+                onClick={goToStore}
+              >
+                <h3 className="text-red-600 font-semibold text-lg mb-3">
+                  Kho &amp; dịch vụ
+                </h3>
+                <div className="text-red-700 text-2xl">icon3</div>
+              </div>
+
+              {/* Ô 5: Quản lý đơn hàng -> Bill */}
+              <div
+                className="p-6 bg-blue-100 rounded-lg text-center cursor-pointer hover:shadow-md transition-shadow"
+                onClick={goToBill}
+              >
+                <h3 className="text-blue-600 font-semibold text-lg mb-3">
+                  Quản lý đơn hàng
+                </h3>
+                <div className="text-blue-700 text-2xl">icon7</div>
+              </div>
+
+            </div>
           </div>
-          <div className="p-4 bg-red-100 rounded-lg text-center">
-            <h3 className="text-lg font-semibold">Doanh thu hôm nay</h3>
-            <p className="text-3xl font-bold text-red-600">2,500,000 VNĐ</p>
-          </div>
-        </div>
-      </div>
-      
-      <div className="bg-white shadow rounded-lg p-4">
-        <h2 className="text-2xl font-bold mb-4">Lịch sử đặt sân gần đây</h2>
-        <table className="w-full text-left">
-          <thead>
-            <tr>
-              <th className="border-b-2 p-2">Người dùng</th>
-              <th className="border-b-2 p-2">Sân</th>
-              <th className="border-b-2 p-2">Thời gian</th>
-              <th className="border-b-2 p-2">Tình trạng</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="border-b p-2">Nguyen Van A</td>
-              <td className="border-b p-2">Sân 1</td>
-              <td className="border-b p-2">10:00 - 11:00</td>
-              <td className="border-b p-2 text-green-600">Đã hoàn thành</td>
-            </tr>
-            <tr>
-              <td className="border-b p-2">Tran Thi B</td>
-              <td className="border-b p-2">Sân 3</td>
-              <td className="border-b p-2">11:00 - 12:00</td>
-              <td className="border-b p-2 text-yellow-600">Đang chờ</td>
-            </tr>
-          </tbody>
-        </table>
+        </main>
       </div>
     </div>
   );
 };
 
 export default Dashboard;
-
-
