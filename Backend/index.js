@@ -10,6 +10,7 @@ import { initSocket } from "./config/socket.js";
 import bookingPendingRoute from "./routes/bookingRoute.js";
 import contactRoutes from "./routes/contactRoute.js"; // Import route liên hệ
 import newsRoutes from "./routes/newsRoute.js"; // Import route tin tức
+import ratingRoutes from "./routes/ratingRoute.js"; // Import route đánh giá
 
 // Kết nối tới MongoDB
 connectDB();
@@ -32,6 +33,7 @@ app.use("/api/centers", centerRoute);
 app.use("/api/booking", bookingPendingRoute);
 app.use("/api/contact", contactRoutes); 
 app.use("/api/news", newsRoutes);
+app.use("/api/ratings", ratingRoutes);
 
 const server = http.createServer(app);
 

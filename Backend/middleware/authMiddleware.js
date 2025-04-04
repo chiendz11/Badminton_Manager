@@ -1,6 +1,6 @@
 // src/middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
-import User from "../models/Users.js";
+import User from "../models/users.js";
 
 export const protect = async (req, res, next) => {
   let token;
@@ -12,7 +12,7 @@ export const protect = async (req, res, next) => {
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select("-password_hash");
+    req.user = await User.findById(decoded.id).select("+password_hash");
     next();
   } catch (error) {
     console.error("Auth middleware error:", error);

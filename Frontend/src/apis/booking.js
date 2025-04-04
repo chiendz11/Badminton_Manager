@@ -23,12 +23,13 @@ export const getPendingMapping = async (centerId, date) => {
   }
 };
 
-export const confirmBookingToDB = async ({ userId, centerId, date }) => {
+export const confirmBookingToDB = async ({ userId, centerId, date, totalAmount }) => {
   try {
     const response = await axiosInstance.post("/api/booking/pending/pendingBookingToDB", {
       userId,
       centerId,
-      date
+      date,
+      totalAmount
     });
     return response.data;
   } catch (error) {
@@ -38,14 +39,15 @@ export const confirmBookingToDB = async ({ userId, centerId, date }) => {
 };
 
 
-export const confirmBooking = async ({ userId, centerId, date, totalPrice, note }) => {
+export const confirmBooking = async ({ userId, centerId, date, totalPrice, paymentImage, note }) => {
   try {
     const response = await axiosInstance.post("/api/booking/pending/bookedBookingInDB", {
       userId,
       centerId,
       date,
-      totalPrice,
-      note, // Thêm note ở đây
+      totalAmount: totalPrice,
+      paymentImage, 
+      note
     });
     return response.data;
   } catch (error) {
@@ -76,14 +78,40 @@ export const clearAllPendingBookings = async ({ userId, centerId }) => {
   }
 };
 
-// Giả sử backend bạn có endpoint POST /api/bills
-export const createBill = async (payload) => {
-  // payload có thể gồm userId, centerId, bookingId, totalAmount, paymentImage (base64) ...
+
+export const cancelBooking = async () => {
   try {
-    const { data } = await axiosInstance.post("/api/booking/bills", payload);
-    return data; // { success: true, bill: {...} }
+    const response = await axiosInstance.post("/api/booking/cancel-booking");
+    return response.data;
   } catch (error) {
-    console.error("Error creating bill:", error.response?.data || error.message);
+    console.error("Error canceling booking:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getPopularTimeSlot = async () => {
+  try {
+    const response = await axiosInstance.get('/api/booking/popular-times'); // Giả sử backend chạy cùng domain
+    if (response.data.success) {
+      return response.data.data;
+    }
+    throw new Error(response.data.message || 'Lỗi khi lấy dữ liệu.');
+  } catch (error) {
+    console.error('Error in getPopularTimeSlot:', error);
+    throw error;
+  }
+};
+
+export const getBookingHistory = async () => {
+  try {
+    const response = await axiosInstance.get('/api/booking/get-booking-history'); 
+    console.log("API Response:", response); // Log toàn bộ response để kiểm tra
+    if (response.data.success) {
+      return response.data;
+    }
+    throw new Error(response.data.message || 'API trả về nhưng không có message.');
+  } catch (error) {
+    console.error("Error in getBookingHistory:", error?.response || error);
     throw error;
   }
 };

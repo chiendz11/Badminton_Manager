@@ -117,6 +117,17 @@ export const getAllCenters = async () => {
         console.log("🔍 Nhận request lấy toàn bộ các trung tâm");
         const centers = await Center.find({});
         console.log("✅ Danh sách các trung tâm:", centers);
+
+        // Cập nhật bookingCount cho mỗi trung tâm bằng cách lặp qua centers
+        await Promise.all(
+            centers.map(async (center) => {
+                const count = await updateBookingCountForCenter(center._id);
+                // Cập nhật trực tiếp trong object center nếu cần
+                center.bookingCount = count;
+                return center;
+            })
+        );
+
         return centers;
     } catch (error) {
         console.error("❌ Lỗi lấy danh sách trung tâm:", error);
@@ -126,16 +137,21 @@ export const getAllCenters = async () => {
 
 export const updateBookingCountForCenter = async (centerId) => {
     try {
-      // Đếm số booking với status "booked" cho center đã cho
-      const count = await Booking.countDocuments({
-        centerId: new mongoose.Types.ObjectId(centerId),
-        status: "booked",
-      });
-      // Cập nhật trường bookingCount của center
-      await Center.findByIdAndUpdate(centerId, { bookingCount: count });
-      return count;
+        // Đếm số bill có centerId và status "paid"
+        const count = await Booking.countDocuments({
+            centerId: new mongoose.Types.ObjectId(centerId),
+            status: "paid",
+        });
+        console.log(`✅ Đã cập nhật bookingCount cho centerId ${centerId}: ${count}`);
+        // Cập nhật trường bookingCount của center
+        const updatedCenter = await Center.findByIdAndUpdate(
+            centerId,
+            { bookingCount: count },
+            { new: true }
+        );
+        return updatedCenter.bookingCount;
     } catch (error) {
-      console.error("Error updating booking count for center:", error);
-      throw error;
+        console.error("Error updating booking count for center:", error);
+        throw error;
     }
-  };
+};

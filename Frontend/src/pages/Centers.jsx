@@ -1,21 +1,20 @@
-
-import React, { useState, useEffect, useContext } from 'react';
-import '../styles/centers.css';
-import Footer from '../components/Footer';
-import Header from '../components/Header';
-import { checkPendingExists } from '../apis/booking';
-import { useNavigate } from 'react-router-dom';
-import CenterDetailModal from '../pages/CenterDetailModal';
-import { getAllCenters } from '../apis/centers'; // Import hàm gọi API lấy centers
-import { AuthContext } from '../contexts/AuthContext';
-import LoginModal from '../pages/Login';
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../styles/centers.css";
+import Footer from "../components/Footer";
+import Header from "../components/Header";
+import { checkPendingExists } from "../apis/booking";
+import { getAllCenters } from "../apis/centers"; // Hàm API lấy centers
+import { AuthContext } from "../contexts/AuthContext";
+import CenterDetailModal from "../pages/CenterDetailModal";
+import LoginModal from "../pages/Login";
+import { getCenterInfoById } from "../apis/centers"; // Hàm API lấy thông tin center theo ID
 
 const Centers = () => {
   const { user } = useContext(AuthContext);
   const openHours = "05:00 - 24:00";
   const today = new Date().toISOString().split("T")[0];
   const navigate = useNavigate();
-
 
   const [centers, setCenters] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +32,6 @@ const Centers = () => {
     setModalOpen(false);
   };
 
-
   const fetchCenters = async () => {
     try {
       setLoading(true);
@@ -50,7 +48,8 @@ const Centers = () => {
     fetchCenters();
   }, []);
 
-  // Hàm goToBooking: nếu user chưa đăng nhập, hiện thông báo và mở modal đăng nhập
+  // Hàm goToBooking: nếu chưa đăng nhập thì mở modal đăng nhập, nếu đã có pending thì thông báo,
+  // nếu không thì lưu thông tin booking vào localStorage và điều hướng sang trang booking
   const goToBooking = async (centerId) => {
     if (!user || !user._id) {
       alert("Hãy đăng nhập hoặc đăng ký để đặt sân");
@@ -62,17 +61,19 @@ const Centers = () => {
       if (exists) {
         alert("Bạn đã có booking pending cho trung tâm này. Vui lòng chờ hết 5 phút.");
       } else {
-        // Lưu thông tin booking vào localStorage
+        // Gọi API lấy thông tin trung tâm để lấy tên
+        const centerInfo = await getCenterInfoById(centerId);
+        if (centerInfo.success && centerInfo.center) {
+          localStorage.setItem("centerName", centerInfo.center.name);
+        }
         const bookingData = { centerId, date: today };
         localStorage.setItem("bookingData", JSON.stringify(bookingData));
-        // Điều hướng mà không truyền state qua navigate
         navigate("/booking");
       }
     } catch (error) {
       alert("Lỗi kiểm tra booking pending: " + error.message);
     }
   };
-
 
   const renderRatingStars = (rating) => {
     const stars = [];
@@ -104,42 +105,41 @@ const Centers = () => {
 
   return (
     <>
-    <Header />
+      <Header />
 
-    <div className="centers-page">
-      <div className="hero-section">
-        <div className="hero-content">
-          <h1>Chọn Cơ Sở Yêu Thích Của Bạn</h1>
-          <p>Tìm và đặt sân cầu lông tốt nhất tại Hà Nội</p>
-          <div className="hero-stats">
-            <div className="stat-item">
-              <i className="fas fa-medal"></i>
-              <div className="stat-info">
-                <span className="stat-number">4</span>
-                <span className="stat-label">Cơ sở hàng đầu</span>
+      <div className="centers-page">
+        <div className="hero-section">
+          <div className="hero-content">
+            <h1>Chọn Cơ Sở Yêu Thích Của Bạn</h1>
+            <p>Tìm và đặt sân cầu lông tốt nhất tại Hà Nội</p>
+            <div className="hero-stats">
+              <div className="stat-item">
+                <i className="fas fa-medal"></i>
+                <div className="stat-info">
+                  <span className="stat-number">4</span>
+                  <span className="stat-label">Cơ sở hàng đầu</span>
+                </div>
               </div>
-            </div>
-            <div className="stat-item">
-              <i className="fas fa-table-tennis"></i>
-              <div className="stat-info">
-                <span className="stat-number">20</span>
-                <span className="stat-label">Sân cầu lông</span>
+              <div className="stat-item">
+                <i className="fas fa-table-tennis"></i>
+                <div className="stat-info">
+                  <span className="stat-number">20</span>
+                  <span className="stat-label">Sân cầu lông</span>
+                </div>
               </div>
-            </div>
-            <div className="stat-item">
-              <i className="fas fa-users"></i>
-              <div className="stat-info">
-                <span className="stat-number">1000+</span>
-                <span className="stat-label">Đặt sân/tháng</span>
+              <div className="stat-item">
+                <i className="fas fa-users"></i>
+                <div className="stat-info">
+                  <span className="stat-number">1000+</span>
+                  <span className="stat-label">Đặt sân/tháng</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-
-        <div className="centers-header">
-          <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
-          <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
+          <div className="centers-header">
+            <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
+            <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
+          </div>
         </div>
 
         {loading ? (
@@ -154,7 +154,9 @@ const Centers = () => {
                   <img
                     src={center.imgUrl[0] || "/images/default.png"}
                     alt={center.name}
-                    onError={(e) => { e.target.src = "/images/default.png" }}
+                    onError={(e) => {
+                      e.target.src = "/images/default.png";
+                    }}
                   />
                   <div className="center-badge">
                     <i className="fas fa-table-tennis"></i> {center.totalCourts} sân
@@ -170,7 +172,6 @@ const Centers = () => {
                     </div>
                   )}
                 </div>
-
                 <div className="center-info">
                   <div className="center-header">
                     <h2>{center.name}</h2>
@@ -179,22 +180,16 @@ const Centers = () => {
                       <span>{center.avgRating}/5</span>
                     </div>
                   </div>
-
                   <div className="center-booking-stats">
                     <i className="fas fa-calendar-check"></i>
                     <span>{center.bookingCount || 0}+ lượt đặt tháng này</span>
                   </div>
-
                   <p className="center-address">
                     <i className="fas fa-map-marker-alt"></i> {center.address}
                   </p>
-
                   <div className="center-divider"></div>
-
                   <p className="center-description">{center.description}</p>
-
                   {renderFacilities(center.facilities)}
-
                   <div className="center-footer">
                     <div className="center-details">
                       <span>
@@ -204,7 +199,6 @@ const Centers = () => {
                         <i className="fas fa-phone"></i> {center.phone}
                       </span>
                     </div>
-
                     <div className="center-action-buttons">
                       <button
                         className="view-details-btn"
@@ -228,44 +222,45 @@ const Centers = () => {
           </div>
         )}
 
-
-      <div className="centers-info-section">
-        <div className="info-card">
-          <div className="info-icon">
-            <i className="fas fa-shield-alt"></i>
+        <div className="centers-info-section">
+          <div className="info-card">
+            <div className="info-icon">
+              <i className="fas fa-shield-alt"></i>
+            </div>
+            <h3>Đặt Sân An Toàn</h3>
+            <p>Thanh toán bảo mật và đảm bảo hoàn tiền nếu có vấn đề</p>
           </div>
-          <h3>Đặt Sân An Toàn</h3>
-          <p>Thanh toán bảo mật và đảm bảo hoàn tiền nếu có vấn đề</p>
-        </div>
-        <div className="info-card">
-          <div className="info-icon">
-            <i className="fas fa-bolt"></i>
+          <div className="info-card">
+            <div className="info-icon">
+              <i className="fas fa-bolt"></i>
+            </div>
+            <h3>Đặt Sân Nhanh Chóng</h3>
+            <p>Chỉ mất vài phút để hoàn tất đặt sân và nhận xác nhận</p>
           </div>
-          <h3>Đặt Sân Nhanh Chóng</h3>
-          <p>Chỉ mất vài phút để hoàn tất đặt sân và nhận xác nhận</p>
-        </div>
-        <div className="info-card">
-          <div className="info-icon">
-            <i className="fas fa-chart-line"></i>
+          <div className="info-card">
+            <div className="info-icon">
+              <i className="fas fa-chart-line"></i>
+            </div>
+            <h3>Trải Nghiệm Chất Lượng</h3>
+            <p>Tất cả các cơ sở đều được đánh giá và kiểm duyệt chất lượng</p>
           </div>
-          <h3>Trải Nghiệm Chất Lượng</h3>
-          <p>Tất cả các cơ sở đều được đánh giá và kiểm duyệt chất lượng</p>
         </div>
-
 
         {selectedCenter && (
-          <CenterDetailModal center={selectedCenter} isOpen={modalOpen} onClose={closeModal} />
+          <CenterDetailModal
+            center={selectedCenter}
+            isOpen={modalOpen}
+            onClose={closeModal}
+          />
         )}
       </div>
-
-      <Footer />
 
       {/* Modal đăng nhập nếu chưa đăng nhập */}
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
-
+      <Footer />
     </>
   );
 };

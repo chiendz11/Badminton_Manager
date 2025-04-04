@@ -1,99 +1,203 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import ModalConfirmation from '../components/ModalConfirmation';
 import '../styles/UserProfile.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { AuthContext } from '../contexts/AuthContext';
+import { getBookingHistory } from '../apis/booking';
+import { useNavigate } from 'react-router-dom';
+import { cancelBooking } from '../apis/booking';
+import EditableInfoCard from '../components/EditableInfoCard';
+import { updateUserInfo, updateUserPassword, getDetailedBookingStats, fetchUserInfo } from '../apis/users';
+import { getChartData } from '../apis/users'; // API call dùng axiosInstance, không lộ userId
+import PopularTimeChart from '../components/PopularTimeChart';
 
 const UserProfile = () => {
   const [activeTab, setActiveTab] = useState('info');
   const [isLoading, setIsLoading] = useState(true);
   const [animateStats, setAnimateStats] = useState(false);
+  const [editMode, setEditMode] = useState("profile");
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
+  const [statsPeriod, setStatsPeriod] = useState("month"); // week, month, year
+  const [detailedStats, setDetailedStats] = useState(null);
 
-  const userData = {
-    name: "Trần Anh Tuấn",
-    avatar: "/images/avatar.jpg",
-    phone: "0972628815",
-    email: "23021710@vnu.edu.vn",
-    address: "Số 123, Đường ABC, Quận XYZ, Hà Nội",
-    joinDate: "21/06/2023",
-    level: "Thành viên Vàng",
-    points: 650,
-    favoriteCenter: "Cơ sở Mỹ Đình",
-    stats: {
-      totalBookings: 28,
-      completedBookings: 25,
-      cancelledBookings: 3,
-      favoriteTime: "19:00 - 20:30",
-      averagePlayTime: "90 phút"
+  const { user, setUser } = useContext(AuthContext);
+  const [bookingHistory, setBookingHistory] = useState([]);
+  const [filteredHistory, setFilteredHistory] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [loadingChart, setLoadingChart] = useState(true);
+  // Thêm state cho bộ lọc chart: all, completed, cancelled
+  const [chartFilter, setChartFilter] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterCenter, setFilterCenter] = useState("all");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTo, setFilterTo] = useState("");
+  const [filterSearch, setFilterSearch] = useState("");
+
+  const centerName = localStorage.getItem("centerName") || "Tên Trung Tâm Mặc Định";
+  const navigate = useNavigate();
+  const slotGroupsFromLS = JSON.parse(localStorage.getItem("slotGroups") || "[]");
+  const totalAmountLS = Number(localStorage.getItem("totalAmount")) || 0;
+  const userPoints = user?.points || 0;
+  const levels = ["Iron", "Đồng", "Bạc", "Vàng", "Bạch kim"];
+  const pointsPerLevel = 1000;
+
+  const currentLevelIndex = Math.min(Math.floor(userPoints / pointsPerLevel), levels.length - 1);
+  const nextLevelIndex = currentLevelIndex < levels.length - 1 ? currentLevelIndex + 1 : null;
+  const pointsInCurrentLevel = userPoints - currentLevelIndex * pointsPerLevel;
+  const progressPercentage = (pointsInCurrentLevel / pointsPerLevel) * 100;
+  const pointsToNextLevel = nextLevelIndex !== null ? pointsPerLevel - pointsInCurrentLevel : 0;
+  const currentLevelName = levels[currentLevelIndex];
+  const nextLevelName = nextLevelIndex !== null ? levels[nextLevelIndex] : "";
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      alert("Mật khẩu xác nhận không khớp!");
+      return;
+    }
+    try {
+      const data = await updateUserPassword({ oldPassword, newPassword });
+      if (data.success) {
+        alert("Đổi mật khẩu thành công!");
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        alert("Đổi mật khẩu thất bại: " + data.message);
+      }
+    } catch (error) {
+      alert("Lỗi khi đổi mật khẩu: " + error.message);
     }
   };
 
-  const bookingHistory = [
-    {
-      id: "B001",
-      status: "completed",
-      center: "Cơ sở Mỹ Đình",
-      court: "Sân số 3",
-      date: "20/03/2025",
-      time: "18:00 - 19:30",
-      price: "150.000 VNĐ",
-      paymentMethod: "Thẻ tín dụng",
-      paymentStatus: "Đã thanh toán"
-    },
-    {
-      id: "B002",
-      status: "completed",
-      center: "Cơ sở Cầu Giấy",
-      court: "Sân số 2",
-      date: "15/03/2025",
-      time: "20:00 - 21:30",
-      price: "180.000 VNĐ",
-      paymentMethod: "Ví điện tử",
-      paymentStatus: "Đã thanh toán"
-    },
-    {
-      id: "B003",
-      status: "pending",
-      center: "Cơ sở Thanh Xuân",
-      court: "Sân số 5",
-      date: "27/03/2025",
-      time: "19:00 - 20:30",
-      price: "165.000 VNĐ",
-      paymentMethod: "Chưa chọn",
-      paymentStatus: "Chờ thanh toán"
-    },
-    {
-      id: "B004",
-      status: "cancelled",
-      center: "Cơ sở Hà Đông",
-      court: "Sân số 1",
-      date: "10/03/2025",
-      time: "17:00 - 18:30",
-      price: "150.000 VNĐ",
-      paymentMethod: "-",
-      paymentStatus: "Đã hủy"
+  const promptCancelBooking = (bookingId) => {
+    setSelectedBookingId(bookingId);
+    setShowCancelModal(true);
+  };
+
+  const handleModalAction = async (action) => {
+    setShowCancelModal(false);
+    if (action === "confirm" && selectedBookingId) {
+      try {
+        await cancelBooking();
+        alert("Đã hủy pending booking thành công!");
+        setBookingHistory((prevHistory) =>
+          prevHistory.filter((booking) => booking.orderId !== selectedBookingId)
+        );
+        setFilteredHistory((prevFiltered) =>
+          prevFiltered.filter((booking) => booking.orderId !== selectedBookingId && booking.orderId !== selectedBookingId)
+        );
+      } catch (error) {
+        alert("Lỗi khi hủy đặt sân: " + error.message);
+      }
     }
-  ];
+    const updatedUserData = await fetchUserInfo(); // API này trả về dữ liệu user cập nhật
+    setUser(updatedUserData.user);
+    setSelectedBookingId(null);
+  };
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await getDetailedBookingStats(statsPeriod);
+        console.log("Fetched detailed booking stats:", data); // Log dữ liệu trả về từ API
+        if (data.success) {
+          setDetailedStats(data.stats);
+        } else {
+          console.error("Error fetching booking stats:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching booking stats:", error);
+      }
+    };
+    fetchStats();
+  }, [statsPeriod]);
+  // ...
+
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (user && user._id) {
+        try {
+          const data = await getBookingHistory();
+          console.log("Fetched booking history:", data);
+          if (data.success) {
+            setBookingHistory(data.bookingHistory);
+            // Mặc định filteredHistory hiển thị toàn bộ dữ liệu
+            setFilteredHistory(data.bookingHistory);
+          } else {
+            console.error("Error fetching booking history:", data);
+          }
+        } catch (error) {
+          console.error("Error fetching booking history:", error?.response?.data || error);
+        } finally {
+          setIsLoading(false);
+          setTimeout(() => setAnimateStats(true), 500);
+        }
+      }
+    };
+    fetchHistory();
+  }, [user]);
+
+  // Fetch chartData từ API
+  useEffect(() => {
+    const fetchChart = async () => {
+      try {
+        const data = await getChartData();
+        if (data.success) {
+          setChartData(data.chartData);
+        } else {
+          console.error("Error fetching chart data:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching chart data:", error);
+      } finally {
+        setLoadingChart(false);
+      }
+    };
+
+    fetchChart();
+  }, []);
+
+  const handleUpdateField = async (field, newValue) => {
+    try {
+      const payload = { [field]: newValue };
+      const data = await updateUserInfo(payload);
+      if (data.success) {
+        setUser((prevUser) => ({ ...prevUser, [field]: newValue }));
+        alert("Cập nhật thông tin thành công!");
+      } else {
+        alert("Cập nhật thất bại: " + data.message);
+      }
+    } catch (error) {
+      alert("Lỗi cập nhật: " + error.message);
+    }
+  };
 
   const upcomingBookings = bookingHistory.filter(booking => booking.status === "pending");
-  
+
   useEffect(() => {
-    // Simulate loading
     const timer = setTimeout(() => {
       setIsLoading(false);
-      
-      // Animate stats after loading
       setTimeout(() => {
         setAnimateStats(true);
       }, 500);
     }, 1500);
-    
     return () => clearTimeout(timer);
   }, []);
-
+  useEffect(() => {
+    console.log("Chart data:", chartData);
+  }, [chartData]);
   const getStatusClass = (status) => {
-    switch(status) {
-      case 'completed': return 'status-completed';
+    switch (status) {
+      case 'paid': return 'status-completed';
       case 'pending': return 'status-pending';
       case 'cancelled': return 'status-cancelled';
       default: return '';
@@ -101,27 +205,78 @@ const UserProfile = () => {
   };
 
   const getStatusText = (status) => {
-    switch(status) {
-      case 'completed': return 'Hoàn thành';
+    switch (status) {
+      case 'paid': return 'Hoàn thành';
       case 'pending': return 'Chờ thanh toán';
       case 'cancelled': return 'Đã hủy';
       default: return '';
     }
   };
 
-  // Array of months for the chart
-  const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+  const calculateCenterPercentage = (centerName) => {
+    if (!user || !user?.favouriteCenter || user?.favouriteCenter.length === 0) return 0;
 
-  // Random data for the chart
-  const generateRandomData = () => {
-    return months.map(month => ({
-      month,
-      completed: Math.floor(Math.random() * 10) + 1,
-      cancelled: Math.floor(Math.random() * 3)
-    }));
+    // Tính tổng số bookingCount của tất cả các trung tâm yêu thích
+    const totalBookingCount = user?.favouriteCenter.reduce((total, center) => total + center.bookingCount, 0);
+
+    const center = user?.favouriteCenter.find(center => center.centerName === centerName);
+
+    // Nếu trung tâm không tồn tại hoặc tổng bookingCount bằng 0, trả về 0%
+    if (!center || totalBookingCount === 0) {
+      return 0;
+    }
+
+
+    // Tính phần trăm cho trung tâm
+    return (center.bookingCount / totalBookingCount) * 100;
   };
 
-  const chartData = generateRandomData();
+  // Hàm filter lịch sử đặt sân
+  const handleFilter = () => {
+    const filtered = bookingHistory.filter(item => {
+      // Lọc theo trạng thái
+      const statusMatch = filterStatus === "all" || item.status === filterStatus;
+      // Lọc theo cơ sở
+      const centerMatch = filterCenter === "all" || item.center.toLowerCase().includes(filterCenter.toLowerCase());
+      // Lọc theo tìm kiếm (trong orderId hoặc court_time)
+      const searchMatch =
+        filterSearch === "" ||
+        (item.orderId && item.orderId.toLowerCase().includes(filterSearch.toLowerCase())) ||
+        (item.court_time && item.court_time.toLowerCase().includes(filterSearch.toLowerCase()));
+      // Lọc theo khoảng thời gian (nếu chọn)
+      const itemDate = new Date(item.date);
+      let dateMatch = true;
+      if (filterFrom) {
+        dateMatch = dateMatch && (itemDate >= new Date(filterFrom));
+      }
+      if (filterTo) {
+        dateMatch = dateMatch && (itemDate <= new Date(filterTo));
+      }
+      return statusMatch && centerMatch && searchMatch && dateMatch;
+    });
+    setFilteredHistory(filtered);
+  };
+
+  const handleStatusFilterChange = (e) => {
+    setFilterStatus(e.target.value);
+  };
+
+  const handleCenterFilterChange = (e) => {
+    setFilterCenter(e.target.value);
+  };
+
+  const handleSearchChange = (e) => {
+    setFilterSearch(e.target.value);
+  };
+
+  const handleFromDateChange = (e) => {
+    setFilterFrom(e.target.value);
+  };
+
+  const handleToDateChange = (e) => {
+    setFilterTo(e.target.value);
+  };
+
 
   if (isLoading) {
     return (
@@ -136,732 +291,1009 @@ const UserProfile = () => {
 
   return (
     <>
-    < Header/>
-    <div className="profile-container">
-      <div className="profile-header">
-        <div className="header-content">
-          <div className="avatar-container">
-            <img 
-              src={userData.avatar || "https://via.placeholder.com/150"} 
-              alt="Avatar" 
-              className="user-avatar"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "https://via.placeholder.com/150?text=Avatar";
-              }}
-            />
-            <div className="level-badge">{userData.level}</div>
-          </div>
-          <div className="user-info">
-            <h1>{userData.name}</h1>
-            <div className="user-details">
-              <div className="detail-item">
-                <i className="fas fa-phone"></i>
-                <span>{userData.phone}</span>
-              </div>
-              <div className="detail-item">
-                <i className="fas fa-envelope"></i>
-                <span>{userData.email}</span>
-              </div>
-              <div className="detail-item">
-                <i className="fas fa-map-marker-alt"></i>
-                <span>{userData.address}</span>
+      < Header />
+      <div className="profile-container">
+        <div className="profile-header">
+          <div className="header-content">
+            <div className="avatar-container">
+              <img
+                src={user?.avatar_image_path || "https://via.placeholder.com/150"}
+                alt="Avatar"
+                className="user-avatar"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://via.placeholder.com/150?text=Avatar";
+                }}
+              />
+              <div className="level-badge">{user?.level}</div>
+            </div>
+            <div className="user-info">
+              <h1>{user?.name}</h1>
+              <div className="user-details">
+                <div className="detail-item">
+                  <i className="fas fa-phone"></i>
+                  <span>{user?.phone_number}</span>
+                </div>
+                <div className="detail-item">
+                  <i className="fas fa-envelope"></i>
+                  <span>{user?.email}</span>
+                </div>
+                <div className="detail-item">
+                  <i className="fas fa-map-marker-alt"></i>
+                  <span>{user?.address}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="membership-info">
-            <div className="points-container">
-              <div className="points-circle">
-                <span className="points-value">{userData.points}</span>
-                <span className="points-label">điểm</span>
+            <div className="membership-info">
+              <div className="points-container">
+                <div className="points-circle">
+                  <span className="points-value">{user?.points}</span>
+                  <span className="points-label">điểm</span>
+                </div>
               </div>
-            </div>
-            <div className="member-since">
-              <span>Thành viên từ</span>
-              <strong>{userData.joinDate}</strong>
+              <div className="member-since">
+                <span>Thành viên từ</span>
+                <strong>{new Date(user?.registration_date).toLocaleDateString('vi-VN')}</strong>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {upcomingBookings.length > 0 && (
-        <div className="upcoming-bookings">
-          <div className="section-title">
-            <i className="fas fa-calendar-alt"></i>
-            <h2>Lịch đặt sắp tới</h2>
-          </div>
-          <div className="upcoming-grid">
-            {upcomingBookings.map(booking => (
-              <div key={booking.id} className="upcoming-card">
-                <div className="upcoming-header">
-                  <span className="upcoming-id">#{booking.id}</span>
-                  <span className={`upcoming-status ${getStatusClass(booking.status)}`}>
-                    {getStatusText(booking.status)}
-                  </span>
-                </div>
-                <div className="upcoming-details">
-                  <div className="upcoming-detail">
-                    <i className="fas fa-map-marker-alt"></i>
-                    <span>{booking.center}</span>
-                  </div>
-                  <div className="upcoming-detail">
-                    <i className="fas fa-table-tennis"></i>
-                    <span>{booking.court}</span>
-                  </div>
-                  <div className="upcoming-detail">
-                    <i className="fas fa-calendar-day"></i>
-                    <span>{booking.date}</span>
-                  </div>
-                  <div className="upcoming-detail">
-                    <i className="fas fa-clock"></i>
-                    <span>{booking.time}</span>
-                  </div>
-                </div>
-                <div className="upcoming-price">
-                  <span>{booking.price}</span>
-                </div>
-                <div className="upcoming-actions">
-                  <button className="pay-now-btn">Thanh Toán Ngay</button>
-                  <button className="cancel-btn">Hủy Đặt Sân</button>
-                </div>
-              </div>
-            ))}
-          </div>
+
+
+        <div className="profile-tabs">
+          <button
+            className={`tab-btn ${activeTab === 'info' ? 'active' : ''}`}
+            onClick={() => setActiveTab('info')}
+          >
+            <i className="fas fa-user"></i>
+            <span>Thông tin cá nhân</span>
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'stats' ? 'active' : ''}`}
+            onClick={() => setActiveTab('stats')}
+          >
+            <i className="fas fa-chart-pie"></i>
+            <span>Thống kê</span>
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => setActiveTab('history')}
+          >
+            <i className="fas fa-history"></i>
+            <span>Lịch sử đặt sân</span>
+          </button>
         </div>
-      )}
 
-      <div className="profile-tabs">
-        <button 
-          className={`tab-btn ${activeTab === 'info' ? 'active' : ''}`}
-          onClick={() => setActiveTab('info')}
-        >
-          <i className="fas fa-user"></i>
-          <span>Thông tin cá nhân</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'stats' ? 'active' : ''}`}
-          onClick={() => setActiveTab('stats')}
-        >
-          <i className="fas fa-chart-pie"></i>
-          <span>Thống kê</span>
-        </button>
-        <button 
-          className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          <i className="fas fa-history"></i>
-          <span>Lịch sử đặt sân</span>
-        </button>
-      </div>
+        <div className="profile-content">
+          {/* Thông tin cá nhân Tab */}
+          {activeTab === 'info' && (
+            <div className="tab-content info-content">
+              <div className="section-title">
+                <i className="fas fa-user-edit"></i>
+                <h2>Thông tin cá nhân</h2>
+              </div>
 
-      <div className="profile-content">
-        {/* Thông tin cá nhân Tab */}
-        {activeTab === 'info' && (
-          <div className="tab-content info-content">
-            <div className="section-title">
-              <i className="fas fa-user-edit"></i>
-              <h2>Thông tin cá nhân</h2>
-            </div>
-            
-            <div className="info-container">
-              <div className="info-sidebar">
-                <div className="profile-overview">
-                  <div className="profile-image-container">
-                    <img 
-                      src={userData.avatar || "https://via.placeholder.com/150"} 
-                      alt="Avatar" 
-                      className="profile-image"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = "https://via.placeholder.com/150?text=Avatar";
-                      }}
-                    />
-                    <button className="change-avatar-btn">
-                      <i className="fas fa-camera"></i>
+              <div className="info-container">
+                <div className="info-sidebar">
+                  <div className="profile-overview">
+                    <div className="profile-image-container">
+                      <img
+                        src={user?.avatar_image_path || "https://via.placeholder.com/150"}
+                        alt="Avatar"
+                        className="profile-image"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://via.placeholder.com/150?text=Avatar";
+                        }}
+                      />
+                      <button className="change-avatar-btn">
+                        <i className="fas fa-camera"></i>
+                      </button>
+                    </div>
+                    <h3 className="profile-name">{user?.name}</h3>
+                    <p className="profile-email">{user?.email}</p>
+                    <div className="membership-badge">
+                      <i className="fas fa-gem"></i>
+                      <span>Thành viên {currentLevelName}</span>
+                    </div>
+                    <div className="progress-container">
+                      <div className="progress-info">
+                        <span>Điểm thành viên ({currentLevelName})</span>
+                        <span>{pointsInCurrentLevel}/{pointsPerLevel}</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div
+                          className="progress"
+                          style={{ width: `${progressPercentage}%` }}
+                        ></div>
+                      </div>
+                      <p className="progress-note">
+                        {nextLevelIndex !== null
+                          ? `Còn ${pointsToNextLevel} điểm để lên ${nextLevelName}`
+                          : "Bạn đã đạt cấp cao nhất!"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="info-actions">
+                    <button
+                      className={`action-btn ${editMode === 'profile' ? 'primary' : 'secondary'}`}
+                      onClick={() => setEditMode('profile')}
+                    >
+                      <i className="fas fa-edit"></i>
+                      <span>Chỉnh sửa hồ sơ</span>
+                    </button>
+                    <button
+                      className={`action-btn ${editMode === 'password' ? 'primary' : 'secondary'}`}
+                      onClick={() => setEditMode('password')}
+                    >
+                      <i className="fas fa-key"></i>
+                      <span>Đổi mật khẩu</span>
                     </button>
                   </div>
-                  <h3 className="profile-name">{userData.name}</h3>
-                  <p className="profile-email">{userData.email}</p>
-                  <div className="membership-badge">
-                    <i className="fas fa-gem"></i>
-                    <span>{userData.level}</span>
-                  </div>
-                  <div className="progress-container">
-                    <div className="progress-info">
-                      <span>Điểm thành viên</span>
-                      <span>{userData.points}/1000</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress" style={{width: `${(userData.points/1000)*100}%`}}></div>
-                    </div>
-                    <p className="progress-note">Còn 350 điểm để lên <strong>Platinum</strong></p>
-                  </div>
                 </div>
-                
-                <div className="info-actions">
-                  <button className="action-btn primary">
-                    <i className="fas fa-edit"></i>
-                    <span>Chỉnh sửa hồ sơ</span>
-                  </button>
-                  <button className="action-btn secondary">
-                    <i className="fas fa-key"></i>
-                    <span>Đổi mật khẩu</span>
-                  </button>
-                </div>
-              </div>
-              
-              <div className="info-details-container">
-                <div className="info-section">
-                  <h3 className="info-section-title">
-                    <i className="fas fa-user"></i>
-                    <span>Thông tin cơ bản</span>
-                  </h3>
-                  <div className="info-grid">
-                    <div className="info-card enhanced">
-                      <div className="info-label">Họ và tên</div>
-                      <div className="info-value">{userData.name}</div>
-                      <button className="edit-info-btn" title="Chỉnh sửa">
-                        <i className="fas fa-pen"></i>
-                      </button>
-                    </div>
-                    <div className="info-card enhanced">
-                      <div className="info-label">Số điện thoại</div>
-                      <div className="info-value">{userData.phone}</div>
-                      <button className="edit-info-btn" title="Chỉnh sửa">
-                        <i className="fas fa-pen"></i>
-                      </button>
-                    </div>
-                    <div className="info-card enhanced">
-                      <div className="info-label">Email</div>
-                      <div className="info-value">{userData.email}</div>
-                      <button className="edit-info-btn" title="Chỉnh sửa">
-                        <i className="fas fa-pen"></i>
-                      </button>
-                    </div>
-                    <div className="info-card enhanced">
-                      <div className="info-label">Ngày sinh</div>
-                      <div className="info-value">01/01/1990</div>
-                      <button className="edit-info-btn" title="Chỉnh sửa">
-                        <i className="fas fa-pen"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="info-section">
-                  <h3 className="info-section-title">
-                    <i className="fas fa-map-marked-alt"></i>
-                    <span>Thông tin liên hệ</span>
-                  </h3>
-                  <div className="info-grid">
-                    <div className="info-card enhanced full-width">
-                      <div className="info-label">Địa chỉ</div>
-                      <div className="info-value">{userData.address}</div>
-                      <button className="edit-info-btn" title="Chỉnh sửa">
-                        <i className="fas fa-pen"></i>
-                      </button>
-                    </div>
-                    <div className="info-card enhanced">
-                      <div className="info-label">Tỉnh/Thành phố</div>
-                      <div className="info-value">Hà Nội</div>
-                      <button className="edit-info-btn" title="Chỉnh sửa">
-                        <i className="fas fa-pen"></i>
-                      </button>
-                    </div>
-                    <div className="info-card enhanced">
-                      <div className="info-label">Quận/Huyện</div>
-                      <div className="info-value">Nam Từ Liêm</div>
-                      <button className="edit-info-btn" title="Chỉnh sửa">
-                        <i className="fas fa-pen"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="info-section">
-                  <h3 className="info-section-title">
-                    <i className="fas fa-table-tennis"></i>
-                    <span>Thông tin đặt sân</span>
-                  </h3>
-                  <div className="info-grid">
-                    <div className="info-card enhanced">
-                      <div className="info-label">Sân yêu thích</div>
-                      <div className="info-value">{userData.favoriteCenter}</div>
-                      <div className="info-badge">Phổ biến</div>
-                    </div>
-                    <div className="info-card enhanced">
-                      <div className="info-label">Thời gian chơi thường xuyên</div>
-                      <div className="info-value">19:00 - 20:30</div>
-                    </div>
-                    <div className="info-card enhanced">
-                      <div className="info-label">Đối thủ thường gặp</div>
-                      <div className="info-value">
-                        <div className="partner-avatars">
-                          <div className="partner-avatar" title="Nguyễn Văn B">NVB</div>
-                          <div className="partner-avatar" title="Trần Văn C">TVC</div>
-                          <div className="partner-avatar" title="Xem thêm">+3</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="info-card enhanced">
-                      <div className="info-label">Trình độ</div>
-                      <div className="info-value">
-                        <div className="skill-level">
-                          <div className="skill-bar" style={{width: '70%'}}></div>
-                          <span>Trung cấp</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Thống kê Tab */}
-        {activeTab === 'stats' && (
-          <div className="tab-content stats-content">
-            <div className="section-title">
-              <i className="fas fa-chart-line"></i>
-              <h2>Thống kê hoạt động</h2>
-            </div>
-            
-            <div className="stats-dashboard-enhanced">
-              <div className="stats-overview">
-                <div className="stats-header">
-                  <h3>Tổng quan hoạt động</h3>
-                  <div className="stats-period-selector">
-                    <button className="period-btn active">Tuần</button>
-                    <button className="period-btn">Tháng</button>
-                    <button className="period-btn">Năm</button>
-                  </div>
-                </div>
-                
-                <div className="stats-cards-container">
-                  <div className={`stats-card-enhanced ${animateStats ? 'animate' : ''}`}>
-                    <div className="stats-card-header">
-                      <div className="stats-icon-enhanced booking">
-                        <i className="fas fa-calendar-check"></i>
-                      </div>
-                      <div className="stats-trend positive">
-                        <i className="fas fa-arrow-up"></i>
-                        <span>12%</span>
-                      </div>
-                    </div>
-                    <div className="stats-card-body">
-                      <h4>Tổng số lần đặt sân</h4>
-                      <div className="stats-value">{userData.stats.totalBookings}</div>
-                    </div>
-                    <div className="stats-card-footer">
-                      <span>Tăng 3 lần so với tháng trước</span>
-                    </div>
-                  </div>
-                  
-                  <div className={`stats-card-enhanced ${animateStats ? 'animate' : ''}`} style={{animationDelay: '0.1s'}}>
-                    <div className="stats-card-header">
-                      <div className="stats-icon-enhanced completed">
-                        <i className="fas fa-check-circle"></i>
-                      </div>
-                      <div className="stats-trend positive">
-                        <i className="fas fa-arrow-up"></i>
-                        <span>8%</span>
-                      </div>
-                    </div>
-                    <div className="stats-card-body">
-                      <h4>Hoàn thành</h4>
-                      <div className="stats-value">{userData.stats.completedBookings}</div>
-                    </div>
-                    <div className="stats-card-footer">
-                      <div className="completion-rate">
-                        <span>Tỷ lệ hoàn thành:</span>
-                        <div className="rate-bar-container">
-                          <div className="rate-bar" style={{width: `${(userData.stats.completedBookings/userData.stats.totalBookings)*100}%`}}></div>
-                        </div>
-                        <span>{Math.round((userData.stats.completedBookings/userData.stats.totalBookings)*100)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className={`stats-card-enhanced ${animateStats ? 'animate' : ''}`} style={{animationDelay: '0.2s'}}>
-                    <div className="stats-card-header">
-                      <div className="stats-icon-enhanced cancelled">
-                        <i className="fas fa-times-circle"></i>
-                      </div>
-                      <div className="stats-trend negative">
-                        <i className="fas fa-arrow-down"></i>
-                        <span>5%</span>
-                      </div>
-                    </div>
-                    <div className="stats-card-body">
-                      <h4>Đã hủy</h4>
-                      <div className="stats-value">{userData.stats.cancelledBookings}</div>
-                    </div>
-                    <div className="stats-card-footer">
-                      <span>Giảm 1 lần so với tháng trước</span>
-                    </div>
-                  </div>
-                  
-                  <div className={`stats-card-enhanced ${animateStats ? 'animate' : ''}`} style={{animationDelay: '0.3s'}}>
-                    <div className="stats-card-header">
-                      <div className="stats-icon-enhanced points">
-                        <i className="fas fa-medal"></i>
-                      </div>
-                      <div className="stats-trend positive">
-                        <i className="fas fa-arrow-up"></i>
-                        <span>15%</span>
-                      </div>
-                    </div>
-                    <div className="stats-card-body">
-                      <h4>Điểm thành viên</h4>
-                      <div className="stats-value">{userData.points}</div>
-                    </div>
-                    <div className="stats-card-footer">
-                      <span>Tăng 85 điểm trong tháng này</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="stats-charts-enhanced">
-                <div className="chart-container-enhanced">
-                  <div className="chart-header">
-                    <h3>Thống kê đặt sân theo tháng</h3>
-                    <div className="chart-actions">
-                      <button className="chart-action-btn active">Tất cả</button>
-                      <button className="chart-action-btn">Hoàn thành</button>
-                      <button className="chart-action-btn">Hủy</button>
-                    </div>
-                  </div>
-                  
-                  <div className="advanced-chart">
-                    <div className="chart-labels">
-                      <div className="chart-y-axis">
-                        <span>10</span>
-                        <span>8</span>
-                        <span>6</span>
-                        <span>4</span>
-                        <span>2</span>
-                        <span>0</span>
-                      </div>
-                    </div>
-                    
-                    <div className="chart-content">
-                      <div className="chart-grid">
-                        <div className="grid-line"></div>
-                        <div className="grid-line"></div>
-                        <div className="grid-line"></div>
-                        <div className="grid-line"></div>
-                        <div className="grid-line"></div>
-                      </div>
-                      
-                      <div className="chart-bars">
-                        {chartData.map((data, index) => (
-                          <div key={index} className="chart-bar-group">
-                            <div className="stacked-bar">
-                              <div 
-                                className="bar-segment completed" 
-                                style={{height: `${data.completed * 10}%`}}
-                                data-value={data.completed}
-                              ></div>
-                              <div 
-                                className="bar-segment cancelled" 
-                                style={{height: `${data.cancelled * 10}%`}}
-                                data-value={data.cancelled}
-                              ></div>
-                            </div>
-                            <span className="bar-label">{data.month}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="chart-legend">
-                    <div className="legend-item">
-                      <div className="legend-color completed"></div>
-                      <span>Hoàn thành</span>
-                    </div>
-                    <div className="legend-item">
-                      <div className="legend-color cancelled"></div>
-                      <span>Đã hủy</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="stats-details-grid">
-                  <div className="stats-detail-card">
-                    <div className="detail-card-header">
-                      <h4>
-                        <i className="fas fa-clock"></i>
-                        Thời gian đặt sân phổ biến
-                      </h4>
-                    </div>
-                    <div className="detail-card-body">
-                      <div className="time-distribution">
-                        <div className="time-slot">
-                          <div className="time-bar" style={{height: '30%'}}></div>
-                          <span>Sáng</span>
-                        </div>
-                        <div className="time-slot">
-                          <div className="time-bar" style={{height: '15%'}}></div>
-                          <span>Trưa</span>
-                        </div>
-                        <div className="time-slot">
-                          <div className="time-bar" style={{height: '55%'}}></div>
-                          <span>Chiều</span>
-                        </div>
-                        <div className="time-slot">
-                          <div className="time-bar" style={{height: '95%'}}></div>
-                          <span>Tối</span>
-                        </div>
-                      </div>
-                      <div className="most-popular-time">
-                        <i className="fas fa-star"></i>
-                        <span>Khung giờ phổ biến nhất: <strong>19:00 - 20:30</strong></span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="stats-detail-card">
-                    <div className="detail-card-header">
-                      <h4>
-                        <i className="fas fa-map-marker-alt"></i>
-                        Cơ sở đặt sân thường xuyên
-                      </h4>
-                    </div>
-                    <div className="detail-card-body">
-                      <div className="location-distribution">
-                        <div className="location-item">
-                          <div className="location-name">Cơ sở Mỹ Đình</div>
-                          <div className="location-bar-container">
-                            <div className="location-bar" style={{width: '80%'}}></div>
-                            <span>80%</span>
-                          </div>
-                        </div>
-                        <div className="location-item">
-                          <div className="location-name">Cơ sở Cầu Giấy</div>
-                          <div className="location-bar-container">
-                            <div className="location-bar" style={{width: '15%'}}></div>
-                            <span>15%</span>
-                          </div>
-                        </div>
-                        <div className="location-item">
-                          <div className="location-name">Cơ sở Thanh Xuân</div>
-                          <div className="location-bar-container">
-                            <div className="location-bar" style={{width: '5%'}}></div>
-                            <span>5%</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+                <div className="info-details-container">
+                  {editMode === 'password' ? (
+                    // Form đổi mật khẩu
+                    <div className="space-y-4 fade-in">
+                      {/* Mật khẩu cũ */}
+                      <div className="info-card">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Mật khẩu cũ
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showOldPassword ? "text" : "password"}
+                            value={oldPassword}
+                            onChange={(e) => setOldPassword(e.target.value)}
+                            className="mt-1 block w-full border border-black rounded-md py-2 pr-12 pl-2 focus:ring-blue-500 focus:border-blue-500"
+                            style={{
+                              overflowX: "auto",
+                              whiteSpace: "nowrap"
+                            }}
+                          />
 
-        {/* Lịch sử đặt sân Tab */}
-        {activeTab === 'history' && (
-          <div className="tab-content history-content">
-            <div className="section-title">
-              <i className="fas fa-history"></i>
-              <h2>Lịch sử đặt sân</h2>
-            </div>
-            
-            <div className="history-container">
-  <div className="history-filters-enhanced">
-    <div className="filters-header-enhanced">
-      <div className="header-title">
-        <i className="fas fa-filter"></i>
-        <h3>Bộ lọc tìm kiếm</h3>
-      </div>
-      <button className="reset-filters-btn-enhanced">
-        <i className="fas fa-redo-alt"></i>
-        <span>Đặt lại</span>
-      </button>
-    </div>
-    
-    <div className="divider"></div>
-    
-    <div className="filters-body-enhanced">
-      <div className="filter-section">
-        <h4 className="filter-section-title">Tình trạng đặt sân</h4>
-        <div className="status-filter-options">
-          <label className="filter-chip">
-            <input type="radio" name="status" value="all" defaultChecked />
-            <span>Tất cả</span>
-          </label>
-          <label className="filter-chip success">
-            <input type="radio" name="status" value="completed" />
-            <span><i className="fas fa-check-circle"></i> Hoàn thành</span>
-          </label>
-          <label className="filter-chip warning">
-            <input type="radio" name="status" value="pending" />
-            <span><i className="fas fa-clock"></i> Chờ thanh toán</span>
-          </label>
-          <label className="filter-chip danger">
-            <input type="radio" name="status" value="cancelled" />
-            <span><i className="fas fa-times-circle"></i> Đã hủy</span>
-          </label>
-        </div>
-      </div>
-      
-      <div className="filter-section">
-        <h4 className="filter-section-title">Cơ sở</h4>
-        <div className="select-wrapper">
-          <select className="filter-select-enhanced">
-            <option value="all">Tất cả cơ sở</option>
-            <option value="mydình">Cơ sở Mỹ Đình</option>
-            <option value="caugiay">Cơ sở Cầu Giấy</option>
-            <option value="thanhxuan">Cơ sở Thanh Xuân</option>
-            <option value="hadong">Cơ sở Hà Đông</option>
-          </select>
-          <i className="fas fa-chevron-down select-arrow"></i>
-        </div>
-      </div>
-      
-      <div className="filter-section">
-        <h4 className="filter-section-title">Khoảng thời gian</h4>
-        <div className="date-range-picker">
-          <div className="date-input-group">
-            <div className="date-input-wrapper">
-              <i className="fas fa-calendar-alt"></i>
-              <input type="date" className="date-input" placeholder="Từ ngày" />
-            </div>
-            <div className="date-input-wrapper">
-              <i className="fas fa-calendar-alt"></i>
-              <input type="date" className="date-input" placeholder="Đến ngày" />
-            </div>
-          </div>
-          <div className="quick-date-options">
-            <button className="quick-date-btn">Hôm nay</button>
-            <button className="quick-date-btn">Tuần này</button>
-            <button className="quick-date-btn">Tháng này</button>
-          </div>
-        </div>
-      </div>
-      
-      <div className="filter-section">
-        <h4 className="filter-section-title">Tìm kiếm</h4>
-        <div className="search-input-wrapper">
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Nhập ID đặt sân hoặc tên sân..." 
-          />
-          <i className="fas fa-search search-icon"></i>
-        </div>
-      </div>
-    </div>
-    
-    <div className="divider"></div>
-    
-    <div className="filters-footer">
-      <button className="apply-filter-btn-enhanced">
-        <i className="fas fa-search"></i>
-        <span>Tìm kiếm</span>
-      </button>
-    </div>
-  </div>
-            
-              <div className="history-results">
-                <div className="results-header">
-                  <div className="results-summary">
-                    <h3>Kết quả</h3>
-                    <span className="results-count">{bookingHistory.length} lịch sử đặt sân</span>
-                  </div>
+                          {/* Icon mắt bên phải */}
+                          <button
+                            type="button"
+                            onClick={() => setShowOldPassword(!showOldPassword)}
+                            className="absolute inset-y-0 right-3 flex items-center text-gray-600"
+                            style={{ zIndex: 10 }}
+                          >
+                            {showOldPassword ? (
+                              <i className="fas fa-eye-slash"></i>
+                            ) : (
+                              <i className="fas fa-eye"></i>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Mật khẩu mới */}
+                      <div className="info-card">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Mật khẩu mới
+                        </label>
+                        <div className="relative">
+
+                          <input
+                            type={showNewPassword ? "text" : "password"}
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="mt-1 block w-full border border-black rounded-md py-2 pr-12 pl-2 focus:ring-blue-500 focus:border-blue-500"
+                            style={{
+                              overflowX: "auto",
+                              whiteSpace: "nowrap"
+                            }}
+                          />
+
+                          {/* Icon mắt bên phải */}
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute inset-y-0 right-3 flex items-center text-gray-600"
+                            style={{ zIndex: 10 }}
+                          >
+                            {showNewPassword ? (
+                              <i className="fas fa-eye-slash"></i>
+                            ) : (
+                              <i className="fas fa-eye"></i>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Xác nhận mật khẩu mới */}
+                      <div className="info-card">
+                        <label className="block text-sm font-medium text-gray-700">
+                          Xác nhận mật khẩu mới
+                        </label>
+                        <div className="relative">
+
+                          <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="mt-1 block w-full border border-black rounded-md py-2 pr-12 pl-2 focus:ring-blue-500 focus:border-blue-500"
+                            style={{
+                              overflowX: "auto",
+                              whiteSpace: "nowrap"
+                            }}
+                          />
+
+                          {/* Icon mắt bên phải */}
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute inset-y-0 right-3 flex items-center text-gray-600"
+                            style={{ zIndex: 10 }}
+                          >
+                            {showConfirmPassword ? (
+                              <i className="fas fa-eye-slash"></i>
+                            ) : (
+                              <i className="fas fa-eye"></i>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Nút xác nhận thay đổi */}
+                      <button
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md"
+                        onClick={handleChangePassword}
+                      >
+                        Xác nhận thay đổi
+                      </button>
+                    </div>
+
+                  ) : (
+                    // Hiển thị thông tin cơ bản và lịch đặt sắp tới
+                    <>
+                      <div className="info-section">
+                        <h3 className="info-section-title">
+                          <i className="fas fa-user"></i>
+                          <span>Thông tin cơ bản</span>
+                        </h3>
+                        <div className="info-grid">
+                          <EditableInfoCard
+                            label="Họ và tên"
+                            value={user?.name}
+                            onConfirm={(newValue) => handleUpdateField("name", newValue)}
+                          />
+                          <EditableInfoCard
+                            label="Số điện thoại"
+                            value={user?.phone_number}
+                            onConfirm={(newValue) => handleUpdateField("phone_number", newValue)}
+                          />
+                          <EditableInfoCard
+                            label="Email"
+                            value={user?.email}
+                            onConfirm={(newValue) => handleUpdateField("email", newValue)}
+                          />
+                          <EditableInfoCard
+                            label="Địa chỉ"
+                            value={user?.address}
+                            onConfirm={(newValue) => handleUpdateField("address", newValue)}
+                          />
+                        </div>
+                      </div>
+                      <div className="upcoming-bookings">
+                        <div className="section-title">
+                          <i className="fas fa-calendar-alt"></i>
+                          <h2>Lịch đặt sắp tới</h2>
+                        </div>
+                        {upcomingBookings.length > 0 ? (
+                          <div className="upcoming-grid">
+                            {upcomingBookings.map((booking) => (
+                              <div key={booking._id} className="upcoming-card">
+                                <div className="upcoming-header">
+                                  <span className="upcoming-id">#{booking.orderId}</span>
+                                  <span className={`upcoming-status ${getStatusClass(booking.status)}`}>
+                                    {getStatusText(booking.status)}
+                                  </span>
+                                </div>
+                                <div className="upcoming-details">
+                                  <div className="upcoming-detail">
+                                    <i className="fas fa-map-marker-alt"></i>
+                                    <span>{centerName}</span>
+                                  </div>
+                                  <div className="upcoming-detail">
+                                    <i className="fas fa-table-tennis"></i>
+                                    <span>
+                                      {slotGroupsFromLS.length > 0 ? (
+                                        slotGroupsFromLS.map((group, idx) => (
+                                          <React.Fragment key={idx}>
+                                            <span>
+                                              {group.courtName}: {group.timeStr}
+                                            </span>
+                                            {idx < slotGroupsFromLS.length - 1 && <br />}
+                                          </React.Fragment>
+                                        ))
+                                      ) : (
+                                        booking.court
+                                      )}
+                                    </span>
+                                  </div>
+                                  <div className="upcoming-detail">
+                                    <i className="fas fa-calendar-day"></i>
+                                    <span>{booking.date}</span>
+                                  </div>
+                                </div>
+                                <div className="upcoming-price">
+                                  <span>{totalAmountLS.toLocaleString("vi-VN")} đ</span>
+                                </div>
+                                <div className="upcoming-actions">
+                                  <button className="pay-now-btn" onClick={() => navigate("/payment")}>
+                                    Thanh Toán Ngay
+                                  </button>
+                                  <button
+                                    className="cancel-btn"
+                                    onClick={() => promptCancelBooking(booking.orderId)}
+                                  >
+                                    Hủy Đặt Sân
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p>Không có lịch đặt sắp tới.</p>
+                        )}
+                      </div>
+
+                    </>
+                  )}
                 </div>
-                
-                <div className="history-table-container">
-                  <table className="history-table">
-                    <thead>
-                      <tr>
-                        <th>Mã đặt sân</th>
-                        <th>Trạng thái</th>
-                        <th>Cơ sở</th>
-                        <th>Sân</th>
-                        <th>Ngày</th>
-                        <th>Giờ</th>
-                        <th>Giá tiền</th>
-                        <th>Phương thức</th>
-                        <th>Thanh toán</th>
-                        <th>Thao tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {bookingHistory.map(booking => (
-                        <tr key={booking.id} className={booking.status === 'cancelled' ? 'cancelled-row' : ''}>
-                          <td className="booking-id">#{booking.id}</td>
-                          <td>
-                            <span className={`status-badge ${getStatusClass(booking.status)}`}>
-                              {getStatusText(booking.status)}
+
+              </div>
+            </div>
+          )}
+
+
+          {/* Thống kê Tab */}
+          {activeTab === 'stats' && (
+            <div className="tab-content stats-content">
+              <div className="section-title">
+                <i className="fas fa-chart-line"></i>
+                <h2>Thống kê hoạt động</h2>
+              </div>
+
+              <div className="stats-dashboard-enhanced">
+                <div className="stats-dashboard-enhanced">
+                  <div className="stats-overview">
+                    <div className="stats-header">
+                      <h3>Tổng quan hoạt động</h3>
+                      <div className="stats-period-selector">
+                        <button
+                          className={`period-btn ${statsPeriod === "week" ? "active" : ""}`}
+                          onClick={() => setStatsPeriod("week")}
+                        >
+                          Tuần
+                        </button>
+                        <button
+                          className={`period-btn ${statsPeriod === "month" ? "active" : ""}`}
+                          onClick={() => setStatsPeriod("month")}
+                        >
+                          Tháng
+                        </button>
+                        <button
+                          className={`period-btn ${statsPeriod === "year" ? "active" : ""}`}
+                          onClick={() => setStatsPeriod("year")}
+                        >
+                          Năm
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="stats-cards-container">
+                      {/* Card Tổng số đặt sân */}
+                      <div className={`stats-card-enhanced ${animateStats ? "animate" : ""}`}>
+                        <div className="stats-card-header">
+                          <div className="stats-icon-enhanced booking">
+                            <i className="fas fa-calendar-check"></i>
+                          </div>
+                          <div
+                            className={`stats-trend ${detailedStats && detailedStats.comparison.totalChange < 0 ? "negative" : "positive"
+                              }`}
+                          >
+                            {detailedStats && detailedStats.comparison.totalChange < 0 ? (
+                              <i className="fas fa-arrow-down"></i>
+                            ) : (
+                              <i className="fas fa-arrow-up"></i>
+                            )}
+                            <span>
+                              {detailedStats ? Math.round(Math.abs(detailedStats.comparison.totalChange)) : 0}%
                             </span>
-                          </td>
-                          <td>{booking.center}</td>
-                          <td>{booking.court}</td>
-                          <td>{booking.date}</td>
-                          <td>{booking.time}</td>
-                          <td className="booking-price">{booking.price}</td>
-                          <td>{booking.paymentMethod}</td>
-                          <td>{booking.paymentStatus}</td>
-                          <td>
-                            <div className="action-buttons">
-                              <button className="view-btn" title="Xem chi tiết">
-                                <i className="fas fa-eye"></i>
-                              </button>
-                              {booking.status === 'pending' && (
-                                <>
-                                  <button className="pay-btn" title="Thanh toán">
-                                    <i className="fas fa-credit-card"></i>
-                                  </button>
-                                  <button className="cancel-btn" title="Hủy đặt sân">
-                                    <i className="fas fa-times"></i>
-                                  </button>
-                                </>
-                              )}
-                              {booking.status === 'completed' && (
-                                <button className="review-btn" title="Đánh giá">
-                                  <i className="fas fa-star"></i>
-                                </button>
-                              )}
+                          </div>
+                        </div>
+                        <div className="stats-card-body">
+                          <h4>Tổng số lần đặt sân</h4>
+                          <div className="stats-value">
+                            {detailedStats ? detailedStats.current.total : 0}
+                          </div>
+                        </div>
+                        <div className="stats-card-footer">
+                          <span>
+                            {detailedStats &&
+                              detailedStats.comparison.totalChange >= 0
+                              ? "Tăng"
+                              : "Giảm"}{" "}
+                            {detailedStats ? Math.abs(Math.round(detailedStats.comparison.totalChange)) : 0} so với{" "}
+                            {statsPeriod === "week"
+                              ? "tuần"
+                              : statsPeriod === "month"
+                                ? "tháng"
+                                : "năm"}{" "}
+                            trước
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Hoàn thành */}
+                      <div className={`stats-card-enhanced ${animateStats ? "animate" : ""}`} style={{ animationDelay: "0.1s" }}>
+                        <div className="stats-card-header">
+                          <div className="stats-icon-enhanced completed">
+                            <i className="fas fa-check-circle"></i>
+                          </div>
+                          <div
+                            className={`stats-trend ${detailedStats && detailedStats.comparison.completedChange < 0 ? "negative" : "positive"
+                              }`}
+                          >
+                            {detailedStats && detailedStats.comparison.completedChange < 0 ? (
+                              <i className="fas fa-arrow-down"></i>
+                            ) : (
+                              <i className="fas fa-arrow-up"></i>
+                            )}
+                            <span>
+                              {detailedStats ? Math.round(Math.abs(detailedStats.comparison.completedChange)) : 0}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="stats-card-body">
+                          <h4>Hoàn thành</h4>
+                          <div className="stats-value">
+                            {detailedStats ? detailedStats.current.completed : 0}
+                          </div>
+                        </div>
+                        <div className="stats-card-footer">
+                          <div className="completion-rate">
+                            <span>Tỷ lệ hoàn thành:</span>
+                            <div className="rate-bar-container">
+                              <div
+                                className="rate-bar"
+                                style={{
+                                  width:
+                                    detailedStats && detailedStats.current.total > 0
+                                      ? `${(detailedStats.current.completed / detailedStats.current.total) * 100}%`
+                                      : "0%"
+                                }}
+                              ></div>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                            <span>
+                              {detailedStats && detailedStats.current.total > 0
+                                ? Math.round((detailedStats.current.completed / detailedStats.current.total) * 100)
+                                : 0}
+                              %
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Đã hủy */}
+                      <div className={`stats-card-enhanced ${animateStats ? "animate" : ""}`} style={{ animationDelay: "0.2s" }}>
+                        <div className="stats-card-header">
+                          <div className="stats-icon-enhanced cancelled">
+                            <i className="fas fa-times-circle"></i>
+                          </div>
+                          <div
+                            className={`stats-trend ${detailedStats && detailedStats.comparison.cancelledChange < 0 ? "negative" : "positive"
+                              }`}
+                          >
+                            {detailedStats && detailedStats.comparison.cancelledChange < 0 ? (
+                              <i className="fas fa-arrow-down"></i>
+                            ) : (
+                              <i className="fas fa-arrow-up"></i>
+                            )}
+                            <span>
+                              {detailedStats ? Math.round(Math.abs(detailedStats.comparison.cancelledChange)) : 0}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="stats-card-body">
+                          <h4>Đã hủy</h4>
+                          <div className="stats-value">
+                            {detailedStats ? detailedStats.current.cancelled : 0}
+                          </div>
+                        </div>
+                        <div className="stats-card-footer">
+                          <span>
+                            {detailedStats &&
+                              detailedStats.comparison.cancelledChange >= 0
+                              ? "Tăng"
+                              : "Giảm"}{" "}
+                            {detailedStats ? Math.abs(Math.round(detailedStats.comparison.cancelledChange)) : 0} so với{" "}
+                            {statsPeriod === "week"
+                              ? "tuần"
+                              : statsPeriod === "month"
+                                ? "tháng"
+                                : "năm"}{" "}
+                            trước
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Card Điểm thành viên */}
+                      <div className={`stats-card-enhanced ${animateStats ? "animate" : ""}`} style={{ animationDelay: "0.3s" }}>
+                        <div className="stats-card-header">
+                          <div className="stats-icon-enhanced points">
+                            <i className="fas fa-medal"></i>
+                          </div>
+                          <div
+                            className={`stats-trend ${detailedStats && detailedStats.comparison.pointsChange < 0 ? "negative" : "positive"
+                              }`}
+                          >
+                            {detailedStats && detailedStats.comparison.pointsChange < 0 ? (
+                              <i className="fas fa-arrow-down"></i>
+                            ) : (
+                              <i className="fas fa-arrow-up"></i>
+                            )}
+                            <span>
+                              {detailedStats ? Math.round(Math.abs(detailedStats.comparison.pointsChange)) : 0}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="stats-card-body">
+                          <h4>Điểm thành viên</h4>
+                          <div className="stats-value">
+                            {detailedStats ? detailedStats.current.points : (user?.points || 0)}
+                          </div>
+                        </div>
+                        <div className="stats-card-footer">
+                          <span>
+                            {detailedStats && detailedStats.comparison.pointsChange >= 0 ? "Tăng" : "Giảm"}{" "}
+                            {detailedStats ? Math.abs(Math.round(detailedStats.comparison.pointsChange)) : 0} so với{" "}
+                            {statsPeriod === "week"
+                              ? "tuần"
+                              : statsPeriod === "month"
+                                ? "tháng"
+                                : "năm"}{" "}
+                            trước
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="history-pagination">
-                  <div className="pagination-info">
-                    <span>Hiển thị 1-4 của 4 kết quả</span>
+
+                {/* Phần biểu đồ */}
+                <div className="stats-charts-enhanced">
+                  <div className="chart-container-enhanced">
+                    <div className="chart-header">
+                      <h3>Thống kê đặt sân theo tháng</h3>
+                      <div className="chart-actions">
+                        <button
+                          className={`chart-action-btn ${chartFilter === 'all' ? 'active' : ''}`}
+                          onClick={() => setChartFilter("all")}
+                        >
+                          Tất cả
+                        </button>
+                        <button
+                          className={`chart-action-btn ${chartFilter === 'completed' ? 'active' : ''}`}
+                          onClick={() => setChartFilter("completed")}
+                        >
+                          Hoàn thành
+                        </button>
+                        <button
+                          className={`chart-action-btn ${chartFilter === 'cancelled' ? 'active' : ''}`}
+                          onClick={() => setChartFilter("cancelled")}
+                        >
+                          Hủy
+                        </button>
+                      </div>
+                    </div>
+
+                    {loadingChart ? (
+                      <div>Loading chart...</div>
+                    ) : (
+                      <div className="advanced-chart">
+                        {/* Trục Y */}
+                        <div className="chart-labels">
+                          <div className="chart-y-axis">
+                            <span>100%</span>
+                            <span>80%</span>
+                            <span>60%</span>
+                            <span>40%</span>
+                            <span>20%</span>
+                            <span>0%</span>
+                          </div>
+                        </div>
+
+                        {/* Nội dung biểu đồ */}
+                        <div className="chart-content">
+                          <div className="chart-grid">
+                            {[...Array(6)].map((_, i) => (
+                              <div key={i} className="grid-line"></div>
+                            ))}
+                          </div>
+                          <div className="chart-bars">
+                            {chartData.map((data, index) => {
+                              const total = data.completed + data.cancelled;
+                              const completedPercent = total > 0 ? (data.completed / total) * 100 : 0;
+                              const cancelledPercent = total > 0 ? (data.cancelled / total) * 100 : 0;
+                              console.log(
+                                `Tháng ${data.month}: completed=${data.completed} (${completedPercent.toFixed(
+                                  2
+                                )}%), cancelled=${data.cancelled} (${cancelledPercent.toFixed(2)}%)`
+                              );
+                              return (
+                                <div key={index} className="chart-bar-group">
+                                  <div className="stacked-bar">
+                                    {chartFilter === "all" && (
+                                      <>
+                                        <div
+                                          className="bar-segment completed"
+                                          style={{
+                                            height: `${completedPercent}%`,
+
+                                          }}
+                                          data-value={data.completed}
+                                        ></div>
+                                        <div
+                                          className="bar-segment cancelled"
+                                          style={{ height: `${cancelledPercent}%` }}
+                                          data-value={data.cancelled}
+                                        ></div>
+                                      </>
+                                    )}
+                                    {chartFilter === "completed" && (
+                                      <div
+                                        className="bar-segment completed"
+                                        style={{ height: `${completedPercent}%` }}
+                                        data-value={data.completed}
+                                      ></div>
+                                    )}
+                                    {chartFilter === "cancelled" && (
+                                      <div
+                                        className="bar-segment cancelled"
+                                        style={{ height: `${cancelledPercent}%` }}
+                                        data-value={data.cancelled}
+                                      ></div>
+                                    )}
+                                  </div>
+                                  <span className="bar-label">{data.month}</span>
+                                </div>
+                              );
+                            })}
+
+                          </div>
+                        </div>
+
+
+                      </div>
+                    )}
+
+                    <div className="chart-legend">
+                      <div className="legend-item">
+                        <div className="legend-color completed"></div>
+                        <span>Hoàn thành</span>
+                      </div>
+                      <div className="legend-item">
+                        <div className="legend-color cancelled"></div>
+                        <span>Đã hủy</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="pagination-controls">
-                    <button className="page-btn disabled">
-                      <i className="fas fa-chevron-left"></i>
-                    </button>
-                    <button className="page-btn active">1</button>
-                    <button className="page-btn disabled">
-                      <i className="fas fa-chevron-right"></i>
-                    </button>
-                  </div>
-                  <div className="pagination-options">
-                    <select className="per-page-select">
-                      <option value="10">10 / trang</option>
-                      <option value="20">20 / trang</option>
-                      <option value="50">50 / trang</option>
-                    </select>
+
+                  <div className="stats-details-grid">
+                    <PopularTimeChart />
+
+
+                    <div className="stats-detail-card">
+                      <div className="detail-card-header">
+                        <h4>
+                          <i className="fas fa-map-marker-alt"></i>
+                          Cơ sở đặt sân thường xuyên
+                        </h4>
+                      </div>
+                      <div className="detail-card-body">
+                        <div className="location-distribution">
+                          {/* Iterate over favourite centers and show the percentage */}
+                          {user && user?.favouriteCenter && user?.favouriteCenter.map((center) => (
+                            <div className="location-item" >
+                              <div className="location-name">{center.centerName}</div>
+                              <div className="location-bar-container ">
+                                <div className="location-bar-wrapper">
+                                  <div
+                                    className="location-bar"
+                                    style={{ width: `${calculateCenterPercentage(center.centerName)}%` }}
+                                  ></div>
+                                </div>
+                                <span className="location-percentage">
+                                  {calculateCenterPercentage(center.centerName).toFixed(0)}%
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Lịch sử đặt sân Tab */}
+          {activeTab === 'history' && (
+            <div className="tab-content">
+              <div className="section-title">
+                <i className="fas fa-history"></i>
+                <h2>Lịch sử đặt sân</h2>
+              </div>
+
+              <div className="history-container">
+                <div className="history-filters-enhanced">
+                  <div className="filters-header-enhanced">
+                    <div className="header-title">
+                      <i className="fas fa-filter"></i>
+                      <h3>Bộ lọc tìm kiếm</h3>
+                    </div>
+                    <button
+                      className="reset-filters-btn-enhanced"
+                      onClick={() => {
+                        setFilterStatus("all");
+                        setFilterCenter("all");
+                        setFilterSearch("");
+                        setFilterFrom("");
+                        setFilterTo("");
+                        setFilteredHistory(bookingHistory);
+                      }}
+                    >
+                      <i className="fas fa-redo-alt"></i>
+                      <span>Đặt lại</span>
+                    </button>
+                  </div>
+
+                  <div className="divider"></div>
+
+                  <div className="filters-body-enhanced">
+                    <div className="filter-section">
+                      <h4 className="filter-section-title">Tình trạng đặt sân</h4>
+                      <div className="status-filter-options">
+                        <label className="filter-chip">
+                          <input type="radio" name="status" value="all" checked={filterStatus === "all"} onChange={handleStatusFilterChange} />
+                          <span>Tất cả</span>
+                        </label>
+                        <label className="filter-chip success">
+                          <input type="radio" name="status" value="paid" checked={filterStatus === "paid"} onChange={handleStatusFilterChange} />
+                          <span><i className="fas fa-check-circle"></i> Hoàn thành</span>
+                        </label>
+                        <label className="filter-chip warning">
+                          <input type="radio" name="status" value="pending" checked={filterStatus === "pending"} onChange={handleStatusFilterChange} />
+                          <span><i className="fas fa-clock"></i> Chờ thanh toán</span>
+                        </label>
+                        <label className="filter-chip danger">
+                          <input type="radio" name="status" value="cancelled" checked={filterStatus === "cancelled"} onChange={handleStatusFilterChange} />
+                          <span><i className="fas fa-times-circle"></i> Đã hủy</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="filter-section">
+                      <h4 className="filter-section-title">Cơ sở</h4>
+                      <div className="select-wrapper">
+                        <select className="filter-select-enhanced" value={filterCenter} onChange={handleCenterFilterChange}>
+                          <option value="all">Tất cả cơ sở</option>
+                          <option value="Nhà thi đấu quận Thanh Xuân">Nhà thi đấu quận Thanh Xuân</option>
+                          <option value="Nhà thi đấu quận Cầu Giấy">Nhà thi đấu quận Cầu Giấy</option>
+                          <option value="Nhà thi đấu quận Tây Hồ">Nhà thi đấu quận Tây Hồ</option>
+                          <option value="Nhà thi đấu quận Bắc Từ Liêm">Nhà thi đấu quận Bắc Từ Liêm</option>
+                        </select>
+                        <i className="fas fa-chevron-down select-arrow"></i>
+                      </div>
+                    </div>
+
+                    <div className="filter-section">
+                      <h4 className="filter-section-title">Khoảng thời gian</h4>
+                      <div className="date-range-picker">
+                        <div className="date-input-group">
+                          <label>Từ:</label>
+                          <div className="date-input-wrapper">
+                            
+                            <i className="fas fa-calendar-alt"></i>
+                            <input
+                              type="date"
+                              className="date-input"
+                              placeholder="Từ ngày"
+                              value={filterFrom}
+                              onChange={handleFromDateChange}
+                              max={filterTo || undefined} // Nếu đã chọn ngày kết thúc thì khóa các ngày sau
+                            />
+                          </div>
+                          <label>Đến:</label>
+                          <div className="date-input-wrapper">
+                            <i className="fas fa-calendar-alt"></i>
+                            <input
+                              type="date"
+                              className="date-input"
+                              placeholder="Đến ngày"
+                              value={filterTo}
+                              onChange={handleToDateChange}
+                              min={filterFrom || undefined} // Nếu đã chọn ngày bắt đầu thì khóa các ngày trước
+                            />
+                          </div>
+                        </div>
+                        <div className="quick-date-options">
+                          <button
+                            className="quick-date-btn"
+                            onClick={() => {
+                              const today = new Date().toISOString().split('T')[0];
+                              setFilterFrom(today);
+                              setFilterTo(today);
+                            }}
+                          >
+                            Hôm nay
+                          </button>
+                          <button
+                            className="quick-date-btn"
+                            onClick={() => {
+                              const now = new Date();
+                              const day = now.getDay() === 0 ? 7 : now.getDay(); // Nếu là Chủ Nhật, đặt là 7
+                              const diffToMonday = day - 1; // số ngày lùi về thứ Hai
+                              const monday = new Date(now);
+                              monday.setDate(now.getDate() - diffToMonday);
+                              const sunday = new Date(monday);
+                              sunday.setDate(monday.getDate() + 6);
+                              setFilterFrom(monday.toISOString().split('T')[0]);
+                              setFilterTo(sunday.toISOString().split('T')[0]);
+                            }}
+                          >
+                            Tuần này
+                          </button>
+                          <button
+                            className="quick-date-btn"
+                            onClick={() => {
+                              const now = new Date();
+                              const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                              const endMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Ngày cuối tháng
+                              setFilterFrom(startMonth.toISOString().split('T')[0]);
+                              setFilterTo(endMonth.toISOString().split('T')[0]);
+                            }}
+                          >
+                            Tháng này
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+
+                  </div>
+
+                  <div className="divider"></div>
+
+                  <div className="filters-footer">
+                    <button className="apply-filter-btn-enhanced" onClick={handleFilter}>
+                      <i className="fas fa-search"></i>
+                      <span>Tìm kiếm</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="history-results">
+                  <div className="results-header">
+                    <div className="results-summary">
+                      <h3>Kết quả</h3>
+                      <span className="results-count">{filteredHistory.length} lịch sử đặt sân</span>
+                    </div>
+                  </div>
+
+                  <div className="history-table-container">
+                    <table className="history-table">
+                      <thead>
+                        <tr>
+                          <th>Mã đặt sân</th>
+                          <th>Trạng thái</th>
+                          <th>Cơ sở</th>
+                          <th>Sân-Giờ</th>
+                          <th>Ngày</th>
+                          <th>Giá tiền</th>
+                          <th>Phương thức</th>
+                          <th>Loại</th>
+                          <th>Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredHistory.map((booking, index) => (
+                          <tr key={index} className={booking.status === 'cancelled' ? 'cancelled-row' : ''}>
+                            <td className="booking-id">{booking.orderId}</td>
+                            <td>
+                              <span className={`status-badge ${getStatusClass(booking.status)}`}>
+                                {getStatusText(booking.status)}
+                              </span>
+                            </td>
+                            <td>{booking.center}</td>
+                            <td>
+                              {booking.court_time.split('\n').map((line, index) => (
+                                <React.Fragment key={index}>
+                                  {line}
+                                  <br />
+                                </React.Fragment>
+                              ))}
+                            </td>
+                            <td>{new Date(booking.date).toLocaleDateString()}</td>
+                            <td className="booking-price">{booking.price}</td>
+                            <td>{booking.paymentMethod}</td>
+                            <td>{booking.orderType}</td>
+                            <td>
+                              <div className="action-buttons">
+                                {booking.status === 'pending' && (
+                                  <>
+                                    <button className="pay-btn"
+                                      title="Thanh toán"
+                                      onClick={() => navigate("/payment")}>
+                                      <i className="fas fa-credit-card"></i>
+                                    </button>
+                                    <button
+                                      className="cancel-btn"
+                                      title="Hủy đặt sân"
+                                      onClick={() => promptCancelBooking(booking.orderId)}>
+                                      <i className="fas fa-times"></i>
+                                    </button>
+                                  </>
+                                )}
+                                {booking.status === 'paid' && (
+                                  <button
+                                    className="review-btn"
+                                    title="Đánh giá"
+                                  >
+                                    <i className="fas fa-star"></i>
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="history-pagination">
+                    <div className="pagination-info">
+                      <span>Hiển thị 1-4 của {filteredHistory.length} kết quả</span>
+                    </div>
+                    <div className="pagination-controls">
+                      <button className="page-btn disabled">
+                        <i className="fas fa-chevron-left"></i>
+                      </button>
+                      <button className="page-btn active">1</button>
+                      <button className="page-btn disabled">
+                        <i className="fas fa-chevron-right"></i>
+                      </button>
+                    </div>
+                    <div className="pagination-options">
+                      <select className="per-page-select">
+                        <option value="10">10 / trang</option>
+                        <option value="20">20 / trang</option>
+                        <option value="50">50 / trang</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-    < Footer/>
+      < Footer />
+      {showCancelModal && (
+        <ModalConfirmation
+          title="Xác nhận hủy đặt sân"
+          message="Bạn có chắc chắn muốn hủy đặt sân này không?"
+          onAction={(action) => handleModalAction(action)}
+        />
+      )}
     </>
   );
 };

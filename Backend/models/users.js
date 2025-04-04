@@ -1,6 +1,14 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
+const FavouriteCenterSchema = new Schema(
+  {
+    centerName: { type: String, required: true, trim: true },
+    bookingCount: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
 const UserSchema = new Schema(
   {
     name: {
@@ -30,7 +38,6 @@ const UserSchema = new Schema(
       type: Date,
       default: Date.now,
     },
-    // Username và password_hash sẽ để trống nếu role là "guest"
     username: {
       type: String,
       trim: true,
@@ -44,28 +51,32 @@ const UserSchema = new Schema(
       type: String,
       default: "",
     },
-    role: {
+    // Các trường bổ sung:
+    level: {
       type: String,
-      enum: ["member", "guest"],
-      default: "member",
+      default: "Thành viên Iron",
+    },
+    points: {
+      type: Number,
+      default: 0,
+    },
+    favouriteCenter: {
+      type: [FavouriteCenterSchema],
+      default: [],
+    },
+    stats: {
+      totalBookings: { type: Number, default: 0 },
+      completedBookings: { type: Number, default: 0 },
+      cancelledBookings: { type: Number, default: 0 },
+      averagePlayTime: { type: String, default: "0 phút" },
     },
   },
   { timestamps: true }
 );
 
-// Nếu là user thật (member), bắt buộc phải có username và password_hash
-UserSchema.pre("validate", function (next) {
-  if (this.role === "member") {
-    if (!this.username) {
-      this.invalidate("username", "Username is required for member accounts");
-    }
-    if (!this.password_hash) {
-      this.invalidate("password_hash", "Password is required for member accounts");
-    }
-  }
-  next();
-});
 
-const User = model("User", UserSchema);
+
+// Kiểm tra nếu model User đã được tạo, dùng model đó; nếu chưa thì tạo mới.
+const User = mongoose.models.User || model("User", UserSchema);
 
 export default User;
