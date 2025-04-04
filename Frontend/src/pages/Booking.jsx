@@ -10,6 +10,7 @@ import { AuthContext } from "../contexts/AuthContext";
 
 import { getCourtsByCenter, getPriceForTimeslot, getCenterInfoById } from "../apis/centers";
 import { getPendingMapping, confirmBookingToDB, clearAllPendingBookings } from "../apis/booking";
+import { fetchUserInfo } from "../apis/users";
 
 import "../styles/booking.css";
 
@@ -64,7 +65,7 @@ function applyLockedLogic(mapping, selectedDate, currentUserId) {
 
 const BookingSchedule = () => {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   // Sử dụng optional chaining để tránh lỗi nếu user là null
   const userId = user?._id;
 
@@ -284,18 +285,31 @@ const BookingSchedule = () => {
   const handleModalAction = async (action) => {
     if (action === "confirm") {
       try {
-        const { success, booking } = await confirmBookingToDB({ userId, centerId, date: selectedDate });
+        // Xác nhận booking chuyển từ pending sang booked
+        const { success, booking } = await confirmBookingToDB({
+          userId,
+          centerId,
+          date: selectedDate,
+          totalAmount: totalAmount
+        });
         if (success) {
+          // Lưu các thông tin cần thiết vào localStorage
           localStorage.setItem("bookingExpiresAt", booking.expiresAt);
           localStorage.setItem("bookingId", booking._id);
           localStorage.setItem("userId", userId);
           localStorage.setItem("centerId", centerId);
           localStorage.setItem("selectedDate", selectedDate);
           localStorage.setItem("totalAmount", totalAmount);
+
+          // Lấy các nhóm slot đã chọn (bao gồm courtName và timeStr)
+          const slotGroups = groupSelectedSlots(selectedSlots, courts);
+          localStorage.setItem("slotGroups", JSON.stringify(slotGroups));
+          const updatedUserData = await fetchUserInfo(); // API này trả về dữ liệu user cập nhật
+          setUser(updatedUserData.user);
           alert(`Booking pending đã được lưu vào DB.\nBooking ID: ${booking._id}`);
-          navigate("/payment", {
-            state: { centerId, date: selectedDate, total: totalAmount },
-          });
+
+          // Điều hướng sang trang Payment
+          navigate("/payment");
         }
       } catch (error) {
         console.error("Lỗi khi xác nhận booking:", error);
@@ -305,6 +319,7 @@ const BookingSchedule = () => {
       setShowModal(false);
     }
   };
+
 
   const formatMoney = (val) => val.toLocaleString("vi-VN") + " đ";
   const handleGoBack = () => {
@@ -485,7 +500,7 @@ const BookingSchedule = () => {
                   <span className="font-bold text-yellow-500">
                     {totalAmount.toLocaleString("vi-VN")} đ
                   </span>
-                  . Nếu bạn xác nhận thanh toán, bạn sẽ có 5 phút để thanh toán (trong 5 phút đó không thể đặt sân tại trung tâm bạn vừa đặt nếu bạn thoát ra khỏi trang thanh toán, trừ khi bạn xóa thanh toán đó tại lịch sử thanh toán). Bạn có chắc chắn muốn thanh toán không?!{" "}
+                  . Nếu bạn xác nhận thanh toán, bạn sẽ có 5 phút để thanh toán (trong 5 phút đó không thể đặt sân tại trung tâm bạn vừa đặt nếu bạn thoát ra khỏi trang thanh toán, trừ khi bạn xóa booking giữ chỗ đó tại lịch đặt sắp tới ở phần thông tin cá nhân). Bạn có chắc chắn muốn thanh toán không?!{" "}
                   <span role="img" aria-label="thinking">🧐</span>
                 </>
               }

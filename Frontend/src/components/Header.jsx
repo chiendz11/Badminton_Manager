@@ -161,6 +161,7 @@ const Header = () => {
                               e.preventDefault();
                               handleLogout(e);
                               setIsDropdownOpen(false);
+                              navigate("/");
                             }}
                             className="flex items-center gap-2 w-full px-4 py-2 text-left text-gray-700 text-sm hover:bg-yellow-300 transition-colors"
                           >

@@ -11,17 +11,7 @@ export const registerUser = async (userData) => {
   }
 };
 
-export const getUserById = async (userId) => {
-  try {
-    const res = await axiosInstance.get("/api/users/getUsers", {
-      params: { userId },
-    });
-    return res.data; // Giả sử API trả về { name: "User Name", phone: "0123456789" }
-  } catch (error) {
-    console.error("Error fetching user info:", error.response?.data || error.message);
-    return null;
-  }
-};
+
 
 export const loginUser = async ({ username, password }) => {
   try {
@@ -50,5 +40,67 @@ export const logoutUser = async () => {
     return response.data;
   } catch (error) {
     throw error;
+  }
+};
+
+export const updateUserInfo = async (payload) => {
+  try {
+    const response = await axiosInstance.put("/api/users/update", payload, {
+    });
+    return response.data; // Giả sử trả về { success: true, user: { ... } }
+  } catch (error) {
+    console.error("Error updating user info:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+
+export const updateUserPassword = async (payload) => {
+  try {
+    const response = await axiosInstance.put("/api/users/change-password", payload);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getChartData = async () => {
+  try {
+    // Không cần truyền userId, token từ cookie sẽ được gửi tự động
+    const response = await axiosInstance.get("/api/users/get-chart");
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getDetailedBookingStats = async (period = "month") => {
+  try {
+    const response = await axiosInstance.get(`/api/users/detailed-stats?period=${period}`);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const forgotPasswordByEmailSimpleApi = async (email) => {
+  try {
+      const response = await axiosInstance.post("/api/users/forgot-password-email", { email });
+      return response.data;
+  } catch (error) {
+      console.error("Lỗi yêu cầu quên mật khẩu:", error.response?.data || error.message);
+      throw error;
+  }
+};
+
+export const submitRating = async (ratingData) => {
+  try {
+    // Gửi dữ liệu đánh giá đến endpoint /api/ratings, withCredentials đảm bảo gửi cookie xác thực
+    const response = await axiosInstance.post("/api/users/insert-ratings", ratingData);
+    return response.data; // Giả sử trả về { message, rating }
+  } catch (error) {
+    throw error.response && error.response.data.message
+      ? error.response.data.message
+      : error.message;
   }
 };

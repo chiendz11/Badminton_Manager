@@ -4,43 +4,75 @@ const { Schema, model } = mongoose;
 const bookingSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
   centerId: { type: Schema.Types.ObjectId, ref: "Center", required: true, index: true },
-  billId: { type: Schema.Types.ObjectId, ref: "Bill", index: true, sparse: true },
   courts: [
     {
       courtId: { type: Schema.Types.ObjectId, ref: "Court", required: true },
       timeslots: [{ type: Number, required: true }]
     }
   ],
-  date: { type: String, required: true, index: true },
-  status: { type: String, enum: ["pending", "booked"], default: "pending", index: true },
+  date: { type: Date, required: true, index: true },
+  // Status: pending, paid, cancelled
+  status: {
+    type: String,
+    enum: ["pending", "paid", "cancelled"],
+    default: "pending",
+    index: true
+  },
   expiresAt: { type: Date, default: null },
-  createdAt: { type: Date, default: Date.now, index: true }
+  // Tổng tiền (tính từ pricing của center)
+  totalAmount: { type: Number, required: true },
+  createdAt: { type: Date, default: Date.now, index: true },
+
+  // Các trường dành cho đơn đã thanh toán/hủy (bill)
+  paymentMethod: { type: String, default: "" },
+  // Đổi tên trường từ billCode thành bookingCode
+  bookingCode: { type: String, unique: true, sparse: true, default: null, index: true },
+  type: { type: String, enum: ["fixed", "daily"], default: "daily", index: true },
+  note: { type: String, default: "" },
+  paymentImage: { type: Buffer, default: null },
+  imageType: { type: String, default: "image/jpeg" },
+  pointEarned: { type: Number, default: 0 }
 });
 
-bookingSchema.pre("save", function (next) {
-  if (this.date) {
-    let maxSlot = -Infinity;
-    this.courts.forEach(court => {
-      court.timeslots.forEach(slot => {
-        if (slot > maxSlot) maxSlot = slot;
+// Middleware pre("save"):
+bookingSchema.pre("save", async function (next) {
+  // Nếu đơn đang pending, thiết lập expiresAt (ví dụ: 5 phút kể từ createdAt)
+  if (this.status === "pending") {
+    if (this.date) {
+      let maxSlot = -Infinity;
+      this.courts.forEach(court => {
+        court.timeslots.forEach(slot => {
+          if (slot > maxSlot) maxSlot = slot;
+        });
       });
-    });
-    if (maxSlot !== -Infinity) {
-      if (this.status === "pending") {
-        // TTL cho pending: ví dụ 1 phút (có thể điều chỉnh)
+      if (maxSlot !== -Infinity) {
         this.expiresAt = new Date(this.createdAt.getTime() + 5 * 60 * 1000);
-      } else if (this.status === "booked") {
-        // Với booked: expiresAt là thời gian bắt đầu của timeslot lớn nhất
-        // Chúng ta sử dụng định dạng ISO với offset +07:00 cho giờ Việt Nam
-        const hourStr = maxSlot.toString().padStart(2, "0");
-        this.expiresAt = new Date(`${this.date}T${hourStr}:00:00.000+07:00`);
+      }
+    }
+  } else {
+    // Với các đơn không pending (paid, cancelled), không thiết lập expiresAt
+    this.expiresAt = null;
+    // Nếu đơn không pending và chưa có bookingCode, tự tạo bookingCode
+    if (!this.bookingCode) {
+      let isUnique = false;
+      while (!isUnique) {
+        const now = new Date();
+        const formattedDate = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 12);
+        const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+        const newBookingCode = `#Bill${formattedDate}${randomSuffix}`;
+        const existingBooking = await mongoose.models.Booking.findOne({ bookingCode: newBookingCode });
+        if (!existingBooking) {
+          this.bookingCode = newBookingCode;
+          isUnique = true;
+        }
       }
     }
   }
   next();
 });
 
-// TTL index: tự động xóa các document khi expiresAt hết hạn
+// TTL index chỉ áp dụng cho các đơn pending (expiresAt khác null)
 bookingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export default model("Booking", bookingSchema);
+const Booking = mongoose.models.Booking || model("Booking", bookingSchema);
+export default Booking;

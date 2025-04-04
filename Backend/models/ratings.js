@@ -33,8 +33,6 @@ const RatingSchema = new mongoose.Schema(
   }
 );
 
-// Đảm bảo một user chỉ đánh giá 1 lần trên mỗi center
-RatingSchema.index({ center: 1, user: 1 }, { unique: true });
 
-const Rating = mongoose.model("Rating", RatingSchema);
+const Rating = mongoose.model("Rating", RatingSchema) || model("Rating", RatingSchema);
 export default Rating;

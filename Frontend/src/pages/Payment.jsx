@@ -1,31 +1,45 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { clearAllPendingBookings, confirmBooking, createBill } from "../apis/booking";
+import { clearAllPendingBookings, confirmBooking } from "../apis/booking";
 import { Copy, Clock, AlertTriangle, Upload, User, Phone, Hash, Calendar, DollarSign } from "lucide-react";
 import SessionExpired from "../components/SessionExpired";
 import BookingHeader from "../components/BookingHeader";
 import { AuthContext } from "../contexts/AuthContext";
+import { fetchUserInfo } from "../apis/users";
 
 const PaymentPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
 
   // Lấy thông tin user
   const userId = user?._id || "000000000000000000000001";
   const centerId = state?.centerId || localStorage.getItem("centerId") || "67ca6e3cfc964efa218ab7d7";
-  const initialDate = state?.date || localStorage.getItem("date") || new Date().toISOString().split("T")[0];
+  const initialDate = state?.date || localStorage.getItem("selectedDate") || new Date().toISOString().split("T")[0];
   const totalPrice = state?.total || Number(localStorage.getItem("totalAmount")) || 0;
+  const bookingCode = state?.bookingCode || localStorage.getItem("bookingId") || "BK123456";
+  // Lấy tên trung tâm từ localStorage (đã được lưu từ trang Centers)
+  const centerName = localStorage.getItem("centerName") || "Tên Trung Tâm Mặc Định";
 
   // State
   const [selectedDate] = useState(initialDate);
   const [timeLeft, setTimeLeft] = useState(300);
   const [showCopied, setShowCopied] = useState(false);
   const [paymentImageBase64, setPaymentImageBase64] = useState("");
-  const [note, setNote] = useState(""); // <--- Thêm state note
-
+  const [note, setNote] = useState(""); // Ghi chú cho chủ sân
+  // Lấy slotGroups đã lưu từ trang booking
+  const [slotGroups, setSlotGroups] = useState([]);
+  const [showQrModal, setShowQrModal] = useState(false); // State hiển thị modal QR
   // Ref cho input file
   const paymentFileInputRef = useRef(null);
+
+  // Khi component mount, lấy slotGroups từ localStorage
+  useEffect(() => {
+    const storedGroups = localStorage.getItem("slotGroups");
+    if (storedGroups) {
+      setSlotGroups(JSON.parse(storedGroups));
+    }
+  }, []);
 
   // Clear pending bookings khi load
   useEffect(() => {
@@ -33,7 +47,7 @@ const PaymentPage = () => {
       try {
         await clearAllPendingBookings({ userId, centerId });
       } catch (error) {
-        console.error("Error clearing pending bookings on mount:", error);
+        console.error("Lỗi xóa pending bookings khi mount:", error);
       }
     };
     clearAll();
@@ -81,21 +95,18 @@ const PaymentPage = () => {
     return cleanup;
   }, []);
 
-  // formatTime
   const formatTime = (t) => {
     const m = Math.floor(t / 60);
     const s = t % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Copy account
   const handleCopyAccount = () => {
     navigator.clipboard.writeText("0982451906");
     setShowCopied(true);
     setTimeout(() => setShowCopied(false), 1500);
   };
 
-  // Upload payment image
   const handlePaymentImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -117,7 +128,7 @@ const PaymentPage = () => {
           navigate("/");
         })
         .catch((err) => {
-          console.error("Error clearing pending bookings on back button:", err);
+          console.error("Lỗi khi xóa pending bookings khi back:", err);
           navigate("/");
         });
     };
@@ -125,55 +136,51 @@ const PaymentPage = () => {
     return () => window.removeEventListener("popstate", handlePopState);
   }, [navigate, userId, centerId]);
 
-  // Clear pending khi unmount
+  // Clear pending bookings khi unmount
   useEffect(() => {
     return () => {
       clearAllPendingBookings({ userId, centerId })
         .then(() => {
           localStorage.removeItem("paymentStartTime");
         })
-        .catch((err) => console.error("Error clearing pending bookings on unmount:", err));
+        .catch((err) => console.error("Lỗi khi xóa pending bookings khi unmount:", err));
     };
   }, [userId, centerId]);
 
-  // Nếu hết giờ => SessionExpired
   if (timeLeft === 0) {
     return <SessionExpired />;
   }
 
-  // Xác nhận booking
+  // Xác nhận booking và thanh toán
   const handleConfirmOrder = async () => {
     try {
-      // 1. Confirm booking
-      const { success, booking } = await confirmBooking({
+      // 1. Xác nhận booking, gửi note kèm theo
+      const { success } = await confirmBooking({
         userId,
         centerId,
-        date: selectedDate,
+        date: initialDate,
         totalPrice,
-        note, // <--- Gửi note kèm request
+        paymentImage: paymentImageBase64, // Truyền ảnh thanh toán trực tiếp vào confirmBooking
+        note
       });
+
       if (!success) {
         alert("Xác nhận booking thất bại.");
         return;
       }
-      // 2. Tạo bill
-      const billPayload = {
-        userId,
-        centerId,
-        bookingId: booking._id,
-        totalAmount: totalPrice,
-        paymentImage: paymentImageBase64, // Dạng data URL, backend sẽ chuyển đổi nếu cần
-        note, // Nếu bạn muốn lưu note riêng trong bill, truyền note vào billPayload
-      };
-      const billRes = await createBill(billPayload);
-      if (billRes.success) {
-        alert("Đơn hàng và Bill đã được tạo thành công!");
-      } else {
-        alert("Đơn hàng đã booked, nhưng tạo Bill thất bại!");
-      }
+
+      alert("Đặt sân thành công!");
+
+      // Xóa thời gian đếm ngược trong localStorage
       localStorage.removeItem("paymentStartTime");
       localStorage.removeItem("bookingExpiresAt");
+
+      // Điều hướng về trang chủ
       navigate("/");
+
+      // Cập nhật dữ liệu user sau khi booking thành công
+      const updatedUserData = await fetchUserInfo(); // API này trả về dữ liệu user cập nhật
+      setUser(updatedUserData.user);
     } catch (error) {
       alert("Lỗi khi xác nhận booking: " + error.message);
     }
@@ -188,7 +195,7 @@ const PaymentPage = () => {
       <div className="flex flex-1 p-4 lg:p-6 gap-6 max-w-7xl mx-auto w-full">
         {/* Left column: Payment information */}
         <div className="flex-1 flex flex-col gap-5">
-          {/* Bank account card */}
+          {/* Thẻ thông tin ngân hàng */}
           <div className="bg-green-700 rounded-lg shadow-lg overflow-hidden">
             <div className="bg-green-600 px-4 py-3 border-b border-green-500">
               <h2 className="text-lg font-bold flex items-center gap-2 text-yellow-300">
@@ -228,7 +235,7 @@ const PaymentPage = () => {
                 </div>
               </div>
               <div className="flex-shrink-0">
-                <div className="bg-white p-2 rounded-lg">
+                <div className="bg-white p-2 rounded-lg cursor-pointer" onClick={() => setShowQrModal(true)}>
                   <img
                     src="/images/Tiền.jpg"
                     alt="QR Code for payment"
@@ -257,8 +264,7 @@ const PaymentPage = () => {
           {/* Note */}
           <div className="bg-green-700 bg-opacity-50 p-4 rounded-md border border-green-600">
             <p className="text-sm text-yellow-200 italic">
-              After transferring, please check your booking status in the "Account" tab until the
-              owner confirms your booking.
+              After transferring, please check your booking status in the "Account" tab until the owner confirms your booking.
             </p>
           </div>
 
@@ -268,14 +274,10 @@ const PaymentPage = () => {
               <Clock size={18} />
               <p>Your booking will expire in:</p>
             </div>
-            <h3
-              className={`text-3xl font-bold ${timeLeft < 60 ? "text-red-400" : "text-yellow-300"}`}
-            >
+            <h3 className={`text-3xl font-bold ${timeLeft < 60 ? "text-red-400" : "text-yellow-300"}`}>
               {formatTime(timeLeft)}
             </h3>
           </div>
-
-
 
           {/* Image upload section */}
           <div className="mt-4">
@@ -286,10 +288,7 @@ const PaymentPage = () => {
               <div className="flex-1 min-w-[200px]">
                 <p className="text-sm text-yellow-300 mb-2">Payment Confirmation Image *</p>
                 <label
-                  className={`border-2 ${paymentImageBase64
-                    ? "border-green-500"
-                    : "border-yellow-500 border-dashed"
-                    } rounded-lg h-48 flex flex-col items-center justify-center text-center p-2 cursor-pointer transition-colors hover:bg-green-700`}
+                  className={`border-2 ${paymentImageBase64 ? "border-green-500" : "border-yellow-500 border-dashed"} rounded-lg h-48 flex flex-col items-center justify-center text-center p-2 cursor-pointer transition-colors hover:bg-green-700`}
                 >
                   {paymentImageBase64 ? (
                     <img
@@ -314,6 +313,7 @@ const PaymentPage = () => {
               </div>
             </div>
           </div>
+
           {/* Ghi chú cho chủ sân */}
           <div className="mt-4">
             <label className="block text-white font-semibold mb-2">
@@ -327,6 +327,7 @@ const PaymentPage = () => {
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
+
           {/* Confirm button */}
           <div className="mt-auto pt-6">
             <button
@@ -339,13 +340,14 @@ const PaymentPage = () => {
           </div>
         </div>
 
-        {/* Right column: Booking information */}
+        {/* Right column: Booking summary */}
         <div className="w-80 hidden md:block">
           <div className="bg-green-900 rounded-lg shadow-lg overflow-hidden sticky top-20">
             <div className="bg-green-700 px-4 py-3 border-b border-green-600">
               <h2 className="font-bold flex items-center gap-2">Booking Summary</h2>
             </div>
             <div className="p-5 flex flex-col gap-4">
+              {/* Hiển thị tên khách hàng */}
               <div className="flex items-center gap-3">
                 <User size={18} className="text-green-400" />
                 <div>
@@ -353,6 +355,7 @@ const PaymentPage = () => {
                   <p className="font-medium">{user?.name || "Loading..."}</p>
                 </div>
               </div>
+              {/* Hiển thị số điện thoại */}
               <div className="flex items-center gap-3">
                 <Phone size={18} className="text-green-400" />
                 <div>
@@ -360,21 +363,43 @@ const PaymentPage = () => {
                   <p className="font-medium">{user?.phone_number || "Loading..."}</p>
                 </div>
               </div>
+              {/* Mã booking */}
               <div className="flex items-center gap-3">
                 <Hash size={18} className="text-green-400" />
                 <div>
                   <p className="text-gray-300 text-xs">Booking Code</p>
-                  <p className="font-medium">#646</p>
+                  <p className="font-medium">{bookingCode}</p>
                 </div>
               </div>
+              {/* Hiển thị tên trung tâm */}
+              <div className="flex items-center gap-3">
+                <i className="fas fa-building text-green-400"></i>
+                <div>
+                  <p className="text-gray-300 text-xs">Center Name</p>
+                  <p className="font-medium">{centerName}</p>
+                </div>
+              </div>
+              {/* Booking details: Nếu có slotGroups thì hiển thị tiêu đề "Sân và Thời Gian:" và danh sách từng nhóm */}
               <div className="flex items-start gap-3">
                 <Calendar size={18} className="text-green-400" />
                 <div>
                   <p className="text-gray-300 text-xs">Booking Details</p>
-                  <p className="font-medium">{selectedDate}</p>
+                  {slotGroups.length > 0 ? (
+                    <>
+                      <p className="font-medium">Sân và Thời Gian:</p>
+                      {slotGroups.map((group, idx) => (
+                        <p key={idx} className="font-medium">
+                          ~ {group.courtName} - {group.timeStr} ~
+                        </p>
+                      ))}
+                    </>
+                  ) : (
+                    <p className="font-medium">{selectedDate}</p>
+                  )}
                 </div>
               </div>
               <div className="h-px bg-green-700 my-2"></div>
+              {/* Hiển thị tổng tiền */}
               <div className="flex items-center gap-3">
                 <DollarSign size={18} className="text-yellow-400" />
                 <div>
@@ -384,6 +409,7 @@ const PaymentPage = () => {
                   </p>
                 </div>
               </div>
+              {/* Hiển thị payment required */}
               <div className="flex items-start gap-3">
                 <AlertTriangle size={18} className="text-yellow-400" />
                 <div>
@@ -415,6 +441,24 @@ const PaymentPage = () => {
           }
         }}
       />
+      {/* Modal hiển thị QR Code */}
+      {showQrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative bg-white p-4 rounded-lg">
+            <button
+              onClick={() => setShowQrModal(false)}
+              className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
+            >
+              &#10005;
+            </button>
+            <img
+              src="/images/Tiền.jpg"
+              alt="QR Code for payment"
+              className="max-w-full max-h-[80vh]"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

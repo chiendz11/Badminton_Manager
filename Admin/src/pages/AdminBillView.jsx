@@ -11,8 +11,11 @@ const AdminBillView = () => {
     useEffect(() => {
       const fetchBill = async () => {
         try {
-          // Gọi API để lấy bill theo billId
-          const res = await axios.get(`http://localhost:3000/api/booking/${billId}`, { withCredentials: true });
+          // Gọi API để lấy bill theo billId thông qua query parameter
+          const res = await axios.get("http://localhost:3000/api/booking/getBillById", {
+            withCredentials: true,
+            params: { billId }
+          });
           setBill(res.data.bill);
         } catch (error) {
           console.error("Error fetching bill:", error);
@@ -20,9 +23,12 @@ const AdminBillView = () => {
           setLoading(false);
         }
       };
-  
-      fetchBill();
+    
+      if (billId) {
+        fetchBill();
+      }
     }, [billId]);
+    
   
     if (loading) return <div>Loading bill...</div>;
     if (!bill) return <div>Bill not found.</div>;

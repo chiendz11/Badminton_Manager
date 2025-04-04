@@ -5,8 +5,10 @@ import {
   bookedBookingInDB,
   clearAllPendingBookings,
   getFullPendingMapping,
-  createBillService,
-  getBillService
+  getBookingImageService,
+  cancelBookingService,
+  getPopularTimeSlot,
+  getBookingHistory
 } from "../services/bookingServices.js";
 import Booking from "../models/bookings.js"; // Cho hàm checkPendingExists
 
@@ -23,8 +25,8 @@ export const togglePendingTimeslotController = async (req, res) => {
 
 export const pendingBookingToDBController = async (req, res) => {
   try {
-    const { userId, centerId, date } = req.body;
-    const booking = await pendingBookingToDB(userId, centerId, date);
+    const { userId, centerId, date, totalAmount } = req.body;
+    const booking = await pendingBookingToDB(userId, centerId, date, totalAmount);
     res.json({ success: true, booking });
   } catch (error) {
     console.error("Error confirming booking to DB (Controller):", error);
@@ -34,11 +36,21 @@ export const pendingBookingToDBController = async (req, res) => {
 
 export const bookedBookingInDBController = async (req, res) => {
   try {
-    const { userId, centerId, date, totalPrice } = req.body;
-    const booking = await bookedBookingInDB(userId, centerId, date, totalPrice);
-    res.json({ success: true, booking });
+    const { userId, centerId, date, totalAmount, paymentImage, note } = req.body;
+
+    // Gọi service để cập nhật booking từ pending -> paid
+    const result = await bookedBookingInDB({
+      userId,
+      centerId,
+      date,
+      totalAmount,
+      paymentImage,
+      note
+    });
+
+    res.json({ success: true, booking: result.booking, totalPoints: result.totalPoints, pointsEarned: result.pointsEarned });
   } catch (error) {
-    console.error("Error confirming booking in DB (Controller):", error);
+    console.error("Lỗi khi xác nhận thanh toán booking (Controller):", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
@@ -70,15 +82,20 @@ export const getPendingMappingController = async (req, res) => {
   }
 };
 
-export const checkPendingExistsController = async (req, res) => {
+export const checkPendingExistsController = async (req, res) => { 
   try {
-    const { userId, centerId} = req.query;
-    const exists = await Booking.findOne({
+    const { userId, centerId } = req.query;
+    // Tìm một pending booking dựa vào userId và centerId
+    const pendingBooking = await Booking.findOne({
       userId,
       centerId,
       status: "pending"
     });
-    res.json({ success: true, exists: !!exists });
+    res.json({ 
+      success: true, 
+      exists: !!pendingBooking, 
+      booking: pendingBooking 
+    });
   } catch (error) {
     console.error("Error checking pending booking existence (Controller):", error);
     res.status(500).json({ success: false, error: error.message });
@@ -86,26 +103,59 @@ export const checkPendingExistsController = async (req, res) => {
 };
 
 
-export const createBillController = async (req, res) => {
+
+export const getBookingImageController = async (req, res) => {
   try {
-    const { userId, centerId, bookingId, totalAmount, paymentImage } = req.body;
-    const bill = await createBillService({ userId, centerId, bookingId, totalAmount, paymentImage });
-    return res.status(201).json({ success: true, bill });
+    const { bookingId } = req.params;
+    const booking = await getBookingImageService(bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found" });
+    }
+    return res.status(200).json({ success: true, booking });
   } catch (error) {
-    console.error("Error creating bill:", error);
-    return res.status(500).json({ success: false, message: "Error creating bill" });
+    console.error("Error getting booking:", error);
+    return res.status(500).json({ success: false, message: "Error getting booking" });
   }
 };
-export const getBillController = async (req, res) => {
+
+;
+
+export const cancelBookingController = async (req, res) => {
   try {
-    const { billId } = req.params;
-    const bill = await getBillService(billId);
-    if (!bill) {
-      return res.status(404).json({ success: false, message: "Bill not found" });
-    }
-    return res.status(200).json({ success: true, bill });
+    const userId = req.user._id; // Lấy từ authMiddleware
+
+    const result = await cancelBookingService(userId);
+    res.status(200).json({
+      success: true,
+      message: "Xóa booking pending thành công",
+      ...result,
+    });
   } catch (error) {
-    console.error("Error getting bill:", error);
-    return res.status(500).json({ success: false, message: "Error getting bill" });
+    console.error("Error in cancelBookingController:", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+export const getPopularTimeSlotController = async (req, res) => {
+  try {
+    // Lấy userId từ req.user (được thiết lập bởi auth middleware)
+    const userId = req.user._id;
+    const result = await getPopularTimeSlot(userId);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    console.error("Error in getPopularTimeSlotController:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const getBookingHistoryController = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const history = await getBookingHistory(userId);
+    return res.status(200).json({ success: true, bookingHistory: history });
+  } catch (error) {
+    console.error("Error getting booking history:", error);
+    return res.status(500).json({ success: false, message: error?.message || "Lỗi server" });
   }
 };

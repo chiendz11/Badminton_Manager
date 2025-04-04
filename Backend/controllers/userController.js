@@ -1,123 +1,22 @@
-// Ví dụ: src/controllers/userController.js
-import axios from 'axios';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from '../models/Users.js';
+// src/controllers/userController.js
+import { insertRatingService, forgotPasswordByEmailService, registerUserService, loginUserService, updateUserService, updateUserPasswordService, getChartService, getUserBookingStats } from "../services/userServices.js";
+import jwt from "jsonwebtoken";
 
-// Hàm kiểm tra email với Hunter.io API
-const checkEmailExists = async (email) => {
-  const apiKey = "b70f4eb3ad5581c2dafeffb3a8583b75fe275225";
-  const url = `https://api.hunter.io/v2/email-verifier?email=${email}&api_key=${apiKey}`;
-  try {
-    const response = await axios.get(url);
-    const data = response.data.data;
-    // Nếu status là "invalid", "disposable" hoặc "block", trả về lỗi
-    if (data.status === "invalid") {
-      return { success: false, message: "Email không hợp lệ hoặc không tồn tại!" };
-    }
-    if (data.disposable) {
-      return { success: false, message: "Email này là email tạm thời (disposable)!" };
-    }
-    if (data.block) {
-      return { success: false, message: "Email bị chặn hoặc thuộc danh sách đen!" };
-    }
-    // Nếu score thấp (ví dụ dưới 50), coi là không đáng tin cậy
-    if (data.score < 50) {
-      return { success: false, message: "Email không tồn tại hoặc không đáng tin cậy!" };
-    }
-    return {
-      success: true,
-      message: `Email hợp lệ! (Độ tin cậy: ${data.score}%)`
-    };
-  } catch (error) {
-    console.error("❌ Lỗi kiểm tra email:", error.response?.data || error.message);
-    return { success: false, message: "Lỗi hệ thống khi kiểm tra email!" };
-  }
+// Hàm tạo token (có thể để trong service, nhưng ta đặt ở đây để dễ sử dụng)
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
 
-// Đăng ký user
-export const registerUser = async (req, res) => {
-  console.log("📩 Dữ liệu từ frontend:", req.body);
+/**
+ * Controller đăng ký user
+ */
+export const registerUserController = async (req, res) => {
   try {
-    const { name, email, phone_number, address, username, password, avatar_image_path } = req.body;
-    const errors = {};
-
-    // 1. Kiểm tra dữ liệu đầu vào
-    if (!name || !name.trim()) {
-      errors.name = "Vui lòng nhập Họ và tên";
-    }
-    if (!email || !email.trim()) {
-      errors.email = "Vui lòng nhập Email";
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      errors.email = "Email không hợp lệ";
-    }
-    if (!phone_number || !phone_number.trim()) {
-      errors.phone_number = "Vui lòng nhập Số điện thoại";
-    }
-    if (!address || !address.trim()) {
-      errors.address = "Vui lòng nhập Địa chỉ";
-    }
-    if (!username || !username.trim()) {
-      errors.username = "Vui lòng nhập Tên đăng nhập";
-    }
-    if (!password) {
-      errors.password = "Vui lòng nhập Mật khẩu";
-    }
-    if (password && password.length < 6) {
-      errors.password = "Mật khẩu phải có ít nhất 6 ký tự!";
-    }
-
-    // Nếu có lỗi từ dữ liệu đầu vào, chúng ta không cần kiểm tra tiếp
-    // Tuy nhiên, nếu bạn muốn kiểm tra đồng thời tất cả lỗi, bạn có thể tiếp tục
-    // Nhưng hãy cẩn trọng vì gọi API Hunter.io có thể mất thời gian.
-    
-    // 2. Kiểm tra email với Hunter.io API
-    const emailCheckResult = await checkEmailExists(email);
-    if (!emailCheckResult.success) {
-      // Ghi đè lỗi email nếu đã có lỗi từ bước 1 hoặc thêm mới nếu chưa có
-      errors.email = emailCheckResult.message;
-    }
-
-    // 3. Kiểm tra sự tồn tại của email, số điện thoại và username
-    const [emailExists, phoneExists, usernameExists] = await Promise.all([
-      User.findOne({ email }),
-      User.findOne({ phone_number }),
-      User.findOne({ username })
-    ]);
-
-    if (emailExists) {
-      errors.email = "Email đã được sử dụng!";
-    }
-    if (phoneExists) {
-      errors.phone_number = "Số điện thoại đã được sử dụng!";
-    }
-    if (usernameExists) {
-      errors.username = "Tên đăng nhập đã được sử dụng!";
-    }
-
-    // Nếu có bất kỳ lỗi nào, trả về đồng thời
-    if (Object.keys(errors).length > 0) {
-      return res.status(400).json({ errors });
-    }
-
-    // 4. Hash mật khẩu
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // 5. Tạo user mới
-    const user = await User.create({
-      name,
-      email,
-      phone_number,
-      address,
-      username,
-      password_hash: hashedPassword,
-      avatar_image_path: avatar_image_path || ""
-    });
-
-    // 6. Trả về thông tin user & token
-    return res.status(201).json({
-      _id: user.id,
+    console.log("📩 Dữ liệu từ frontend:", req.body);
+    const user = await registerUserService(req.body);
+    const token = generateToken(user._id);
+    res.status(201).json({
+      _id: user._id,
       name: user.name,
       email: user.email,
       phone_number: user.phone_number,
@@ -125,58 +24,34 @@ export const registerUser = async (req, res) => {
       username: user.username,
       avatar_image_path: user.avatar_image_path,
       registration_date: user.registration_date,
-      token: generateToken(user.id),
+      token,
       message: "Đăng ký thành công!"
     });
   } catch (error) {
     console.error("❌ Lỗi server khi đăng ký:", error);
-    return res.status(500).json({ message: "Lỗi server, vui lòng thử lại sau!" });
+    if (error.status === 400 && error.errors) {
+      res.status(400).json({ errors: error.errors });
+    } else {
+      res.status(500).json({ message: "Lỗi server, vui lòng thử lại sau!" });
+    }
   }
 };
 
-
-export const getUserById = async (req, res) => {
-    const { userId } = req.query; // Lấy userId từ query parameter
-    try {
-        const user = await User.findById(userId); // Truy vấn vào database
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-        // Trả về các trường cần thiết
-        res.json({ name: user.name, phone: user.phone_number });
-    } catch (error) {
-        console.error("Error fetching user:", error);
-        res.status(500).json({ error: "Internal server error" });
-    }
-};
-
-// Hàm tạo token với payload chứa id và role
-const generateToken = (user) => {
-  return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
-};
-  
-export const loginUser = async (req, res) => {
+/**
+ * Controller đăng nhập user
+ */
+export const loginUserController = async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ username và password!" });
     }
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ message: "User không tồn tại!" });
-    }
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: "Sai username hoặc password!" });
-    }
-    const token = generateToken(user);
-    console.log("Token generated:", token);
-    // Set token vào cookie HTTP‑only
+    const { user, token } = await loginUserService(username, password);
     res.cookie("token", token, {
-      httpOnly: false, // cho dev để xem cookie qua document.cookie
-      secure: false,   // không bắt buộc HTTPS khi phát triển
-      sameSite: "Lax", // Lax cho phép gửi cookie qua link chuyển hướng, Strict thì hạn chế hơn
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
+      httpOnly: false,
+      secure: false,
+      sameSite: "Lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
       success: true,
@@ -195,26 +70,71 @@ export const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error("Lỗi server khi đăng nhập:", error);
-    res.status(500).json({ message: "Lỗi server, vui lòng thử lại sau!" });
+    // Nếu lỗi là do xác thực, trả về 401, nếu không trả về 500
+    const statusCode = (error.message === "Sai username hoặc password!" || error.message === "User không tồn tại!") ? 401 : 500;
+    res.status(statusCode).json({ message: error.message });
   }
 };
 
+
+/**
+ * Controller lấy thông tin user (dùng trong AuthContext)
+ */
 export const getUserInfoController = async (req, res) => {
   try {
     if (!req.user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
-    res.json({ success: true, user: req.user });
+    res.status(200).json({ success: true, user: req.user });
   } catch (error) {
     console.error("Error in getUserInfoController:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// src/controllers/userController.js
+/**
+ * Controller cập nhật thông tin user
+ */
+export const updateUserController = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const updatedUser = await updateUserService(userId, req.body);
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, user: updatedUser });
+  } catch (error) {
+    console.error("Error in updateUserController:", error);
+    next(error);
+  }
+};
+
+/**
+ * Controller cập nhật mật khẩu user
+ */
+export const updateUserPasswordController = async (req, res) => {
+  try {
+    const user = req.user;
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: "Vui lòng nhập đủ thông tin" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: "Mật khẩu mới phải có ít nhất 6 ký tự" });
+    }
+    await updateUserPasswordService(user, oldPassword, newPassword);
+    res.status(200).json({ success: true, message: "Đổi mật khẩu thành công" });
+  } catch (error) {
+    console.error("Error in updateUserPasswordController:", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * Controller đăng xuất
+ */
 export const logoutController = (req, res) => {
   try {
-    // Xóa cookie "token" đã được set khi đăng nhập
     res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -224,5 +144,61 @@ export const logoutController = (req, res) => {
   } catch (error) {
     console.error("Logout error:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getChartController = async (req, res) => {
+  // User được gán vào req.user bởi middleware protect
+  const userId = req.user._id;
+  try {
+    const months = await getChartService(userId);
+    return res.json({ success: true, chartData: months });
+  } catch (error) {
+    console.error("Error in getChartDataController:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getDetailedBookingStatsController = async (req, res) => {
+  try {
+    const period = req.query.period || "month"; // week, month, year
+    const userId = req.user._id; // Lấy từ middleware protect
+    const stats = await getUserBookingStats(userId, period);
+    res.json({ success: true, stats });
+  } catch (error) {
+    console.error("Error in getDetailedBookingStatsController:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const forgotPasswordByEmailController = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const result = await forgotPasswordByEmailService(email);
+    res.status(result.success ? 200 : 404).json(result);
+  } catch (error) {
+    console.error("Lỗi quên mật khẩu bằng email:", error);
+    res.status(500).json({ success: false, message: "Đã xảy ra lỗi khi xử lý yêu cầu." });
+  }
+};
+
+// Thêm đánh giá từ người dùng
+export const insertRating = async (req, res) => {
+  try {
+    const { centerId, stars, comment } = req.body;
+    // Lấy userId từ thông tin user đã được middleware set vào req.user
+    const userId = req.user._id;
+
+    // Gọi service để xử lý logic thêm đánh giá
+    const newRating = await insertRatingService({ centerId, userId, stars, comment });
+
+    res.status(201).json({ message: "Đánh giá thành công!", rating: newRating });
+  } catch (error) {
+    console.error("❌ Lỗi khi thêm đánh giá:", error);
+    if (error.status) {
+      return res.status(error.status).json({ message: error.message });
+    }
+    res.status(500).json({ message: "Lỗi server!" });
   }
 };
