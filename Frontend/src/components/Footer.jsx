@@ -52,9 +52,9 @@ const Footer = () => {
           <div className="footer-categories">
             <h3>Khám phá</h3>
             <ul className="footer-links">
-              <li><Link to="/fields/5">Sân 5 người</Link></li>
-              <li><Link to="/fields/7">Sân 7 người</Link></li>
-              <li><Link to="/fields/11">Sân 11 người</Link></li>
+              <li><Link to="/Center/5">Sân 5 người</Link></li>
+              <li><Link to="/Center/7">Sân 7 người</Link></li>
+              <li><Link to="/Center/11">Sân 11 người</Link></li>
               <li><Link to="/promotions">Khuyến mãi</Link></li>
               <li><Link to="/blog">Tin tức cầu lông</Link></li>
             </ul>

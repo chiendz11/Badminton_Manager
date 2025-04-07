@@ -13,3 +13,4 @@ export async function authenticateAdmin(username, password) {
   const { _id, username: uname, role, avatar, centers, createdAt, updatedAt } = admin;
   return { _id, username: uname, role, avatar, centers, createdAt, updatedAt };
 }
+

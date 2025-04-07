@@ -1,5 +1,4 @@
-const Rating = require("../models/Ratings");
-const Center = require("../models/Centers");
+import ratingService from '../services/ratingService.js';
 
 // Thêm đánh giá từ người dùng
 const insertRating = async (req, res) => {
@@ -41,5 +40,52 @@ const insertRating = async (req, res) => {
   } catch (error) {
     console.error("❌ Lỗi khi thêm đánh giá:", error);
     res.status(500).json({ message: "Lỗi server!" });
+  }
+};
+
+export const updateRating = async (req, res) => {
+  try {
+    const ratingId = req.params.id;
+    const updatedRating = await ratingService.updateRating(ratingId, req.body);
+    if (!updatedRating) {
+      return res.status(404).json({ message: "Không tìm thấy đánh giá!" });
+    }
+    res.status(200).json({ message: "Cập nhật đánh giá thành công!", rating: updatedRating });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const deleteRating = async (req, res) => {
+  try {
+    const ratingId = req.params.id;
+    const deletedRating = await ratingService.deleteRating(ratingId);
+    if (!deletedRating) {
+      return res.status(404).json({ message: "Không tìm thấy đánh giá!" });
+    }
+    res.status(200).json({ message: "Xóa đánh giá thành công!" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const getAllRatings = async (req, res) => {
+  try {
+    const ratings = await ratingService.getAllRatings();
+    res.status(200).json(ratings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getRatingById = async (req, res) => {
+  try {
+    const rating = await ratingService.getRatingById(req.params.id);
+    if (!rating) {
+      return res.status(404).json({ message: "Không tìm thấy đánh giá!" });
+    }
+    res.status(200).json(rating);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
