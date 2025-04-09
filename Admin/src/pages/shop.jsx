@@ -1,19 +1,15 @@
 // src/pages/Shop.jsx
 import React, { useState, useEffect } from 'react';
 import { getInventories } from '../apis/inventoriesAPI.js';
-import pic1 from '../image/pic1.jpg';
 import AdminLayout from '../components/AdminLayout.jsx';
 
-// Các style theo inline style (bạn có thể chuyển sang CSS hoặc Tailwind nếu muốn)
+// Các style cải tiến (không dùng background image có sẵn)
 const containerStyle = {
   width: '100vw',
-  height: '100vh',
+  minHeight: '100vh',
   padding: '2rem',
   fontFamily: 'Arial, sans-serif',
-  backgroundImage: `url(${pic1})`,
-  backgroundRepeat: 'no-repeat',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
+  background: 'linear-gradient(135deg, #f5f7fa, #c3cfe2)',
   boxSizing: 'border-box',
   overflowY: 'auto',
 };
@@ -21,9 +17,10 @@ const containerStyle = {
 const productContainerStyle = {
   maxWidth: '1200px',
   margin: '0 auto',
-  backgroundColor: 'rgba(255,255,255,0.95)',
+  backgroundColor: 'rgba(255,255,255,0.98)',
   borderRadius: '8px',
   padding: '2rem',
+  boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
 };
 
 const headerStyle = {
@@ -35,6 +32,7 @@ const headerStyle = {
 const mainContentStyle = {
   display: 'flex',
   gap: '2rem',
+  flexWrap: 'wrap',
 };
 
 const productListContainerStyle = {
@@ -43,7 +41,7 @@ const productListContainerStyle = {
 
 const productListStyle = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
   gap: '1rem',
   listStyle: 'none',
   padding: 0,
@@ -51,10 +49,16 @@ const productListStyle = {
 };
 
 const productItemStyle = {
-  border: '1px solid #ccc',
+  border: '1px solid #e0e0e0',
   borderRadius: '6px',
   padding: '1rem',
   backgroundColor: '#fff',
+  transition: 'transform 0.2s',
+  boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+};
+
+const productItemHover = {
+  transform: 'scale(1.02)',
 };
 
 const productImageStyle = {
@@ -62,6 +66,7 @@ const productImageStyle = {
   height: '150px',
   objectFit: 'cover',
   marginBottom: '0.5rem',
+  borderRadius: '4px',
 };
 
 const paginationStyle = {
@@ -78,11 +83,12 @@ const buttonStyle = {
   border: '1px solid #007bff',
   backgroundColor: '#007bff',
   color: '#fff',
+  transition: 'background-color 0.2s',
 };
 
 const cartContainerStyle = {
   flex: 1,
-  backgroundColor: 'rgba(255,255,255,0.95)',
+  backgroundColor: 'rgba(255,255,255,0.98)',
   padding: '1rem',
   borderRadius: '6px',
   boxShadow: '0 0 5px rgba(0,0,0,0.1)',
@@ -104,7 +110,7 @@ const cartItemStyle = {
 
 const modalOverlayStyle = {
   position: 'fixed',
-  top: 0, 
+  top: 0,
   left: 0,
   width: '100vw',
   height: '100vh',
@@ -121,6 +127,7 @@ const modalContentStyle = {
   maxWidth: '400px',
   borderRadius: '8px',
   padding: '1rem',
+  boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
 };
 
 const formContainerStyle = {
@@ -267,7 +274,12 @@ const Shop = () => {
               ) : (
                 <ul style={productListStyle}>
                   {currentItems.map((product) => (
-                    <li key={product._id} style={productItemStyle}>
+                    <li
+                      key={product._id}
+                      style={productItemStyle}
+                      onMouseEnter={(e) => (e.currentTarget.style.transform = productItemHover.transform)}
+                      onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}
+                    >
                       <img src={product.image} alt={product.name} style={productImageStyle} />
                       <h3>{product.name}</h3>
                       <p>Category: {product.category}</p>

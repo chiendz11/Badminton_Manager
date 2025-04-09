@@ -28,6 +28,10 @@ const Login = () => {
       setIsLoading(true);
       const response = await loginAdmin(loginData);
       console.log('Login successful:', response);
+  
+      // Lưu thông tin admin vào localStorage (bao gồm cả id)
+      localStorage.setItem('admin', JSON.stringify(response.admin));
+  
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng nhập thất bại');
@@ -35,6 +39,7 @@ const Login = () => {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <div className="flex min-h-screen">

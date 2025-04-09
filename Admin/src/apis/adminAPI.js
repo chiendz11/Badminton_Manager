@@ -11,23 +11,3 @@ import axios from 'axios';
       throw error;
     }
   };
-
-  // Lấy thông tin tài khoản Admin theo id
-  export const getAdminAccount = async (adminId) => {
-    try {
-      const response = await axios.get(`${API_URL}/api/admin/account/${adminId}`);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };
-  
-  // Cập nhật thông tin tài khoản Admin
-  export const updateAdminAccount = async (adminId, accountData) => {
-    try {
-      const response = await axios.put(`${API_URL}/api/admin/account/${adminId}`, accountData);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };

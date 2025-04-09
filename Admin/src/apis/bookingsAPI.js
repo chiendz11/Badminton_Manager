@@ -1,45 +1,135 @@
-// src/api/bookingAPI.js
-import axios from 'axios';
+// src/api/bookingApi.js
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Toggle pending timeslot (POST /api/booking/pending/toggle)
-export const togglePendingTimeslot = async (data) => {
-  // data cần bao gồm: userId, centerId, date, courtId, timeslot, ttl (tùy chọn)
-  const response = await axios.post(`${API_URL}/api/booking/pending/toggle`, data);
-  return response.data;
+/**
+ * Tạo booking mới.
+ * @param {Object} bookingData Dữ liệu đặt sân.
+ */
+export const createBooking = async (bookingData) => {
+  try {
+    const response = await fetch(`${API_URL}/bookings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Lỗi khi tạo booking');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in createBooking API:', error);
+    throw error;
+  }
 };
 
-// Lưu pending booking vào DB (POST /api/booking/pending/pendingBookingToDB)
-export const pendingBookingToDB = async (data) => {
-  // data cần bao gồm: userId, centerId, date
-  const response = await axios.post(`${API_URL}/api/booking/pending/pendingBookingToDB`, data);
-  return response.data;
+/**
+ * Lấy thông tin booking theo id.
+ * @param {String} bookingId 
+ */
+export const getBooking = async (bookingId) => {
+  try {
+    const response = await fetch(`${API_URL}/bookings/${bookingId}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Lỗi khi lấy thông tin booking');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getBooking API:', error);
+    throw error;
+  }
 };
 
-// Chuyển pending booking thành booked trong DB (POST /api/booking/pending/bookedBookingInDB)
-export const bookedBookingInDB = async (data) => {
-  // data cần bao gồm: userId, centerId, date
-  const response = await axios.post(`${API_URL}/api/booking/pending/bookedBookingInDB`, data);
-  return response.data;
+/**
+ * Lấy danh sách booking với các tham số filter (vd: userId, centerId, status, date).
+ * @param {Object} params 
+ */
+export const listBookings = async (params = {}) => {
+  try {
+    // Tạo chuỗi query từ object params
+    const queryString = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_URL}/bookings?${queryString}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Lỗi khi lấy danh sách booking');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in listBookings API:', error);
+    throw error;
+  }
 };
 
-// Xóa toàn bộ pending booking của user tại trung tâm (POST /api/booking/pending/clear-all)
-export const clearAllPendingBookings = async (data) => {
-  // data cần bao gồm: userId, centerId
-  const response = await axios.post(`${API_URL}/api/booking/pending/clear-all`, data);
-  return response.data;
+/**
+ * Cập nhật booking theo id.
+ * @param {String} bookingId 
+ * @param {Object} updateData 
+ */
+export const updateBooking = async (bookingId, updateData) => {
+  try {
+    const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateData),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Lỗi khi cập nhật booking');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in updateBooking API:', error);
+    throw error;
+  }
 };
 
-// Lấy mapping pending booking (GET /api/booking/pending/mapping)
-// Truyền query params: centerId, date
-export const getPendingMapping = async (params) => {
-  const response = await axios.get(`${API_URL}/api/booking/pending/mapping`, { params });
-  return response.data;
+/**
+ * Xóa booking theo id.
+ * @param {String} bookingId 
+ */
+export const deleteBooking = async (bookingId) => {
+  try {
+    const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Lỗi khi xóa booking');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error in deleteBooking API:', error);
+    throw error;
+  }
 };
 
-// Kiểm tra tồn tại pending booking (GET /api/booking/pending/exists)
-// Truyền query params: userId, centerId, date
-export const checkPendingExists = async (params) => {
-  const response = await axios.get(`${API_URL}/api/booking/pending/exists`, { params });
-  return response.data;
+export const getPendingMapping = async (centerId, date) => {
+  try {
+    // Xây dựng URL với query params tùy chọn
+    let url = `${API_URL}/bookings?status=pending`;
+    if (centerId) {
+      url += `&centerId=${centerId}`;
+    }
+    if (date) {
+      url += `&date=${date}`;
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Lỗi khi lấy booking pending');
+    }
+    // Giả sử API trả về một mảng các booking,
+    // chúng ta bao gói nó thành object để phù hợp với cách Dashboard xử lý (bookingResponse.bookings)
+    const data = await response.json();
+    return { bookings: Array.isArray(data) ? data : [] };
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };

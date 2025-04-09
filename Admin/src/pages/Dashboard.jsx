@@ -3,9 +3,72 @@ import { useNavigate } from 'react-router-dom';
 import { getAllNews } from '../apis/newsAPI.js';
 import { getAllRatings } from '../apis/ratingAPI.js';
 import { getPendingMapping } from '../apis/bookingsAPI.js';
-
-// Icon minh họa, bạn có thể thay bằng icon của riêng mình
+import AdminLayout from '../components/AdminLayout.jsx';
 import { Home, Users, MapPin, Calendar, CreditCard, Star, User, LogOut, ShoppingBag } from 'lucide-react';
+
+
+// Sub-components for content cards
+const NewsCard = ({ data }) => (
+  <div className="bg-white group rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div className="p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">{data.title}</h3>
+      <p className="text-sm text-gray-600 line-clamp-2 mb-3">{data.summary}</p>
+      <div className="flex items-center justify-between text-xs text-gray-500">
+        <span>{data.date}</span>
+        <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded-md">{data.source}</span>
+      </div>
+    </div>
+  </div>
+);
+
+const BookingCard = ({ data }) => (
+  <div className="bg-white group rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div className="p-6">
+      <div className="flex items-start justify-between mb-3">
+        <h3 className="text-lg font-semibold text-gray-800">{data.center?.name || 'Tên sân'}</h3>
+        <span className="bg-green-100 text-green-600 px-2 py-1 rounded-md text-xs">Mới</span>
+      </div>
+      <div className="space-y-2 text-sm">
+        <p className="flex items-center gap-2 text-gray-600">
+          <span className="inline-block"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 15c2.387 0 4.63.59 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg></span>
+          {data.user?.username || 'N/A'}
+        </p>
+        <p className="flex items-center gap-2 text-gray-600">
+          <span className="inline-block"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-4 18h.01M12 10v4m-6 4h12" /></svg></span>
+          {data.dateStart} - {data.dateEnd}
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+const RatingCard = ({ data }) => (
+  <div className="bg-white group rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div className="p-6">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800">{data.center?.name || 'N/A'}</h3>
+          <p className="text-sm text-gray-500">{data.user?.username || 'N/A'}</p>
+        </div>
+        <div className="flex items-center gap-1 text-yellow-500">
+          {[...Array(5)].map((_, i) => (
+            <svg
+              key={i}
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill={i < data.stars ? 'currentColor' : 'none'}
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.286 7.033a1 1 0 00.95.69h7.388c.969 0 1.371 1.24.588 1.81l-5.976 4.345a1 1 0 00-.364 1.118l2.286 7.033c.3.921-.755 1.688-1.54 1.118l-5.976-4.345a1 1 0 00-1.176 0l-5.976 4.345c-.784.57-1.838-.197-1.54-1.118l2.286-7.033a1 1 0 00-.364-1.118L2.05 12.46c-.783-.57-.38-1.81.588-1.81h7.388a1 1 0 00.95-.69l2.286-7.033z" />
+            </svg>
+          ))}
+        </div>
+      </div>
+      <p className="text-gray-600 text-sm line-clamp-2">{data.comment}</p>
+    </div>
+  </div>
+);
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -13,35 +76,17 @@ const Dashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [ratings, setRatings] = useState([]);
 
-  // Navigation handlers
-  const goToCenter = () => navigate('/centersmanagement');
-  const goToUsers = () => navigate('/users');
-  const goToNews = () => navigate('/news');
-  const goToBooking = () => navigate('/bookingsmanagement');
-  const goToRating = () => navigate('/ratings');
-  const goToAccount = () => navigate('/account');
-  const goToShop = () => navigate('/shop'); // Hàm điều hướng đến cửa hàng
-  const handleLogout = () => {
-    // Có thể xóa token, localStorage, v.v. ở đây
-    navigate('/login');
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Lấy danh sách tin tức
-        const newsData = await getAllNews();
+        const [newsData, bookingResponse, ratingData] = await Promise.all([
+          getAllNews(),
+          getPendingMapping(),
+          getAllRatings()
+        ]);
+
         setNews(Array.isArray(newsData) ? newsData.slice(0, 3) : []);
-
-        // Lấy danh sách booking (giả định API trả về dạng { bookings: [...] })
-        const bookingResponse = await getPendingMapping();
-        const bookingList = Array.isArray(bookingResponse.bookings)
-          ? bookingResponse.bookings.slice(0, 3)
-          : [];
-        setBookings(bookingList);
-
-        // Lấy danh sách đánh giá
-        const ratingData = await getAllRatings();
+        setBookings(Array.isArray(bookingResponse?.bookings) ? bookingResponse.bookings.slice(0, 3) : []);
         setRatings(Array.isArray(ratingData) ? ratingData.slice(0, 3) : []);
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
@@ -52,162 +97,54 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar bên trái */}
-      <div className="w-64 bg-blue-100 p-4 flex flex-col justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-blue-600 mb-6">ADMIN</h2>
-          <nav className="space-y-4">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-            >
-              <Home size={18} />
-              Trang chủ
-            </button>
-            <button
-              onClick={goToUsers}
-              className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-            >
-              <Users size={18} />
-              Quản lý người dùng
-            </button>
-            <button
-              onClick={goToCenter}
-              className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-            >
-              <MapPin size={18} />
-              Quản lý trung tâm
-            </button>
-            <button
-              onClick={goToBooking}
-              className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-            >
-              <Calendar size={18} />
-              Quản lý đặt sân
-            </button>
-            <button
-              onClick={() => navigate('/payments')}
-              className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-            >
-              <CreditCard size={18} />
-              Quản lý thanh toán
-            </button>
-            <button
-              onClick={goToNews}
-              className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-            >
-              <Home size={18} />
-              Quản lý tin tức
-            </button>
-            <button
-              onClick={goToRating}
-              className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-            >
-              <Star size={18} />
-              Đánh giá
-            </button>
-            <button
-              onClick={goToShop}
-              className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-            >
-              <ShoppingBag size={18} />
-              Cửa hàng
-            </button>
-          </nav>
-        </div>
-        <div className="mt-8 space-y-4">
-          <button
-            onClick={goToAccount}
-            className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-          >
-            <User size={18} />
-            Trang cá nhân
-          </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-blue-900 hover:text-blue-700 transition-colors"
-          >
-            <LogOut size={18} />
-            Đăng xuất
-          </button>
-        </div>
+    <AdminLayout>
+      {/* Main Content */}
+      <div>
+        <header className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Trang tổng quan</h1>
+            <p className="text-gray-500 mt-1">Cập nhật mới nhất từ hệ thống</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+              <User size={20} className="text-blue-600" />
+            </div>
+          </div>
+        </header>
+
+        {[
+          { title: 'Tin tức mới nhất', data: news, component: NewsCard },
+          { title: 'Đặt sân gần đây', data: bookings, component: BookingCard },
+          { title: 'Đánh giá gần đây', data: ratings, component: RatingCard },
+        ].map((section, index) => (
+          <section key={index} className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <div className="w-2 h-6 bg-blue-600 rounded-full" />
+                {section.title}
+              </h2>
+              <button className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1">
+                Xem tất cả
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {section.data.length > 0 ? (
+                section.data.map((item) => (
+                  <section.component key={item._id} data={item} />
+                ))
+              ) : (
+                <div className="col-span-full bg-white p-6 rounded-xl shadow-sm">
+                  <p className="text-gray-500 text-center">Không có dữ liệu</p>
+                </div>
+              )}
+            </div>
+          </section>
+        ))}
       </div>
-
-      {/* Nội dung bên phải */}
-      <div className="flex-1 bg-gray-100 p-6">
-        <h1 className="text-2xl font-bold mb-6">Trang tổng quan</h1>
-
-        {/* Khu vực hiển thị tin tức mới nhất */}
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-blue-700">Tin tức mới nhất</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {news.length > 0 ? (
-              news.map((item) => (
-                <div key={item._id} className="bg-white rounded shadow p-4">
-                  <h3 className="text-lg font-bold text-blue-800 mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">{item.summary}</p>
-                  <p className="text-xs text-gray-500">
-                    Ngày đăng: {item.date} | Nguồn: {item.source}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p>Không có tin mới</p>
-            )}
-          </div>
-        </section>
-
-        {/* Khu vực hiển thị booking gần đây */}
-        <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-blue-700">Đặt sân gần đây</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {bookings.length > 0 ? (
-              bookings.map((booking) => (
-                <div key={booking._id} className="bg-white rounded shadow p-4">
-                  <h3 className="text-lg font-bold text-blue-800 mb-2">
-                    {booking.center?.name || 'Tên sân'}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Khách: {booking.user?.username || 'N/A'}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Thời gian: {booking.dateStart} - {booking.dateEnd}
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p>Không có đặt sân mới</p>
-            )}
-          </div>
-        </section>
-
-        {/* Khu vực hiển thị đánh giá gần đây */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-blue-700">Đánh giá gần đây</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ratings.length > 0 ? (
-              ratings.map((rating) => (
-                <div key={rating._id} className="bg-white rounded shadow p-4">
-                  <h3 className="text-lg font-bold text-blue-800 mb-2">
-                    Sân: {rating.center?.name || 'N/A'}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Người đánh giá: {rating.user?.username || 'N/A'}
-                  </p>
-                  <p className="text-sm text-yellow-600">
-                    Số sao: {rating.stars}
-                  </p>
-                  <p className="text-xs text-gray-500">{rating.comment}</p>
-                </div>
-              ))
-            ) : (
-              <p>Không có đánh giá mới</p>
-            )}
-          </div>
-        </section>
-      </div>
-    </div>
+    </AdminLayout>
   );
 };
 

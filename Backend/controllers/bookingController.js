@@ -1,85 +1,92 @@
-// src/controllers/bookingPendingController.js
-import {
-  togglePendingTimeslotMemory,
-  pendingBookingToDB,
-  bookedBookingInDB,
-  clearAllPendingBookings,
-  getFullPendingMapping
-} from "../services/bookingServices.js";
-import Booking from "../models/bookings.js"; // Cho hàm checkPendingExists
+// src/controllers/bookingController.js
+import * as bookingService from '../services/bookingServices.js';
 
-export const togglePendingTimeslotController = async (req, res) => {
+/**
+ * API tạo booking mới.
+ * POST /bookings
+ */
+export const createBooking = async (req, res) => {
   try {
-    const { userId, centerId, date, courtId, timeslot, ttl } = req.body;
-    const booking = await togglePendingTimeslotMemory(userId, centerId, date, courtId, timeslot, ttl || 60);
-    res.json({ success: true, booking });
+    const bookingData = req.body;
+    const booking = await bookingService.createBooking(bookingData);
+    res.status(201).json(booking);
   } catch (error) {
-    console.error("Error toggling pending timeslot (Controller):", error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error in createBooking:', error);
+    res.status(500).json({ message: error.message });
   }
 };
 
-export const pendingBookingToDBController = async (req, res) => {
+/**
+ * API lấy thông tin booking theo id.
+ * GET /bookings/:id
+ */
+export const getBooking = async (req, res) => {
   try {
-    const { userId, centerId, date } = req.body;
-    const booking = await pendingBookingToDB(userId, centerId, date);
-    res.json({ success: true, booking });
-  } catch (error) {
-    console.error("Error confirming booking to DB (Controller):", error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
-
-export const bookedBookingInDBController = async (req, res) => {
-  try {
-    const { userId, centerId, date } = req.body;
-    const booking = await bookedBookingInDB(userId, centerId, date);
-    res.json({ success: true, booking });
-  } catch (error) {
-    console.error("Error confirming booking in DB (Controller):", error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-};
-
-export const clearAllPendingBookingsController = async (req, res) => {
-  try {
-    const { userId, centerId } = req.body;
-    const result = await clearAllPendingBookings(userId, centerId);
-    const currentDate = new Date().toISOString().split("T")[0];
-    const mapping = await getFullPendingMappingService(centerId, currentDate);
-    if (global.io) {
-      global.io.emit("updateBookings", { date: currentDate, mapping });
+    const bookingId = req.params.id;
+    const booking = await bookingService.getBookingById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Không tìm thấy booking' });
     }
-    res.json({ success: true, result });
+    res.status(200).json(booking);
   } catch (error) {
-    console.error("Error clearing all pending bookings (Controller):", error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error in getBooking:', error);
+    res.status(500).json({ message: error.message });
   }
 };
 
-export const getPendingMappingController = async (req, res) => {
+/**
+ * API lấy danh sách booking theo filter.
+ * GET /bookings
+ * Có thể filter theo userId, centerId, status, date (truyền qua query string).
+ */
+export const listBookings = async (req, res) => {
   try {
-    const { centerId, date } = req.query;
-    const mapping = await getFullPendingMapping(centerId, date);
-    res.json({ success: true, mapping });
+    const filter = { ...req.query };
+    // Nếu ngày được truyền dưới dạng chuỗi, chuyển đổi thành Date
+    if (filter.date) {
+      filter.date = new Date(filter.date);
+    }
+    const bookings = await bookingService.listBookings(filter);
+    res.status(200).json(bookings);
   } catch (error) {
-    console.error("Error fetching pending mapping (Controller):", error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error in listBookings:', error);
+    res.status(500).json({ message: error.message });
   }
 };
 
-export const checkPendingExistsController = async (req, res) => {
+/**
+ * API cập nhật booking.
+ * PUT /bookings/:id
+ */
+export const updateBooking = async (req, res) => {
   try {
-    const { userId, centerId, date } = req.query;
-    const exists = await Booking.findOne({
-      userId,
-      centerId,
-      date,
-      status: "pending"
-    });
-    res.json({ success: true, exists: !!exists });
+    const bookingId = req.params.id;
+    const updateData = req.body;
+    const updatedBooking = await bookingService.updateBooking(bookingId, updateData);
+    if (!updatedBooking) {
+      return res.status(404).json({ message: 'Booking không tồn tại' });
+    }
+    res.status(200).json(updatedBooking);
   } catch (error) {
-    console.error("Error checking pending booking existence (Controller):", error);
-    res.status(500).json({ success: false, error: error.message });
+    console.error('Error in updateBooking:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/**
+ * API xóa booking.
+ * DELETE /bookings/:id
+ */
+export const deleteBooking = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const deletedBooking = await bookingService.deleteBooking(bookingId);
+    if (!deletedBooking) {
+      return res.status(404).json({ message: 'Booking không tồn tại' });
+    }
+    res.status(200).json({ message: 'Booking đã được xóa thành công' });
+  } catch (error) {
+    console.error('Error in deleteBooking:', error);
+    res.status(500).json({ message: error.message });
   }
 };

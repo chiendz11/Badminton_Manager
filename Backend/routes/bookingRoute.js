@@ -1,27 +1,22 @@
-// src/routes/bookingPendingRoutes.js
-import express from "express";
-import {
-  togglePendingTimeslotController,
-  pendingBookingToDBController,
-  bookedBookingInDBController,
-  clearAllPendingBookingsController,
-  getPendingMappingController,
-  checkPendingExistsController
-} from "../controllers/bookingController.js";
+// src/routes/bookingRoutes.js
+import express from 'express';
+import * as bookingController from '../controllers/bookingController.js';
 
 const router = express.Router();
 
-router.post("/pending/toggle", togglePendingTimeslotController);
+// Tạo booking mới
+router.post('/', bookingController.createBooking);
 
-router.post("/pending/pendingBookingToDB", pendingBookingToDBController);
+// Lấy danh sách booking (có thể filter theo query)
+router.get('/', bookingController.listBookings);
 
-router.post("/pending/bookedBookingInDB", bookedBookingInDBController);
+// Lấy thông tin booking theo id
+router.get('/:id', bookingController.getBooking);
 
-// Endpoint để clear toàn bộ pending booking của user tại trung tâm
-router.post("/pending/clear-all", clearAllPendingBookingsController);
+// Cập nhật booking theo id
+router.put('/:id', bookingController.updateBooking);
 
-router.get("/pending/mapping", getPendingMappingController);
-
-router.get("/pending/exists", checkPendingExistsController);
+// Xóa booking theo id
+router.delete('/:id', bookingController.deleteBooking);
 
 export default router;

@@ -1,7 +1,6 @@
 // src/pages/CentersManagement.jsx
 import React, { useEffect, useState } from "react";
 import { getCentersAPI, deleteCenterAPI } from "../apis/centersAPI.js";
-import pic1 from '../image/pic1.jpg';
 import AdminLayout from "../components/AdminLayout.jsx";
 
 const CentersManagement = () => {
@@ -57,47 +56,42 @@ const CentersManagement = () => {
 
   return (
     <AdminLayout>
-      <div
-        className="flex justify-center items-center min-h-screen bg-cover bg-center"
-        style={{ backgroundImage: `url(${pic1})` }}
-      >
-        <div className="container mx-auto p-4">
-          <h1 className="text-3xl font-bold mb-6 text-center">
-            Quản lý Nhà Thi Đấu
-          </h1>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white shadow-md rounded-lg">
-              <thead>
-                <tr className="bg-blue-500 text-white">
-                  <th className="py-3 px-4 text-left">Tên</th>
-                  <th className="py-3 px-4 text-left">Địa chỉ</th>
-                  <th className="py-3 px-4 text-left">SĐT</th>
-                  <th className="py-3 px-4 text-left">Số sân</th>
-                  <th className="py-3 px-4 text-left">Đánh giá</th>
-                  <th className="py-3 px-4 text-center">Hành động</th>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+          Quản lý Nhà Thi Đấu
+        </h1>
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white shadow-md rounded-lg">
+            <thead>
+              <tr className="bg-blue-500 text-white">
+                <th className="py-3 px-4 text-left">Tên</th>
+                <th className="py-3 px-4 text-left">Địa chỉ</th>
+                <th className="py-3 px-4 text-left">SĐT</th>
+                <th className="py-3 px-4 text-left">Số sân</th>
+                <th className="py-3 px-4 text-left">Đánh giá</th>
+                <th className="py-3 px-4 text-center">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {centers.map((center) => (
+                <tr key={center._id} className="border-b hover:bg-gray-100">
+                  <td className="py-3 px-4">{center.name}</td>
+                  <td className="py-3 px-4">{center.address}</td>
+                  <td className="py-3 px-4">{center.phone}</td>
+                  <td className="py-3 px-4">{center.totalCourts}</td>
+                  <td className="py-3 px-4">{center.avgRating}</td>
+                  <td className="py-3 px-4 text-center">
+                    <button
+                      onClick={() => handleDelete(center._id)}
+                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
+                    >
+                      Xóa
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {centers.map((center) => (
-                  <tr key={center._id} className="border-b hover:bg-gray-100">
-                    <td className="py-3 px-4">{center.name}</td>
-                    <td className="py-3 px-4">{center.address}</td>
-                    <td className="py-3 px-4">{center.phone}</td>
-                    <td className="py-3 px-4">{center.totalCourts}</td>
-                    <td className="py-3 px-4">{center.avgRating}</td>
-                    <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => handleDelete(center._id)}
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
-                      >
-                        Xóa
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </AdminLayout>

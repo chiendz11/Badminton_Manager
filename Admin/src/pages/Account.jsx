@@ -1,127 +1,125 @@
+// src/components/Account.jsx
 import React, { useState, useEffect } from 'react';
-import { getAdminAccount, updateAdminAccount } from '../apis/adminAPI.js';
-import { Pencil, Save } from 'lucide-react';
+import { getAdminAccount, updateAdminAccount } from '../apis/accountAPI.js';
+import { useNavigate } from 'react-router-dom';
 
 const Account = () => {
-  // Lấy admin từ localStorage
-  const storedAdmin = JSON.parse(localStorage.getItem('admin'));
-  const adminId = storedAdmin?._id;
-
+  const navigate = useNavigate();
   const [admin, setAdmin] = useState(null);
   const [formData, setFormData] = useState({ username: '', avatar: '' });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editing, setEditing] = useState(false);
-  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
+  // Lấy thông tin admin từ localStorage
   useEffect(() => {
-    const fetchAdmin = async () => {
-      if (!adminId) {
-        setError('Không tìm thấy thông tin admin.');
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
+    const storedAdmin = localStorage.getItem('admin');
+    if (storedAdmin && storedAdmin !== 'undefined') {
       try {
-        const data = await getAdminAccount(adminId);
-        setAdmin(data);
-        setFormData({
-          username: data.username,
-          avatar: data.avatar,
-        });
-      } catch (err) {
-        setError('Failed to load admin account');
-      } finally {
-        setLoading(false);
+        const adminData = JSON.parse(storedAdmin);
+        if (adminData && adminData._id) {
+          fetchAdmin(adminData._id);
+        } else {
+          // Nếu không có _id, chuyển hướng về login hoặc xử lý lỗi khác
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Lỗi parse JSON:', error);
+        navigate('/login');
       }
-    };
+    } else {
+      // Nếu không có admin nào trong localStorage
+      navigate('/login');
+    }
+  }, [navigate]);
+  
 
-    fetchAdmin();
-  }, [adminId]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const fetchAdmin = async (adminId) => {
     try {
-      const res = await updateAdminAccount(adminId, formData);
-      setAdmin(res.admin);
-      setMessage('Account updated successfully!');
-      setEditing(false);
-      // Cập nhật lại localStorage nếu cần
-      localStorage.setItem('admin', JSON.stringify(res.admin));
+      setLoading(true);
+      const adminData = await getAdminAccount(adminId);
+      setAdmin(adminData);
+      setFormData({
+        username: adminData.username || '',
+        avatar: adminData.avatar || ''
+      });
     } catch (err) {
-      setError('Error updating account');
+      console.error('Chi tiết lỗi:', err);
+      setError('Lỗi khi tải thông tin tài khoản admin');
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  // Xử lý thay đổi input
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Xử lý cập nhật thông tin admin
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    try {
+      setLoading(true);
+      const result = await updateAdminAccount(admin._id, formData);
+      if (result.admin) {
+        // Cập nhật lại thông tin admin trong localStorage nếu cần
+        localStorage.setItem('admin', JSON.stringify(result.admin));
+        setAdmin(result.admin);
+        setSuccess('Cập nhật thông tin thành công!');
+      }
+    } catch (err) {
+      console.error('Chi tiết lỗi:', err);
+      setError('Có lỗi xảy ra khi cập nhật thông tin');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow rounded-md">
-      <h1 className="text-2xl font-bold mb-4">Quản lý Tài khoản</h1>
-      {message && <p className="text-green-600 mb-4">{message}</p>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Username</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            disabled={!editing}
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Avatar URL</label>
-          <input
-            type="text"
-            name="avatar"
-            value={formData.avatar}
-            onChange={handleChange}
-            disabled={!editing}
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500"
-          />
-        </div>
-        <div className="flex justify-end gap-4">
-          {!editing ? (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="flex items-center gap-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-            >
-              <Pencil size={16} /> Chỉnh sửa
-            </button>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => {
-                  setEditing(false);
-                  setFormData({
-                    username: admin.username,
-                    avatar: admin.avatar,
-                  });
-                }}
-                className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition-colors"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                className="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
-              >
-                <Save size={16} /> Lưu
-              </button>
-            </>
-          )}
-        </div>
-      </form>
+    <div style={{ padding: '20px' }}>
+      <h2>Thông tin tài khoản Admin</h2>
+      {loading && <p>Đang tải...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {success && <p style={{ color: 'green' }}>{success}</p>}
+      {admin && (
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '15px' }}>
+            <label htmlFor="username" style={{ marginRight: '10px' }}>
+              Tên đăng nhập:
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              placeholder="Nhập tên đăng nhập mới"
+            />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label htmlFor="avatar" style={{ marginRight: '10px' }}>
+              Avatar URL:
+            </label>
+            <input
+              type="text"
+              id="avatar"
+              name="avatar"
+              value={formData.avatar}
+              onChange={handleChange}
+              placeholder="Nhập đường dẫn avatar mới"
+            />
+          </div>
+          <button type="submit" disabled={loading}>
+            Cập nhật
+          </button>
+        </form>
+      )}
     </div>
   );
 };

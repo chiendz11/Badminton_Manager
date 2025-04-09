@@ -1,20 +1,26 @@
-import Admin from '../models/admin.js';
+// src/services/accountService.js
+import Admin from "../models/admin.js";
 
-const getAdminById = async (id) => {
-  // Nếu cần, populate các trường liên quan (ví dụ centers)
-  return await Admin.findById(id).populate('centers');
+/**
+ * Lấy thông tin admin theo id
+ * @param {String} adminId
+ * @returns {Promise<Object>} Admin
+ */
+export const getAdminById = async (adminId) => {
+  return await Admin.findById(adminId);
 };
 
-const updateAdminAccount = async (id, data) => {
-  // Ngăn chặn thay đổi trường role (admin chỉ có role "admin")
-  if (data.role) {
-    delete data.role;
-  }
-  // Nếu cập nhật password, bạn có thể thêm xử lý hash ở đây (nếu cần)
-  return await Admin.findByIdAndUpdate(id, data, { new: true });
-};
-
-export default {
-  getAdminById,
-  updateAdminAccount,
+/**
+ * Cập nhật thông tin admin theo id
+ * @param {String} adminId
+ * @param {Object} updateData Dữ liệu cập nhật (ví dụ: { username, avatar })
+ * @returns {Promise<Object>} Admin sau khi cập nhật
+ */
+export const updateAdminAccount = async (adminId, updateData) => {
+  // Cập nhật trường updatedAt nếu cần (timestamps tự động cập nhật nếu bạn enable trong Schema)
+  const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updateData, {
+    new: true, // trả về admin sau khi update
+    runValidators: true,
+  });
+  return updatedAdmin;
 };

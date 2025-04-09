@@ -16,6 +16,7 @@
     import newsRoute from "./routes/newsRoutes.js";
     import ratingRoute from "./routes/ratingRoutes.js";
     import AccountRoute from "./routes/accountRoutes.js";
+    import bookingRoutes from './routes/bookingRoute.js';
 
     // Kết nối tới MongoDB
     connectDB();
@@ -35,6 +36,7 @@
     app.use("/api/news", newsRoute);
     app.use("/api/ratings", ratingRoute);
     app.use("/api/admin/account", AccountRoute);
+    app.use('/bookings', bookingRoutes);
     
 
     const server = http.createServer(app);
