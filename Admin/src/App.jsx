@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import AdminBillView from './pages/AdminBillView';
+import UserManage from './pages/UserManage';
 
 
 
@@ -8,7 +8,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AdminBillView />} />
+        <Route path="/" element={<UserManage />} />
       </Routes>
     </Router>
   );
