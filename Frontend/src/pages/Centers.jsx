@@ -136,10 +136,11 @@ const Centers = () => {
               </div>
             </div>
           </div>
-          <div className="centers-header">
-            <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
-            <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
-          </div>
+        </div>
+
+        <div className="centers-header">
+          <h2>Các Cơ Sở Cầu Lông tại Hà Nội</h2>
+          <p>Vui lòng chọn một trong các cơ sở cầu lông dưới đây để đặt sân</p>
         </div>
 
         {loading ? (
