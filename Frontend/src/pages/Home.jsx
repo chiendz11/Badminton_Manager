@@ -8,16 +8,39 @@ const Home = () => {
   
   return (
     <>
+      <style>
+        {`
+          .section-title {
+            text-align: center !important;
+            width: 100%;
+            display: block;
+          }
+          
+          .section-desc {
+            text-align: center !important;
+            width: 100%;
+            display: block;
+          }
+          
+          .section-header {
+            width: 100%;
+            text-align: center !important;
+          }
+        `}
+      </style>
+
       <HeroBanner />
       <FeatureCards />
+      
       <div className="container mt-5">
-        <div className="section-header text-center">
-          <h2 className="section-title">Khám Phá Sân Cầu Lông</h2>
-          <p className="section-desc">Lựa chọn sân cầu lông phù hợp với nhu cầu của bạn</p>
-        </div>
+      <div className="section-header text-center mb-4">
+        <h2 className="section-title text-center">Khám Phá Sân Cầu Lông</h2>
+        <p className="section-desc text-center">Lựa chọn sân cầu lông phù hợp với nhu cầu của bạn</p>
       </div>
-
-      <div className = "row py-5 justify-content-center">
+    </div>
+    
+    <div className="container">
+      <div className="row py-5 justify-content-center">
         <div className="col-4 img-hover-zoom img-hover-zoom--blur">
           <img src="/images/san1.png" className="img-fluid" alt="Sân cầu" />
           <div className="caption_banner">
@@ -48,6 +71,8 @@ const Home = () => {
           <div className="overlay"></div>
         </div>
       </div>
+    </div>
+
 
       <div className="container promo-banner-container">
         <div className="section-header text-center mb-4">
@@ -74,62 +99,3 @@ const Home = () => {
 
 export default Home;
 
-
-
-// Mẫu dữ liệu sân bóng
-// const featuredFields = [
-//   {
-//     id: 1,
-//     name: 'Sân cầu Mỹ Đình',
-//     location: 'Quận Nam Từ Liêm, Hà Nội',
-//     priceRange: '300.000đ - 500.000đ',
-//     rating: 5,
-//     reviews: 45,
-//     image: '/images/fields/field1.jpg'
-//   },
-//   {
-//     id: 2,
-//     name: 'Sân cầu 24h',
-//     location: 'Quận Thanh Xuân, Hà Nội',
-//     priceRange: '250.000đ - 400.000đ',
-//     rating: 4,
-//     reviews: 32,
-//     image: '/images/fields/field2.jpg'
-//   },
-//   {
-//     id: 3,
-//     name: 'Sân cầu Thành Đô',
-//     location: 'Quận Cầu Giấy, Hà Nội',
-//     priceRange: '280.000đ - 450.000đ',
-//     rating: 5,
-//     reviews: 57,
-//     image: '/images/fields/field3.jpg'
-//   },
-//   {
-//     id: 4,
-//     name: 'Sân cầu Thủ Đô',
-//     location: 'Quận Hà Đông, Hà Nội',
-//     priceRange: '230.000đ - 380.000đ',
-//     rating: 4,
-//     reviews: 28,
-//     image: '/images/fields/field4.jpg'
-//   },  
-//   {
-//     id: 5,
-//     name: 'Sân cầu Cầu Giấy',
-//     location: 'Quận Cầu Giấy, Hà Nội',
-//     priceRange: '150.000đ - 280.000đ',
-//     rating: 4,
-//     reviews: 28,
-//     image: '/images/fields/field5.jpg'
-//   },   
-//   {
-//     id: 6,
-//     name: 'Sân Bóng Tuấn',
-//     location: 'Quận Hà Đông, Hà Nội',
-//     priceRange: '230.000đ - 380.000đ',
-//     rating: 4,
-//     reviews: 29,
-//     image: '/images/fields/field6.jpg'
-//   }
-// ];
