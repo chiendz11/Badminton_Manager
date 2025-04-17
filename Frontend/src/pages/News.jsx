@@ -83,8 +83,9 @@ const News = () => {
                 key={cat}
                 className={activeCategory === cat ? "active" : ""}
                 onClick={() => filterNewsByCategory(cat)}
+                data-category={cat}
               >
-                {cat === "all" ? "Tất cả" : getCategoryName(cat)}
+               {cat === "all" ? "Tất cả" : getCategoryName(cat)}
               </button>
             ))}
           </div>
