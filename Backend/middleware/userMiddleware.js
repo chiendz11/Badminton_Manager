@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Rating from "../models/ratings.js";
 import Center from "../models/centers.js";
 import nodemailer from "nodemailer";
+import axios from "axios";
 
 export const updateAvgRating = async (centerId) => {
   try {

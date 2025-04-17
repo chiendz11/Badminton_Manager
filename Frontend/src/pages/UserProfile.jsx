@@ -46,7 +46,7 @@ const UserProfile = () => {
   const slotGroupsFromLS = JSON.parse(localStorage.getItem("slotGroups") || "[]");
   const totalAmountLS = Number(localStorage.getItem("totalAmount")) || 0;
   const userPoints = user?.points || 0;
-  const levels = ["Iron", "Đồng", "Bạc", "Vàng", "Bạch kim"];
+  const levels = ["Sắt", "Đồng", "Bạc", "Vàng", "Bạch kim"];
   const pointsPerLevel = 1000;
 
   const currentLevelIndex = Math.min(Math.floor(userPoints / pointsPerLevel), levels.length - 1);
@@ -200,6 +200,7 @@ const UserProfile = () => {
       case 'paid': return 'status-completed';
       case 'pending': return 'status-pending';
       case 'cancelled': return 'status-cancelled';
+      case 'processing': return 'status-processing';
       default: return '';
     }
   };
@@ -209,6 +210,7 @@ const UserProfile = () => {
       case 'paid': return 'Hoàn thành';
       case 'pending': return 'Chờ thanh toán';
       case 'cancelled': return 'Đã hủy';
+      case 'processing': return 'Đang xử lý';
       default: return '';
     }
   };

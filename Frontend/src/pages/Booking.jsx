@@ -68,6 +68,7 @@ const BookingSchedule = () => {
   const { user, setUser } = useContext(AuthContext);
   // Sử dụng optional chaining để tránh lỗi nếu user là null
   const userId = user?._id;
+  const username = user?.username || "Người dùng";
 
   const openHours = "05:00 - 24:00";
   const bookingData = JSON.parse(localStorage.getItem("bookingData") || "{}");
@@ -120,6 +121,7 @@ const BookingSchedule = () => {
           });
           setBaseMapping(completeMapping);
           const finalMapping = applyLockedLogic(completeMapping, selectedDate, userId);
+          console.log("Final mapping:", finalMapping);
           setDisplayMapping(finalMapping);
           setInitialMappingLoaded(true);
         }
@@ -186,6 +188,7 @@ const BookingSchedule = () => {
         (async () => {
           try {
             const mapping = await getPendingMapping(centerId, selectedDate);
+            console.log("Received mapping:", mapping);
             const completeMapping = {};
             courts.forEach((court) => {
               completeMapping[court._id] =
@@ -226,7 +229,7 @@ const BookingSchedule = () => {
         return;
       }
     }
-    socket.emit("toggleBooking", { centerId, date: selectedDate, courtId, colIndex, userId });
+    socket.emit("toggleBooking", { centerId, date: selectedDate, courtId, colIndex, userId, username });
     setSelectedSlots((prev) => {
       const foundIndex = prev.findIndex((s) => s.courtId === courtId && s.slotVal === slotVal);
       const newSlots =

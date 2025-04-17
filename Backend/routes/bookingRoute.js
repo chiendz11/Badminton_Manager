@@ -12,14 +12,14 @@ import {
   getPopularTimeSlotController,
   getBookingHistoryController,
 } from "../controllers/bookingController.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, restrictToClient } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 router.get("/getBillById", getBookingImageController);
 
 router.post("/pending/toggle", togglePendingTimeslotController);
 
-router.post("/pending/pendingBookingToDB", pendingBookingToDBController);
+router.post("/pending/pendingBookingToDB", protect, restrictToClient, pendingBookingToDBController);
 
 router.post("/pending/bookedBookingInDB", bookedBookingInDBController);
 

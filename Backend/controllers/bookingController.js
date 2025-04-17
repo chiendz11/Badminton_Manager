@@ -26,7 +26,9 @@ export const togglePendingTimeslotController = async (req, res) => {
 export const pendingBookingToDBController = async (req, res) => {
   try {
     const { userId, centerId, date, totalAmount } = req.body;
-    const booking = await pendingBookingToDB(userId, centerId, date, totalAmount);
+    const username = req.user.username; // Lấy từ authMiddleware
+    const booking = await pendingBookingToDB(userId, centerId, date, totalAmount, username);
+    console.log(username);
     res.json({ success: true, booking });
   } catch (error) {
     console.error("Error confirming booking to DB (Controller):", error);

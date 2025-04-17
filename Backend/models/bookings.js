@@ -7,36 +7,32 @@ const bookingSchema = new Schema({
   courts: [
     {
       courtId: { type: Schema.Types.ObjectId, ref: "Court", required: true },
-      timeslots: [{ type: Number, required: true }]
-    }
+      timeslots: [{ type: Number, required: true }],
+    },
   ],
   date: { type: Date, required: true, index: true },
-  // Status: pending, paid, cancelled
+  // Status: pending, processing, paid, cancelled
   status: {
     type: String,
-    enum: ["pending", "paid", "cancelled"],
+    enum: ["pending", "processing", "paid", "cancelled"], // Thêm "processing"
     default: "pending",
-    index: true
+    index: true,
   },
   expiresAt: { type: Date, default: null },
-  // Tổng tiền (tính từ pricing của center)
   totalAmount: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now, index: true },
-
-  // Các trường dành cho đơn đã thanh toán/hủy (bill)
   paymentMethod: { type: String, default: "" },
-  // Đổi tên trường từ billCode thành bookingCode
   bookingCode: { type: String, unique: true, sparse: true, default: null, index: true },
   type: { type: String, enum: ["fixed", "daily"], default: "daily", index: true },
   note: { type: String, default: "" },
   paymentImage: { type: Buffer, default: null },
   imageType: { type: String, default: "image/jpeg" },
-  pointEarned: { type: Number, default: 0 }
+  pointEarned: { type: Number, default: 0 },
 });
 
-// Middleware pre("save"):
+// Middleware pre("save")
 bookingSchema.pre("save", async function (next) {
-  // Nếu đơn đang pending, thiết lập expiresAt (ví dụ: 5 phút kể từ createdAt)
+  // Nếu đơn đang pending, thiết lập expiresAt (5 phút kể từ createdAt)
   if (this.status === "pending") {
     if (this.date) {
       let maxSlot = -Infinity;
@@ -50,7 +46,7 @@ bookingSchema.pre("save", async function (next) {
       }
     }
   } else {
-    // Với các đơn không pending (paid, cancelled), không thiết lập expiresAt
+    // Với các đơn không pending (processing, paid, cancelled), không thiết lập expiresAt
     this.expiresAt = null;
     // Nếu đơn không pending và chưa có bookingCode, tự tạo bookingCode
     if (!this.bookingCode) {
