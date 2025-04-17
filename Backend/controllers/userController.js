@@ -48,9 +48,7 @@ export const loginUserController = async (req, res) => {
     }
     const { user, token } = await loginUserService(username, password);
     res.cookie("token", token, {
-      httpOnly: false,
-      secure: false,
-      sameSite: "Lax",
+      httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({

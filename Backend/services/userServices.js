@@ -72,21 +72,26 @@ export const registerUserService = async (userData) => {
  * Đăng nhập user
  */
 export const loginUserService = async (username, password) => {
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username }).select("+password_hash");
     if (!user) {
-        throw new Error("User không tồn tại!");
+      throw new Error("User không tồn tại!");
     }
     // Debug log (chỉ dùng khi phát triển)
     console.log("Password nhập:", password);
     console.log("Hash DB:", user.password_hash);
-
+  
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
-        throw new Error("Sai username hoặc password!");
+      throw new Error("Sai username hoặc password!");
     }
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+  
+    const token = jwt.sign(
+      { id: user._id, type: "user" }, // Thêm type: "user"
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
     return { user, token };
-};
+  };
 
 /**
  * Cập nhật thông tin user
@@ -317,7 +322,7 @@ export const getUserBookingStats = async (userId, period = "month") => {
             }
         }
     ]);
-    console.log("Current Bill Aggregation:", currentBillAgg);
+    console.log("Current Bill Aggregation:", currentPaidBookingAgg);
 
     const currentCompleted = currentPaidBookingAgg.length ? currentPaidBookingAgg[0].completedCount : 0;
     const currentPoints = currentPaidBookingAgg.length ? currentPaidBookingAgg[0].totalPoints : 0;
@@ -370,7 +375,7 @@ export const getUserBookingStats = async (userId, period = "month") => {
             }
         }
     ]);
-    console.log("Previous Bill Aggregation:", previousBillAgg);
+    console.log("Previous Bill Aggregation:", previousPaidBookingAgg);
 
     const previousCompleted = previousPaidBookingAgg.length ? previousPaidBookingAgg[0].completedCount : 0;
     const previousPoints = previousPaidBookingAgg.length ? previousPaidBookingAgg[0].totalPoints : 0;

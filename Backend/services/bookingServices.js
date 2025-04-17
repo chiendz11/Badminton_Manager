@@ -1,22 +1,22 @@
-// src/services/bookingPendingService.js
-
 import inMemoryCache from "../config/inMemoryCache.js";
 import Booking from "../models/bookings.js";
 import mongoose from "mongoose";
 import Center from "../models/centers.js";
 import Court from "../models/courts.js";
 import { updateFavouriteCenter, updateCompletedBookingsForUser, markBookingAsCancelled, incrementTotalBookings, updateUserPoints, updateChartForCancelled, updateChartForCompleted } from "./userServices.js";
+
 // ============== CÁC CONSTANT VÀ HÀM PHỤ TRỢ ==============
 const TIMES = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
 
-export const getPendingKey = (centerId, date, userId) => {
-  return `pending:${centerId}:${date}:${userId}`;
+export const getPendingKey = (centerId, date, userId, username) => {
+  return `pending:${centerId}:${date}:${userId}:${username}`;
 };
 
 // ============== HÀM CHUYỂN ĐỔI TIMESLOT TRONG CACHE ==============
-export const togglePendingTimeslotMemory = async (userId, centerId, date, courtId, timeslot, ttl = 60) => {
-  const key = getPendingKey(centerId, date, userId);
+export const togglePendingTimeslotMemory = async (username, userId, centerId, date, courtId, timeslot, ttl = 60) => {
+  const key = getPendingKey(centerId, date, userId, username);
   let booking = inMemoryCache.get(key) || {
+    username,
     userId,
     centerId,
     date,
@@ -54,7 +54,7 @@ export const togglePendingTimeslotMemory = async (userId, centerId, date, courtI
 };
 
 // ============== HÀM LƯU BOOKING PENDING VÀO DB ==============
-export const pendingBookingToDB = async (userId, centerId, date, totalAmount) => {
+export const pendingBookingToDB = async (userId, centerId, date, totalAmount, username) => {
   // Kiểm tra xem đã có booking pending nào chưa (không phân theo ngày)
   const exists = await Booking.findOne({
     userId: new mongoose.Types.ObjectId(userId),
@@ -65,7 +65,7 @@ export const pendingBookingToDB = async (userId, centerId, date, totalAmount) =>
     throw new Error("Bạn đã có booking pending trên trung tâm này. Vui lòng chờ hết 5 phút trước khi đặt thêm.");
   }
 
-  const key = getPendingKey(centerId, date, userId);
+  const key = getPendingKey(centerId, date, userId, username);
   const cachedBooking = inMemoryCache.get(key);
   if (!cachedBooking) {
     throw new Error("Không tìm thấy booking pending trong cache");
@@ -111,7 +111,7 @@ export const bookedBookingInDB = async ({
         userId: new mongoose.Types.ObjectId(userId),
         centerId: new mongoose.Types.ObjectId(centerId),
         date: date,
-        status: "paid"
+        status: "processing"
       });
       if (booking) {
         console.log("Booking đã được thanh toán trước đó.");
@@ -141,7 +141,7 @@ export const bookedBookingInDB = async ({
     }
 
     // Cập nhật trạng thái booking thành "paid" và lưu thông tin thanh toán
-    booking.status = "paid";
+    booking.status = "processing";
     booking.totalAmount = totalAmount;
     booking.paymentMethod = "banking";
     booking.note = note;
@@ -153,7 +153,7 @@ export const bookedBookingInDB = async ({
 
     // Cập nhật số booking đã thanh toán thành công của user
     const completedCount = await updateCompletedBookingsForUser(userId);
-    console.log(`User ${userId} có ${completedCount} booking đã thanh toán.`);
+    console.log(`User ${userId} có ${completedCount} booking đã thanh toán, hãy chờ để Admin duyệt.`);
 
     // Cập nhật dữ liệu biểu đồ cho user
     await updateChartForCompleted(userId, booking.date);
@@ -182,8 +182,8 @@ export const clearAllPendingBookings = async (userId, centerId) => {
   const keys = inMemoryCache.keys();
   let deletedCount = 0;
   keys.forEach((key) => {
-    // Key format: pending:{centerId}:{date}:{userId}
-    if (key.startsWith(`pending:${centerId}:`) && key.endsWith(`:${userId}`)) {
+    // Key format: pending:{centerId}:{date}:{userId}:{username}
+    if (key.startsWith(`pending:${centerId}:`) && key.includes(`:${userId}:`)) {
       inMemoryCache.del(key);
       deletedCount++;
     }
@@ -208,7 +208,11 @@ export const getPendingMappingMemory = async (centerId, date) => {
           courtBooking.timeslots.forEach(slot => {
             const idx = slot - TIMES[0];
             if (idx >= 0 && idx < mapping[courtKey].length) {
-              mapping[courtKey][idx] = { status: "pending", userId: booking.userId.toString() };
+              mapping[courtKey][idx] = { 
+                status: "pending", 
+                userId: booking.userId.toString(),
+                username: booking.username || "Không xác định"
+              };
             }
           });
         });
@@ -220,8 +224,13 @@ export const getPendingMappingMemory = async (centerId, date) => {
 
 // ============== HÀM GET PENDING + BOOKED TỪ DB ==============
 export const getPendingMappingDB = async (centerId, date) => {
-  // Bao gồm cả booking có status "pending" và "booked"
-  const bookings = await Booking.find({ centerId, date, status: { $in: ["pending", "paid"] } });
+  // Lấy booking và populate thông tin user để lấy username
+  const bookings = await Booking.find({ 
+    centerId, 
+    date, 
+    status: { $in: ["pending", "paid"] }
+  }).populate("userId", "username");
+
   const mapping = {};
   bookings.forEach(booking => {
     booking.courts.forEach(courtBooking => {
@@ -232,10 +241,17 @@ export const getPendingMappingDB = async (centerId, date) => {
       courtBooking.timeslots.forEach(slot => {
         const idx = slot - TIMES[0];
         if (idx >= 0 && idx < mapping[courtKey].length) {
-          // Nếu booking đã được chuyển sang booked thì hiển thị "đã đặt"
           mapping[courtKey][idx] = booking.status === "paid"
-            ? "đã đặt"
-            : { status: "pending", userId: booking.userId.toString() };
+            ? { 
+                status: "đã đặt", 
+                userId: booking.userId.toString(),
+                username: booking.userId?.username || "Không xác định"
+              }
+            : { 
+                status: "pending", 
+                userId: booking.userId.toString(),
+                username: booking.userId?.username || "Không xác định"
+              };
         }
       });
     });
@@ -254,7 +270,6 @@ export const getFullPendingMapping = async (centerId, date) => {
     const dbArray = mappingDB[courtId] || Array(TIMES.length - 1).fill("trống");
     const mergedArray = [];
     for (let i = 0; i < cacheArray.length; i++) {
-      // Ưu tiên thông tin từ DB (bao gồm cả "đã đặt")
       if (dbArray[i] !== "trống") {
         mergedArray[i] = dbArray[i];
       } else if (cacheArray[i] !== "trống") {

@@ -1407,6 +1407,10 @@ overflow-x: auto;
   background-color: rgba(244, 67, 54, 0.1);
   color: var(--danger-color);
 }
+.status-processing {
+  background-color: #f97316;
+  color: #ffffff; /* chữ trắng */
+}
 
 .action-buttons {
   display: flex;
