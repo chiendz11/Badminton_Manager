@@ -11,16 +11,17 @@ const AdminNews = () => {
   const [formMode, setFormMode] = useState('create'); // 'create' hoặc 'edit'
   const [currentNews, setCurrentNews] = useState({
     title: '',
-    content: '',
-    images: [],
-    video: '',
-    author: 'Admin',
-    tags: [],
+    summary: '',
+    image: '',
+    category: '',
+    date: '',
+    source: '',
+    url: ''
   });
   const [selectedNewsId, setSelectedNewsId] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  // Load danh sách tin tức
+  // Hàm load danh sách tin tức
   const loadNews = async () => {
     setLoading(true);
     try {
@@ -40,7 +41,7 @@ const AdminNews = () => {
   // Xử lý thay đổi giá trị input trong form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCurrentNews(prev => ({ ...prev, [name]: value }));
+    setCurrentNews((prev) => ({ ...prev, [name]: value }));
   };
 
   // Xử lý submit form (thêm mới hoặc cập nhật)
@@ -52,13 +53,15 @@ const AdminNews = () => {
       } else {
         await updateNews(selectedNewsId, currentNews);
       }
+      // Reset form
       setCurrentNews({
         title: '',
-        content: '',
-        images: [],
-        video: '',
-        author: 'Admin',
-        tags: [],
+        summary: '',
+        image: '',
+        category: '',
+        date: '',
+        source: '',
+        url: ''
       });
       setShowForm(false);
       loadNews();
@@ -73,11 +76,12 @@ const AdminNews = () => {
     setSelectedNewsId(newsItem._id);
     setCurrentNews({
       title: newsItem.title || '',
-      content: newsItem.content || '',
-      images: newsItem.images || [],
-      video: newsItem.video || '',
-      author: newsItem.author || 'Admin',
-      tags: newsItem.tags || [],
+      summary: newsItem.summary || '',
+      image: newsItem.image || '',
+      category: newsItem.category || '',
+      date: newsItem.date || '',
+      source: newsItem.source || '',
+      url: newsItem.url || ''
     });
     setShowForm(true);
   };
@@ -100,11 +104,12 @@ const AdminNews = () => {
     setSelectedNewsId(null);
     setCurrentNews({
       title: '',
-      content: '',
-      images: [],
-      video: '',
-      author: 'Admin',
-      tags: [],
+      summary: '',
+      image: '',
+      category: '',
+      date: '',
+      source: '',
+      url: ''
     });
     setShowForm(true);
   };
@@ -120,7 +125,7 @@ const AdminNews = () => {
         >
           <Plus size={16} /> Thêm mới
         </button>
-        
+
         {loading ? (
           <p>Đang tải...</p>
         ) : (
@@ -129,16 +134,16 @@ const AdminNews = () => {
               <thead>
                 <tr>
                   <th className="py-2 px-4 border-b">Tiêu đề</th>
-                  <th className="py-2 px-4 border-b">Tác giả</th>
+                  <th className="py-2 px-4 border-b">Nguồn tin</th>
                   <th className="py-2 px-4 border-b">Ngày tạo</th>
                   <th className="py-2 px-4 border-b">Hành động</th>
                 </tr>
               </thead>
               <tbody>
-                {newsList.map(newsItem => (
+                {newsList.map((newsItem) => (
                   <tr key={newsItem._id} className="hover:bg-gray-100">
                     <td className="py-2 px-4 border-b">{newsItem.title}</td>
-                    <td className="py-2 px-4 border-b">{newsItem.author}</td>
+                    <td className="py-2 px-4 border-b">{newsItem.source}</td>
                     <td className="py-2 px-4 border-b">
                       {new Date(newsItem.createdAt).toLocaleDateString()}
                     </td>
@@ -182,17 +187,72 @@ const AdminNews = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 mb-1">Nội dung</label>
+                <label className="block text-gray-700 mb-1">Tóm tắt</label>
                 <textarea 
-                  name="content" 
-                  value={currentNews.content} 
+                  name="summary" 
+                  value={currentNews.summary} 
                   onChange={handleInputChange} 
                   className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                  rows="5" 
-                  required 
+                  rows="3" 
+                  required
                 ></textarea>
               </div>
-              {/* Có thể bổ sung thêm các trường khác như images, video, tags nếu cần */}
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">URL hình ảnh</label>
+                <input 
+                  type="url" 
+                  name="image" 
+                  value={currentNews.image} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Danh mục</label>
+                <input 
+                  type="text" 
+                  name="category" 
+                  value={currentNews.category} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Ngày</label>
+                <input 
+                  type="date" 
+                  name="date" 
+                  value={currentNews.date} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Nguồn tin</label>
+                <input 
+                  type="text" 
+                  name="source" 
+                  value={currentNews.source} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">URL bài viết</label>
+                <input 
+                  type="url" 
+                  name="url" 
+                  value={currentNews.url} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+
               <div className="flex justify-end gap-4">
                 <button 
                   type="button" 

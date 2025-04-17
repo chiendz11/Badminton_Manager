@@ -1,30 +1,28 @@
-import News from '../models/news.js';
+// newsService.js
+import New from "../models/news.js";
 
-const getAllNews = async () => {
-  return await News.find();
+// Lấy tất cả tin tức, sắp xếp giảm dần theo thời gian tạo
+export const fetchAllNews = async () => {
+  return await New.find().sort({ createdAt: -1 });
 };
 
-const getNewsById = async (id) => {
-  return await News.findById(id);
-};
-
-const createNews = async (data) => {
-  const news = new News(data);
+// Thêm tin tức mới
+export const addNews = async (newsData) => {
+  const news = new New(newsData);
   return await news.save();
 };
 
-const updateNews = async (id, data) => {
-  return await News.findByIdAndUpdate(id, data, { new: true });
+// Lấy tin tức theo ID
+export const fetchNewsById = async (id) => {
+  return await New.findById(id);
 };
 
-const deleteNews = async (id) => {
-  return await News.findByIdAndDelete(id);
+// Cập nhật tin tức theo ID
+export const modifyNews = async (id, updateData) => {
+  return await New.findByIdAndUpdate(id, updateData, { new: true });
 };
 
-export default {
-  getAllNews,
-  getNewsById,
-  createNews,
-  updateNews,
-  deleteNews,
+// Xoá tin tức theo ID
+export const removeNews = async (id) => {
+  return await New.findByIdAndDelete(id);
 };

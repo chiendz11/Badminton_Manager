@@ -7,16 +7,13 @@
     import courtRoute from "./routes/courtRoute.js";
     import courtStatusRoute from "./routes/courtStatusRoute.js"; // API booking status
     import { initSocket } from "./config/socket.js";
-    import bookingPendingRoute from "./routes/bookingRoute.js";
     import adminRoute from "./routes/adminRoutes.js";
     import inventoriesRoute from "./routes/inventoryRoutes.js";
     import addstockRoutes from './routes/addstockRoutes.js';
-    import userRoute from "./routes/userRoute.js";
     import centerRoute from "./routes/centersRoute.js";
     import newsRoute from "./routes/newsRoutes.js";
     import ratingRoute from "./routes/ratingRoutes.js";
     import AccountRoute from "./routes/accountRoutes.js";
-    import bookingRoutes from './routes/bookingRoute.js';
 
     // Kết nối tới MongoDB
     connectDB();
@@ -27,16 +24,13 @@
 
     app.use("/api/courts", courtRoute);
     app.use("/api/booking", courtStatusRoute);
-    app.use("/api/booking", bookingPendingRoute);
     app.use("/api/admin", adminRoute);
     app.use("/api/inventories", inventoriesRoute);
     app.use('/api/addstock', addstockRoutes);
-    app.use("/api/users", userRoute);
     app.use("/api/centers", centerRoute);
     app.use("/api/news", newsRoute);
     app.use("/api/ratings", ratingRoute);
     app.use("/api/admin/account", AccountRoute);
-    app.use('/bookings', bookingRoutes);
     
 
     const server = http.createServer(app);

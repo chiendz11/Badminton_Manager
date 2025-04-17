@@ -4,10 +4,8 @@ import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import CentersManagement from '@/pages/CentersManagement';
 import Shop from '@/pages/Shop';
-import Users from '@/pages/Users';
-import BookingsManagement from '@/pages/BookingsManagement';
 import News from '@/pages/News';
-import Rating from '@/pages/Rating';
+import Rating from '@/pages/RatingManagement';
 import Account from '@/pages/Account';
 
 
@@ -24,8 +22,6 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />        
         <Route path="/centersmanagement" element={<CentersManagement />} />        
         <Route path="/shop" element={<Shop />} />    
-        <Route path="/users" element={<Users />} />        
-        <Route path="/bookingsmanagement" element={<BookingsManagement />} />  
         <Route path="/news" element={<News />} /> 
         <Route path="/ratings" element={<Rating />} /> 
         <Route path="/account" element={<Account />} /> 

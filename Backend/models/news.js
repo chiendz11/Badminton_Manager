@@ -1,16 +1,14 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 
-const newsSchema = new mongoose.Schema({
-  title: { type: String, required: true }, // Tiêu đề bài viết
-  content: { type: String, required: true }, // Nội dung bài viết
-  images: [{ type: String }], // Danh sách URL hình ảnh (nếu có)
-  video: { type: String }, // URL video (YouTube, MP4, v.v.)
-  author: { type: String, default: "Admin" }, // Người đăng bài
-  tags: [{ type: String }], // Thẻ chủ đề (ví dụ: ["giải đấu", "kỹ thuật", "review"])
-  views: { type: Number, default: 0 }, // Số lượt xem
-  createdAt: { type: Date, default: Date.now }, // Ngày đăng
-  updatedAt: { type: Date, default: Date.now } // Ngày cập nhật
-});
+const newsSchema = new Schema({
+  title: { type: String, required: true },
+  summary: { type: String, required: true },
+  image: { type: String, required: true }, // URL của ảnh
+  category: { type: String, required: true },
+  date: { type: String, required: true }, // Có thể chuyển sang Date nếu bạn muốn
+  source: { type: String, required: true },
+  url: { type: String, required: true }
+}, { timestamps: true });
 
-const News = mongoose.model("News", newsSchema, "news");
-export default News;
+const New = model("New", newsSchema);
+export default New;

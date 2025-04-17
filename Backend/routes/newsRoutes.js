@@ -1,18 +1,28 @@
-import express from 'express';
+// newsRoutes.js
+import express from "express";
 import {
   getAllNews,
-  getNewsById,
   createNews,
+  getNewsById,
   updateNews,
   deleteNews,
-} from '../controllers/newsController.js';
+} from "./newsController.js";
 
 const router = express.Router();
 
-router.get('/', getAllNews);
-router.get('/:id', getNewsById);
-router.post('/', createNews);
-router.put('/:id', updateNews);
-router.delete('/:id', deleteNews);
+// Lấy danh sách tất cả tin tức
+router.get("/", getAllNews);
+
+// Tạo tin tức mới
+router.post("/", createNews);
+
+// Lấy chi tiết tin tức theo ID
+router.get("/:id", getNewsById);
+
+// Cập nhật tin tức theo ID
+router.put("/:id", updateNews);
+
+// Xoá tin tức theo ID
+router.delete("/:id", deleteNews);
 
 export default router;
