@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/footer.css';
+import { MessageSquare, X, Send } from 'lucide-react'; 
 
 const Footer = () => {
+  const [chatOpen, setChatOpen] = useState(false);
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
     });
+  };
+
+  const toggleChat = () => {
+    setChatOpen(!chatOpen);
   };
 
   return (
@@ -67,6 +74,50 @@ const Footer = () => {
           <p>© {new Date().getFullYear()} ĐẶT SÂN 247. Sự hài lòng của bạn là nhiệm vụ của chúng tôi.</p>
         </div>
       </div>
+
+      {chatOpen && (
+        <div className="ai-chat-container">
+          <div className="ai-chat-header">
+            <div className="ai-chat-title">
+              <div className="ai-avatar">AI</div>
+              <span>Trợ lý ĐẶT SÂN 247</span>
+            </div>
+            <button onClick={toggleChat} className="close-chat-btn">
+              <X size={18} />
+            </button>
+          </div>
+          <div className="ai-chat-messages">
+            <div className="ai-message">
+              <div className="ai-avatar">AI</div>
+              <div className="message-content" style={{color: '#333', backgroundColor: 'white'}}>
+                Xin chào! Tôi là trợ lý ảo của ĐẶT SÂN 247. Tôi có thể giúp gì cho bạn?
+              </div>
+            </div>
+
+            <div className="ai-message">
+              <div className="ai-avatar">AI</div>
+              <div className="message-content" style={{color: '#333', backgroundColor: 'white'}}>
+               Bạn muốn tìm sân cầu lông, tra cứu thông tin hay đặt sân ngay hôm nay?
+              </div>
+            </div>
+          </div>
+          <div className="ai-chat-input">
+            <input 
+              type="text" 
+              placeholder="Nhập tin nhắn của bạn..." 
+              disabled={true}
+            />
+            <button className="send-message-btn">
+              <Send size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <button onClick={toggleChat} className="chat-toggle-btn">
+        <MessageSquare size={24} />
+        <span className="sr-only">Trợ giúp</span>
+      </button>
       
       <button onClick={scrollToTop} className="scroll-to-top">
         <i className="fas fa-arrow-up"></i>

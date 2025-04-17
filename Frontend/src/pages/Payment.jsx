@@ -6,6 +6,7 @@ import SessionExpired from "../components/SessionExpired";
 import BookingHeader from "../components/BookingHeader";
 import { AuthContext } from "../contexts/AuthContext";
 import { fetchUserInfo } from "../apis/users";
+import '../styles/payments.css';
 
 const PaymentPage = () => {
   const navigate = useNavigate();
@@ -235,11 +236,11 @@ const PaymentPage = () => {
                 </div>
               </div>
               <div className="flex-shrink-0">
-                <div className="bg-white p-2 rounded-lg cursor-pointer" onClick={() => setShowQrModal(true)}>
+                <div className="bg-transparent p-2 rounded-lg cursor-pointer" onClick={() => setShowQrModal(true)}>
                   <img
-                    src="/images/Tiền.jpg"
+                    src="/images/QR.jpg"
                     alt="QR Code for payment"
-                    className="w-32 h-32 object-contain"
+                    className="w-32 h-32 object-contain qr-code-image"
                   />
                 </div>
               </div>
@@ -452,7 +453,7 @@ const PaymentPage = () => {
               &#10005;
             </button>
             <img
-              src="/images/Tiền.jpg"
+              src="/images/Full_QR.jpg"
               alt="QR Code for payment"
               className="max-w-full max-h-[80vh]"
             />
