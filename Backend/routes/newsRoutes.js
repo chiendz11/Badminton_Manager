@@ -6,7 +6,7 @@ import {
   getNewsById,
   updateNews,
   deleteNews,
-} from "./newsController.js";
+} from "../controllers/newsController.js";
 
 const router = express.Router();
 

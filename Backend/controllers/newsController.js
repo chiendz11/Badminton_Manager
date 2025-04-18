@@ -5,7 +5,7 @@ import {
   fetchNewsById,
   modifyNews,
   removeNews,
-} from "./newsService.js";
+} from "../services/newsService.js";
 
 // Lấy danh sách tất cả tin tức
 export const getAllNews = async (req, res) => {
