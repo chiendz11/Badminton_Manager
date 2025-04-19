@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/footer.css';
 import { MessageSquare, X, Send } from 'lucide-react'; 
-import ChatBox from '../components/ChatBox'
+import ChatBox from '../components/ChatBox';
 
 const Footer = () => {
   const [chatOpen, setChatOpen] = useState(false);
+  const [footerVisible, setFooterVisible] = useState(false);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -18,8 +19,55 @@ const Footer = () => {
     setChatOpen(!chatOpen);
   };
 
+  // Logic animation cho footer được tích hợp trực tiếp
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          // Kiểm tra đã đến gần cuối trang chưa
+          const isNearBottom = window.innerHeight + currentScrollY >= document.body.offsetHeight - 300;
+          const isVeryBottom = window.innerHeight + currentScrollY >= document.body.offsetHeight - 100;
+          
+          // Đang cuộn xuống
+          if (currentScrollY > lastScrollY) {
+            if (isNearBottom) {
+              setFooterVisible(true);
+            }
+          } 
+          // Đang cuộn lên
+          else {
+            if (!isVeryBottom) {
+              setFooterVisible(false);
+            }
+          }
+          
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        
+        ticking = true;
+      }
+    };
+    
+    // Kiểm tra vị trí ban đầu
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 300) {
+      setFooterVisible(true);
+    }
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
-    <footer className="site-footer">
+    <footer className={`site-footer ${footerVisible ? 'footer-visible' : 'footer-hidden'}`}>
       <div className="container">
         <div className="footer-content">
           <div className="footer-info">

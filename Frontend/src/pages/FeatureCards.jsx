@@ -214,7 +214,7 @@ const FeatureCards = () => {
                   <rect x="30" y="60" width="10" height="10" rx="2" fill="white" />
                   <rect x="45" y="60" width="10" height="10" rx="2" fill="white" />
                   <circle cx="65" cy="65" r="12" fill="#fa8c16" strokeWidth="2" stroke="white" />
-                  <text x="65" y="70" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="white">!</text>
+                  <text x="65" y="70" textAnchor="middle" fontFamily="Arial" fontSize="16" fontWeight="bold" fill="white">!</text>
                 </svg>
               </div>
               <div className="feature-text">

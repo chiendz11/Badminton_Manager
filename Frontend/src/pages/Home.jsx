@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import HowItWorks from '../components/HowItWorks';
 import HeroBanner from '../components/HeroBanner';
 import FeatureCards from '../pages/FeatureCards'
+import CustomerTestimonials from '../pages/CustomerTestimonials'
+import TestimonialsSection from '../pages/TestimonialsSection'
 
 const Home = () => {
   
@@ -37,7 +39,7 @@ const Home = () => {
         <h2 className="section-title text-center">Khám Phá Sân Cầu Lông</h2>
         <p className="section-desc text-center">Lựa chọn sân cầu lông phù hợp với nhu cầu của bạn</p>
       </div>
-    </div>
+      </div>
     
     <div className="container">
       <div className="row py-5 justify-content-center">
@@ -73,6 +75,14 @@ const Home = () => {
       </div>
     </div>
 
+    <div className="container mt-5">
+      <div className="section-header text-center mb-4">
+        <h2 className="section-title text-center">Khách hàng của chúng tôi</h2>
+        <p className="section-desc text-center">Những tập thể đã tin tưởng và ủng hộ DATSAN247</p>
+      </div>
+    </div>
+
+    <CustomerTestimonials />
 
       <div className="container promo-banner-container">
         <div className="section-header text-center mb-4">
@@ -93,6 +103,7 @@ const Home = () => {
       <hr/>
 
       <HowItWorks />
+      <TestimonialsSection />
     </>
   );
 };

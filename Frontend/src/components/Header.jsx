@@ -148,7 +148,7 @@ const Header = () => {
                         <img
                           src={user.avatar_image_path || "/default-avatar.png"}
                           alt="Avatar"
-                          className="w-12 h-12 rounded-full object-cover mr-2"
+                          className="w-10 h-10 rounded-full object-cover mr-2"
                         />
                         <span className="text-lg">{user.username}</span>
                         <i className="fas fa-chevron-down text-sm ml-1"></i>

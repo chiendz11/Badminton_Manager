@@ -14,8 +14,8 @@ import Contact from "./pages/Contact";
 import Competition from "./pages/Competition";
 import UserProfile from "./pages/UserProfile";
 import Service from "./pages/Service"
-
 import { AuthProvider } from './contexts/AuthContext';
+import WeatherDisplay from './components/WeatherDisplay'; 
 
 function App() {
   return (
@@ -32,7 +32,7 @@ function App() {
               </>
             }
           />
-<Route path="/profile" element={<UserProfile />} />
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="/service" element={<Service />} />
           <Route path="/competition" element={<Competition />} />
           <Route path="/contact" element={<Contact />} />
@@ -42,6 +42,7 @@ function App() {
           <Route path="/booking" element={<BookingSchedule />} />
           <Route path="/payment" element={< PaymentPage />} />
         </Routes>
+        <WeatherDisplay />
       </Router>
     </AuthProvider>
 
