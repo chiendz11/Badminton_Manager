@@ -67,6 +67,7 @@ const Footer = () => {
   }, []);
 
   return (
+    <>
     <footer className={`site-footer ${footerVisible ? 'footer-visible' : 'footer-hidden'}`}>
       <div className="container">
         <div className="footer-content">
@@ -123,18 +124,19 @@ const Footer = () => {
           <p>© {new Date().getFullYear()} ĐẶT SÂN 247. Sự hài lòng của bạn là nhiệm vụ của chúng tôi.</p>
         </div>
       </div>
-
-      <ChatBox isOpen={chatOpen} onClose={toggleChat} />
-      
-      <button onClick={toggleChat} className="chat-toggle-btn">
-        <MessageSquare size={24} />
-        <span className="sr-only">Trợ giúp</span>
-      </button>
-      
-      <button onClick={scrollToTop} className="scroll-to-top">
-        <i className="fas fa-arrow-up"></i>
-      </button>
     </footer>
+
+    <ChatBox isOpen={chatOpen} onClose={toggleChat} />
+
+    <button onClick={toggleChat} className="chat-toggle-btn">
+       <MessageSquare size={24} />
+       <span className="sr-only">Trợ giúp</span>
+    </button>
+
+    <button onClick={scrollToTop} className="scroll-to-top">
+      <i className="fas fa-arrow-up"></i>
+    </button> 
+    </>
   );
 };
 
