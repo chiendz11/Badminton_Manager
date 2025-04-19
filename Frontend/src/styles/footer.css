@@ -1,240 +1,243 @@
 .site-footer {
-    background-color: #0c8040;
-    color: #fff;
-    padding: 60px 0 20px;
-    position: relative;
-  }
-  
-  .footer-content {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    margin-bottom: 30px;
-  }
-  
-  .footer-info {
-    flex: 0 0 33%;
-  }
-  
-  .footer-logo {
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: #ff6347;
-  }
-  
-  .footer-logo span {
-    color: #ffcc00;
-  }
-  
-  .contact-info p {
-    margin-bottom: 10px;
-    font-size: 14px;
-  }
-  
-  .social-media h3 {
-    margin: 25px 0 15px;
-    font-size: 18px;
-  }
-  
-  .social-icons {
-    display: flex;
-    gap: 15px;
-  }
-  
-  .social-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #555;
-    color: white;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .social-icon:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.2);
-    opacity: 0;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.6s cubic-bezier(0.08, 0.35, 0.13, 1.02), opacity 0.3s;
-    z-index: -1;
-  }
-  
-  .social-icon:hover {
-    transform: translateY(-3px);
-  }
-  
-  .social-icon:hover::before {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-  
-  .social-icon.facebook:hover {
-    background-color: #3b5998;
-  }
-  
-  .social-icon.instagram:hover {
-    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-  }
-  
-  .social-icon.twitter:hover {
-    background-color: #1da1f2;
-  }
-  
-  .footer-about, .footer-categories {
-    flex: 0 0 25%;
-  }
-  
-  .footer-about h3, .footer-categories h3 {
-    font-size: 18px;
-    margin-bottom: 20px;
-    position: relative;
-    padding-bottom: 10px;
-  }
-  
-  .footer-about h3:after, .footer-categories h3:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 50px;
-    height: 2px;
-    background-color: #ffcc00;
-  }
-  
-  .about-desc {
-    margin-bottom: 20px;
-    line-height: 1.6;
-    font-size: 14px;
-  }
-  
-  .footer-links {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .footer-links li {
-    margin-bottom: 12px;
-  }
-  
-  .footer-links a {
-    color: #fff;
-    text-decoration: none;
-    position: relative;
-    padding-left: 15px;
-    overflow: hidden;
-    display: inline-block;
-  }
-  
-  .footer-links a:before {
-    content: '›';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 18px;
-    color: #ffcc00;
-    opacity: 0.7;
-    transition: transform 0.3s ease, opacity 0.3s;
-  }
-  
-  .footer-links a:after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background-color: #ffcc00;
-    transition: width 0.6s cubic-bezier(0.08, 0.35, 0.13, 1.02);
-  }
-  
-  .footer-links a:hover {
-    color: #ffcc00;
-    font-weight: 600;
-  }
-  
-  .footer-links a:hover:before {
-    opacity: 1;
-    transform: translate(3px, -50%);
-  }
-  
-  .footer-links a:hover:after {
-    width: 100%;
-  }
-  
-  .copyright {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.8);
-  }
-  
-  .scroll-to-top {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    width: 50px;
-    height: 50px;
-    background-color: #ffcc00;
-    color: #0c8040;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    z-index: 100;
-    overflow: hidden;
-  }
-  
-  .scroll-to-top:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #075e2f;
-    opacity: 0;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.6s cubic-bezier(0.08, 0.35, 0.13, 1.02), opacity 0.3s;
-    z-index: -1;
-  }
-  
-  .scroll-to-top:hover {
-    color: white;
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  }
-  
-  .scroll-to-top:hover:before {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-  
+  background-color: #0c8040;
+  color: #fff;
+  padding: 60px 0 20px;
+  position: relative;
+  transform-origin: bottom;
+  transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+  z-index: 10;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.footer-info {
+  flex: 0 0 33%;
+}
+
+.footer-logo {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #ff6347;
+}
+
+.footer-logo span {
+  color: #ffcc00;
+}
+
+.contact-info p {
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.social-media h3 {
+  margin: 25px 0 15px;
+  font-size: 18px;
+}
+
+.social-icons {
+  display: flex;
+  gap: 15px;
+}
+
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #555;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.social-icon:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.08, 0.35, 0.13, 1.02), opacity 0.3s;
+  z-index: -1;
+}
+
+.social-icon:hover {
+  transform: translateY(-3px);
+}
+
+.social-icon:hover::before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.social-icon.facebook:hover {
+  background-color: #3b5998;
+}
+
+.social-icon.instagram:hover {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.social-icon.twitter:hover {
+  background-color: #1da1f2;
+}
+
+.footer-about, .footer-categories {
+  flex: 0 0 25%;
+}
+
+.footer-about h3, .footer-categories h3 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.footer-about h3:after, .footer-categories h3:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background-color: #ffcc00;
+}
+
+.about-desc {
+  margin-bottom: 20px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: #fff;
+  text-decoration: none;
+  position: relative;
+  padding-left: 15px;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.footer-links a:before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #ffcc00;
+  opacity: 0.7;
+  transition: transform 0.3s ease, opacity 0.3s;
+}
+
+.footer-links a:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background-color: #ffcc00;
+  transition: width 0.6s cubic-bezier(0.08, 0.35, 0.13, 1.02);
+}
+
+.footer-links a:hover {
+  color: #ffcc00;
+  font-weight: 600;
+}
+
+.footer-links a:hover:before {
+  opacity: 1;
+  transform: translate(3px, -50%);
+}
+
+.footer-links a:hover:after {
+  width: 100%;
+}
+
+.copyright {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.scroll-to-top {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background-color: #ffcc00;
+  color: #0c8040;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.scroll-to-top:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #075e2f;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s cubic-bezier(0.08, 0.35, 0.13, 1.02), opacity 0.3s;
+  z-index: -1;
+}
+
+.scroll-to-top:hover {
+  color: white;
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-to-top:hover:before {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
 /* Chat AI styling */
 .chat-toggle-btn {
   position: fixed;
-  bottom: 100px; /* Điều chỉnh vị trí cao hơn một chút */
-  right: 30px; /* Căn chỉnh phải cho thẳng hàng với nút scroll-to-top */
+  bottom: 100px;
+  right: 30px;
   width: 50px;
   height: 50px;
   background-color: #2e7d32;
@@ -249,9 +252,8 @@
   z-index: 99;
   transition: all 0.3s ease;
   text-align: center;
-  padding: 0; /* Loại bỏ padding có thể gây lệch */
+  padding: 0;
 }
-
 
 .chat-toggle-btn:hover {
   background-color: #1b5e20;
@@ -321,10 +323,10 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   font-size: 14px;
   border: 2px solid rgba(255, 255, 255, 0.8);
-  flex-shrink: 0; /* Ngăn không cho bị bẹp */
-  min-width: 35px; /* Đảm bảo kích thước tối thiểu */
-  position: relative; /* Để có thể định vị pseudo-element */
-  overflow: visible; /* Cho phép hiển thị content bên ngoài */
+  flex-shrink: 0;
+  min-width: 35px;
+  position: relative;
+  overflow: visible;
 }
 
 .ai-avatar::before {
@@ -343,7 +345,7 @@
   border: none;
   color: white;
   cursor: pointer;
-  display: flex;
+  display: flex wonderful;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
@@ -397,14 +399,14 @@
   padding: 12px 16px;
   border-radius: 18px 18px 18px 4px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-  line-height: 1.5;
+  line-height: RELAXED;
   font-size: 14px;
   border-left: 3px solid #2e7d32;
-  word-wrap: break-word;  /* Đảm bảo văn bản dài được xuống dòng */
-  color: #333; /* Thêm màu chữ rõ ràng */
-  z-index: 2; /* Đảm bảo nằm trên các lớp khác */
-  position: relative; /* Cho phép z-index hoạt động */
-  min-width: 200px; /* Đảm bảo có chiều rộng tối thiểu */
+  word-wrap: break-word;
+  color: #333;
+  z-index: 2;
+  position: relative;
+  min-width: 200px;
 }
 
 .ai-chat-input {
@@ -454,26 +456,6 @@
   background-color: #1b5e20;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* Styles cho footer animation */
-.site-footer {
-  transition: transform 0.5s ease, opacity 0.5s ease;
-  position: relative;
-  z-index: 10;
-  transform-origin: bottom;
-}
-
-.footer-hidden {
-  transform: translateY(100px);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.footer-visible {
-  transform: translateY(0);
-  opacity: 1;
-  pointer-events: auto;
 }
 
 
