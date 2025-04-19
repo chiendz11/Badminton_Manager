@@ -110,6 +110,15 @@ const Header = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link
+                    to="/service"
+                    onClick={closeMenu}
+                    className="hover:text-yellow-300 transition-colors"
+                  >
+                    Dịch vụ
+                  </Link>
+                </li>
+                <li>
                   {/* Nếu chưa đăng nhập, mở modal đăng nhập */}
                   {user ? (
                     <Link

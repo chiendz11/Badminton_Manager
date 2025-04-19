@@ -13,6 +13,7 @@ import Policy from "./pages/Policy";
 import Contact from "./pages/Contact";
 import Competition from "./pages/Competition";
 import UserProfile from "./pages/UserProfile";
+import Service from "./pages/Service"
 
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -32,6 +33,7 @@ function App() {
             }
           />
 <Route path="/profile" element={<UserProfile />} />
+          <Route path="/service" element={<Service />} />
           <Route path="/competition" element={<Competition />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/policy" element={<Policy />} />
