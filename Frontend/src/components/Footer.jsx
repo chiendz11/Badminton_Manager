@@ -91,6 +91,9 @@ const Footer = () => {
                   <a href="https://twitter.com" className="social-icon twitter">
                     <i className="fab fa-twitter"></i>
                   </a>
+                  <a href="https://www.youtube.com/channel/UCDZ4Kmmnw84OgLZevnmvQXA" className="social-icon youtube">
+                    <i className="fab fa-youtube"></i>
+                  </a>
                 </div>
               </div>
             </div>
