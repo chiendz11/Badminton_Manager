@@ -12,7 +12,7 @@ const DashboardAdmin = () => {
   const goToAccount = () => navigate('/account');
   const goToShop = () => navigate('/shop');
   const goToStock = () => navigate('/stock');
-  const goToReport = () => navigate('/report'); // ✅ Mới thêm
+  const goToReport = () => navigate('/report');
   const handleLogout = () => navigate('/login');
 
   const features = [

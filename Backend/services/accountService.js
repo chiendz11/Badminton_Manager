@@ -1,26 +1,13 @@
-// src/services/accountService.js
+// services/accountService.js
 import Admin from "../models/admin.js";
+import bcrypt from "bcrypt";
 
-/**
- * Lấy thông tin admin theo id
- * @param {String} adminId
- * @returns {Promise<Object>} Admin
- */
-export const getAdminById = async (adminId) => {
-  return await Admin.findById(adminId);
-};
+export const findAdminById = (id) => Admin.findById(id).select("-password");
 
-/**
- * Cập nhật thông tin admin theo id
- * @param {String} adminId
- * @param {Object} updateData Dữ liệu cập nhật (ví dụ: { username, avatar })
- * @returns {Promise<Object>} Admin sau khi cập nhật
- */
-export const updateAdminAccount = async (adminId, updateData) => {
-  // Cập nhật trường updatedAt nếu cần (timestamps tự động cập nhật nếu bạn enable trong Schema)
-  const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updateData, {
-    new: true, // trả về admin sau khi update
-    runValidators: true,
-  });
-  return updatedAdmin;
+export const updateAdmin = async (id, updates) => {
+  if (updates.password) {
+    const salt = await bcrypt.genSalt(10);
+    updates.password = await bcrypt.hash(updates.password, salt);
+  }
+  return await Admin.findByIdAndUpdate(id, updates, { new: true }).select("-password");
 };

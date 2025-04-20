@@ -1,36 +1,36 @@
-// src/controllers/accountController.js
-import { getAdminById, updateAdminAccount } from "../services/accountService.js";
+// controllers/accountController.js
+import Admin from "../models/admin.js";
+import bcrypt from "bcrypt";
 
-/**
- * Controller để lấy thông tin tài khoản admin theo id.
- * API: GET /api/admin/:adminId
- */
-export const getAdminAccount = async (req, res) => {
+// Giả định bạn có middleware để gán req.adminId
+export const getCurrentAdmin = async (req, res) => {
   try {
-    const { adminId } = req.params;
-    const admin = await getAdminById(adminId);
+    const adminId = req.adminId; // lấy từ middleware xác thực
+    const admin = await Admin.findById(adminId).select("-password");
     if (!admin) {
-      return res.status(404).json({ message: "Không tìm thấy thông tin admin" });
+      return res.status(404).json({ message: "Admin not found" });
     }
-    res.status(200).json(admin);
+    res.json(admin);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-/**
- * Controller để cập nhật tài khoản admin
- * API: PUT /api/admin/:adminId
- */
-export const updateAdminAccountController = async (req, res) => {
+export const updateAdminAccount = async (req, res) => {
   try {
-    const { adminId } = req.params;
-    const updateData = req.body;
-    const updatedAdmin = await updateAdminAccount(adminId, updateData);
-    if (!updatedAdmin) {
-      return res.status(404).json({ message: "Không tìm thấy admin để cập nhật" });
+    const { username, password, avatar } = req.body;
+    const updates = { username, avatar };
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updates.password = await bcrypt.hash(password, salt);
     }
-    res.status(200).json({ admin: updatedAdmin });
+
+    const updatedAdmin = await Admin.findByIdAndUpdate(req.adminId, updates, {
+      new: true,
+    }).select("-password");
+
+    res.json(updatedAdmin);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,127 +1,73 @@
-// src/components/Account.jsx
-import React, { useState, useEffect } from 'react';
-import { getAdminAccount, updateAdminAccount } from '../apis/accountAPI.js';
-import { useNavigate } from 'react-router-dom';
+// src/pages/Account.jsx
+import { useEffect, useState } from "react";
+import { getCurrentAdmin, updateAdminAccount } from "../apis/accountAPI.js";
+import { toast } from "react-toastify";
 
-const Account = () => {
-  const navigate = useNavigate();
+function Account() {
   const [admin, setAdmin] = useState(null);
-  const [formData, setFormData] = useState({ username: '', avatar: '' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [form, setForm] = useState({ username: "", password: "", avatar: "" });
 
-  // Lấy thông tin admin từ localStorage
   useEffect(() => {
-    const storedAdmin = localStorage.getItem('admin');
-    if (storedAdmin && storedAdmin !== 'undefined') {
-      try {
-        const adminData = JSON.parse(storedAdmin);
-        if (adminData && adminData._id) {
-          fetchAdmin(adminData._id);
-        } else {
-          // Nếu không có _id, chuyển hướng về login hoặc xử lý lỗi khác
-          navigate('/login');
-        }
-      } catch (error) {
-        console.error('Lỗi parse JSON:', error);
-        navigate('/login');
-      }
-    } else {
-      // Nếu không có admin nào trong localStorage
-      navigate('/login');
-    }
-  }, [navigate]);
-  
-
-  const fetchAdmin = async (adminId) => {
-    try {
-      setLoading(true);
-      const adminData = await getAdminAccount(adminId);
-      setAdmin(adminData);
-      setFormData({
-        username: adminData.username || '',
-        avatar: adminData.avatar || ''
-      });
-    } catch (err) {
-      console.error('Chi tiết lỗi:', err);
-      setError('Lỗi khi tải thông tin tài khoản admin');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Xử lý thay đổi input
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+    getCurrentAdmin().then(data => {
+      setAdmin(data);
+      setForm({ username: data.username, avatar: data.avatar, password: "" });
     });
+  }, []);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Xử lý cập nhật thông tin admin
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
     try {
-      setLoading(true);
-      const result = await updateAdminAccount(admin._id, formData);
-      if (result.admin) {
-        // Cập nhật lại thông tin admin trong localStorage nếu cần
-        localStorage.setItem('admin', JSON.stringify(result.admin));
-        setAdmin(result.admin);
-        setSuccess('Cập nhật thông tin thành công!');
-      }
+      const updated = await updateAdminAccount(form);
+      setAdmin(updated);
+      toast.success("Cập nhật thành công");
+      setForm({ ...form, password: "" });
     } catch (err) {
-      console.error('Chi tiết lỗi:', err);
-      setError('Có lỗi xảy ra khi cập nhật thông tin');
-    } finally {
-      setLoading(false);
+      toast.error("Lỗi khi cập nhật tài khoản");
     }
   };
 
+  if (!admin) return <div>Loading...</div>;
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Thông tin tài khoản Admin</h2>
-      {loading && <p>Đang tải...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      {success && <p style={{ color: 'green' }}>{success}</p>}
-      {admin && (
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="username" style={{ marginRight: '10px' }}>
-              Tên đăng nhập:
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Nhập tên đăng nhập mới"
-            />
-          </div>
-          <div style={{ marginBottom: '15px' }}>
-            <label htmlFor="avatar" style={{ marginRight: '10px' }}>
-              Avatar URL:
-            </label>
-            <input
-              type="text"
-              id="avatar"
-              name="avatar"
-              value={formData.avatar}
-              onChange={handleChange}
-              placeholder="Nhập đường dẫn avatar mới"
-            />
-          </div>
-          <button type="submit" disabled={loading}>
-            Cập nhật
-          </button>
-        </form>
-      )}
+    <div className="max-w-md mx-auto p-4">
+      <h2 className="text-xl font-bold mb-4">Quản lý tài khoản</h2>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div>
+          <label className="block">Tên đăng nhập:</label>
+          <input
+            name="username"
+            value={form.username}
+            onChange={handleChange}
+            className="w-full border px-2 py-1 rounded"
+          />
+        </div>
+        <div>
+          <label className="block">Mật khẩu mới (bỏ trống nếu không đổi):</label>
+          <input
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            className="w-full border px-2 py-1 rounded"
+          />
+        </div>
+        <div>
+          <label className="block">Avatar URL:</label>
+          <input
+            name="avatar"
+            value={form.avatar}
+            onChange={handleChange}
+            className="w-full border px-2 py-1 rounded"
+          />
+        </div>
+        <button className="bg-blue-600 text-white px-4 py-2 rounded">Lưu thay đổi</button>
+      </form>
     </div>
   );
-};
+}
 
 export default Account;
