@@ -23,6 +23,11 @@ const bookingSchema = new Schema({
   createdAt: { type: Date, default: Date.now, index: true },
   paymentMethod: { type: String, default: "" },
   bookingCode: { type: String, unique: true, sparse: true, default: null, index: true },
+  deleted: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
   type: { type: String, enum: ["fixed", "daily"], default: "daily", index: true },
   note: { type: String, default: "" },
   paymentImage: { type: Buffer, default: null },

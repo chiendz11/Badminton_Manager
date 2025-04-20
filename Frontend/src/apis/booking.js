@@ -1,4 +1,3 @@
-// src/apis/bookingPending.js
 import axiosInstance from "../config/axiosConfig";
 
 export const togglePendingTimeslot = async (payload) => {
@@ -23,13 +22,14 @@ export const getPendingMapping = async (centerId, date) => {
   }
 };
 
-export const confirmBookingToDB = async ({ userId, centerId, date, totalAmount }) => {
+export const confirmBookingToDB = async ({ userId, centerId, date, totalAmount, name }) => {
   try {
     const response = await axiosInstance.post("/api/booking/pending/pendingBookingToDB", {
       userId,
       centerId,
       date,
-      totalAmount
+      totalAmount,
+      name
     });
     return response.data;
   } catch (error) {
@@ -37,7 +37,6 @@ export const confirmBookingToDB = async ({ userId, centerId, date, totalAmount }
     throw error;
   }
 };
-
 
 export const confirmBooking = async ({ userId, centerId, date, totalPrice, paymentImage, note }) => {
   try {
@@ -78,7 +77,6 @@ export const clearAllPendingBookings = async ({ userId, centerId }) => {
   }
 };
 
-
 export const cancelBooking = async () => {
   try {
     const response = await axiosInstance.post("/api/booking/cancel-booking");
@@ -91,7 +89,7 @@ export const cancelBooking = async () => {
 
 export const getPopularTimeSlot = async () => {
   try {
-    const response = await axiosInstance.get('/api/booking/popular-times'); // Giả sử backend chạy cùng domain
+    const response = await axiosInstance.get('/api/booking/popular-times');
     if (response.data.success) {
       return response.data.data;
     }
@@ -105,13 +103,26 @@ export const getPopularTimeSlot = async () => {
 export const getBookingHistory = async () => {
   try {
     const response = await axiosInstance.get('/api/booking/get-booking-history'); 
-    console.log("API Response:", response); // Log toàn bộ response để kiểm tra
+    console.log("API Response:", response);
     if (response.data.success) {
       return response.data;
     }
     throw new Error(response.data.message || 'API trả về nhưng không có message.');
   } catch (error) {
     console.error("Error in getBookingHistory:", error?.response || error);
+    throw error;
+  }
+};
+
+export const deleteBooking = async (bookingId) => {
+  try {
+    const response = await axiosInstance.post("/api/booking/delete-booking", { bookingId });
+    if (response.data.success) {
+      return response.data;
+    }
+    throw new Error(response.data.message || 'Lỗi khi xóa booking.');
+  } catch (error) {
+    console.error("Error in deleteBooking:", error.response?.data || error.message);
     throw error;
   }
 };

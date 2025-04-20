@@ -1,20 +1,41 @@
-  import React from "react";
+import React from "react";
 
-  const BillImage = ({ bill }) => {
-    if (!bill || !bill.paymentImage) {
-      return <div>No image available</div>;
-    }
+const BillImage = ({ bill, onImageClick }) => {
+  if (!bill || !bill.paymentImage) {
+    return <div>Không có ảnh</div>;
+  }
 
-    // Giả sử bill.paymentImage là một chuỗi base64 đã được trả về từ backend
-    // Nếu backend trả về Buffer, bạn cần chắc chắn rằng FE nhận được chuỗi base64.
-    const dataUrl = `data:${"image/jpeg"};base64,${bill.paymentImage}`;
+  // Kiểm tra xem paymentImage đã là data URL hay chỉ là chuỗi base64
+  let dataUrl = bill.paymentImage;
+  if (!dataUrl.startsWith("data:image/")) {
+    // Giả sử là chuỗi base64, thêm tiền tố mặc định (image/jpeg)
+    dataUrl = `data:image/jpeg;base64,${bill.paymentImage}`;
+  }
 
-    return (
-      <div>
-        <h2>Bill Payment Image</h2>
-        <img src={dataUrl} alt="Payment confirmation" style={{ maxWidth: "100%", height: "auto" }} />
-      </div>
-    );
-  };
+  // Kiểm tra xem dataUrl có hợp lệ không (cơ bản)
+  const isValidDataUrl = dataUrl.match(/^data:image\/(png|jpeg|gif);base64,[A-Za-z0-9+/=]+$/);
+  if (!isValidDataUrl) {
+    console.error("Invalid data URL:", dataUrl);
+    return <div>Ảnh không hợp lệ</div>;
+  }
 
-  export default BillImage;
+  return (
+    <div>
+      <img
+        src={dataUrl}
+        alt="Payment confirmation"
+        style={{
+          maxWidth: "200px",
+          height: "auto",
+          cursor: "pointer",
+          borderRadius: "8px",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        }}
+        onClick={() => onImageClick(dataUrl)}
+        onError={() => console.error("Lỗi khi tải ảnh:", dataUrl)} // Ghi log nếu ảnh không tải được
+      />
+    </div>
+  );
+};
+
+export default BillImage;

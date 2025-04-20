@@ -11,6 +11,7 @@ import {
   cancelBookingController,
   getPopularTimeSlotController,
   getBookingHistoryController,
+  deleteBookingController,
 } from "../controllers/bookingController.js";
 import { protect, restrictToClient } from "../middleware/authMiddleware.js";
 
@@ -29,8 +30,9 @@ router.post("/pending/clear-all", clearAllPendingBookingsController);
 router.get("/pending/mapping", getPendingMappingController);
 
 router.get("/pending/exists", checkPendingExistsController);
-router.post("/cancel-booking", protect, cancelBookingController);
-router.get("/popular-times", protect, getPopularTimeSlotController);
-router.get("/get-booking-history", protect, getBookingHistoryController);
+router.post("/cancel-booking", protect, restrictToClient, cancelBookingController);
+router.get("/popular-times", protect, restrictToClient, getPopularTimeSlotController);
+router.get("/get-booking-history", protect, restrictToClient, getBookingHistoryController);
+router.post("/delete-booking", protect, restrictToClient, deleteBookingController);
 
 export default router;

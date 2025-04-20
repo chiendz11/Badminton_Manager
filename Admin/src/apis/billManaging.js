@@ -56,3 +56,39 @@ export const getAllCenters = async () => {
     throw new Error(error.message || "Lỗi khi lấy danh sách trung tâm");
   }
 };
+
+// Lấy danh sách sân trống
+export const getAvailableCourts = async ({ centerId, startDate, timeslots, daysOfWeek }) => {
+  try {
+    const response = await axiosInstance.post("/api/admin/bill-manage/available-courts", {
+      centerId,
+      startDate,
+      timeslots,
+      daysOfWeek,
+    });
+    if (!response.data || !response.data.success) {
+      throw new Error(response.data.message || "Lỗi khi lấy danh sách sân trống");
+    }
+    return response.data.data;
+  } catch (error) {
+    throw new Error(error.message || "Lỗi khi lấy danh sách sân trống");
+  }
+};
+
+// Tạo booking cố định
+export const createFixedBookings = async ({ userId, centerId, bookings, type }) => {
+  try {
+    const response = await axiosInstance.post("/api/admin/bill-manage/fixed-bookings", {
+      userId,
+      centerId,
+      bookings,
+      type,
+    });
+    if (!response.data || !response.data.success) {
+      throw new Error(response.data.message || "Lỗi khi tạo booking cố định");
+    }
+    return response.data.data;
+  } catch (error) {
+    throw new Error(error.message || "Lỗi khi tạo booking cố định");
+  }
+};

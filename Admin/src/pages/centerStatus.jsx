@@ -3,12 +3,10 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import BookingTable from "../components/BookingTable";
-import Legend from "../components/Legend";
-import io from "socket.io-client";
+import Legend from "../components/legend";
 import { fetchFullMapping, getAllCenters, getCourtsByCenter } from "../apis/centerStatus";
 import { FaCalendarAlt, FaHome, FaArrowLeft } from "react-icons/fa";
-
-const socket = io("http://localhost:3000");
+import socket from "../socket"; // Đường dẫn tới file socket.js
 
 const times = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
 const slotCount = times.length - 1;
@@ -29,23 +27,22 @@ function applyLockedLogic(mapping, selectedDate, courts) {
   const currentHour = today.getHours();
   const currentMinute = today.getMinutes();
 
-  console.log(`Applying locked logic for date ${selectedDate}, today is ${todayStr}, current time: ${currentHour}:${currentMinute}`);
+  console.log(`Áp dụng logic khóa cho ngày ${selectedDate}, hôm nay là ${todayStr}, thời gian hiện tại: ${currentHour}:${currentMinute}`);
 
   courts.forEach((court) => {
     const courtId = court._id;
     const arr = updatedMapping[courtId] || Array(slotCount).fill("trống");
-    updatedMapping[courtId] = arr.map((status, i) => {
-      let normalizedStatus = typeof status === "object" && status.status ? status.status : status;
-
+    updatedMapping[courtId] = arr.map((slot, i) => {
       const slotHour = times[i];
       if (selectedDate === todayStr) {
         if (slotHour < currentHour || (slotHour === currentHour && currentMinute > 0)) {
           return "locked";
         }
       }
-      return normalizedStatus;
+      return slot; // Giữ nguyên đối tượng hoặc chuỗi gốc
     });
   });
+  console.log(`Mapping sau khi áp dụng logic khóa:`, updatedMapping);
   return updatedMapping;
 }
 
@@ -243,10 +240,10 @@ const CourtStatusPage = () => {
       return (
         <div
           key={dateStr}
-          className="mb-4 bg-green-100 p-2 rounded-md border border-gray-300"
+          className="mb-4 bg-green-100 p-0 rounded-md border border-gray-300" // Giảm từ p-2 xuống p-1
         >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <div className="w-full sm:w-40 text-sm font-medium text-black">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-0"> 
+            <div className="w-full sm:w-40 text-x font-medium text-black">
               {formatDisplayDate(date)}
             </div>
             <div className="w-full">

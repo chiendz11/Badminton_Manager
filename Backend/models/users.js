@@ -29,11 +29,6 @@ const UserSchema = new Schema(
       unique: true,
       match: [/^\d{10,15}$/, "Please enter a valid phone number"],
     },
-    address: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     registration_date: {
       type: Date,
       default: Date.now,

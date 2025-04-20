@@ -18,7 +18,6 @@ const PaymentPage = () => {
   const initialDate = state?.date || localStorage.getItem("selectedDate") || new Date().toISOString().split("T")[0];
   const totalPrice = state?.total || Number(localStorage.getItem("totalAmount")) || 0;
   const bookingCode = state?.bookingCode || localStorage.getItem("bookingId") || "BK123456";
-  // Lấy tên trung tâm từ localStorage (đã được lưu từ trang Centers)
   const centerName = localStorage.getItem("centerName") || "Tên Trung Tâm Mặc Định";
 
   // State
@@ -26,11 +25,11 @@ const PaymentPage = () => {
   const [timeLeft, setTimeLeft] = useState(300);
   const [showCopied, setShowCopied] = useState(false);
   const [paymentImageBase64, setPaymentImageBase64] = useState("");
-  const [note, setNote] = useState(""); // Ghi chú cho chủ sân
-  // Lấy slotGroups đã lưu từ trang booking
+  const [note, setNote] = useState("");
   const [slotGroups, setSlotGroups] = useState([]);
-  const [showQrModal, setShowQrModal] = useState(false); // State hiển thị modal QR
-  // Ref cho input file
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const paymentFileInputRef = useRef(null);
 
   // Khi component mount, lấy slotGroups từ localStorage
@@ -53,7 +52,7 @@ const PaymentPage = () => {
     clearAll();
   }, [userId, centerId]);
 
-  // Đồng hồ đếm ngược (dựa trên bookingExpiresAt hoặc fallback 300 giây)
+  // Đồng hồ đếm ngược
   useEffect(() => {
     const getExpiresAt = () => {
       const expiresAtStr = localStorage.getItem("bookingExpiresAt");
@@ -151,39 +150,50 @@ const PaymentPage = () => {
     return <SessionExpired />;
   }
 
-  // Xác nhận booking và thanh toán
-  const handleConfirmOrder = async () => {
-    try {
-      // 1. Xác nhận booking, gửi note kèm theo
-      const { success } = await confirmBooking({
-        userId,
-        centerId,
-        date: initialDate,
-        totalPrice,
-        paymentImage: paymentImageBase64, // Truyền ảnh thanh toán trực tiếp vào confirmBooking
-        note
-      });
+  // Hàm mở modal xác nhận khi nhấn nút "Confirm Booking"
+  const handleConfirmOrder = () => {
+    setIsConfirmModalOpen(true);
+  };
 
-      if (!success) {
-        alert("Xác nhận booking thất bại.");
-        return;
+  // Xử lý hành động từ modal xác nhận
+  const handleModalAction = async (action) => {
+    if (action === "confirm") {
+      try {
+        const { success } = await confirmBooking({
+          userId,
+          centerId,
+          date: initialDate,
+          totalPrice,
+          paymentImage: paymentImageBase64,
+          note,
+        });
+
+        if (!success) {
+          alert("Xác nhận booking thất bại.");
+          return;
+        }
+
+        // Hiển thị modal thành công
+        setIsSuccessModalOpen(true);
+
+        // Xóa thời gian đếm ngược trong localStorage
+        localStorage.removeItem("paymentStartTime");
+        localStorage.removeItem("bookingExpiresAt");
+
+        // Cập nhật dữ liệu user sau khi booking thành công
+        const updatedUserData = await fetchUserInfo();
+        setUser(updatedUserData.user);
+      } catch (error) {
+        alert("Lỗi khi xác nhận booking: " + error.message);
       }
-
-      alert("Đặt sân thành công!");
-
-      // Xóa thời gian đếm ngược trong localStorage
-      localStorage.removeItem("paymentStartTime");
-      localStorage.removeItem("bookingExpiresAt");
-
-      // Điều hướng về trang chủ
-      navigate("/");
-
-      // Cập nhật dữ liệu user sau khi booking thành công
-      const updatedUserData = await fetchUserInfo(); // API này trả về dữ liệu user cập nhật
-      setUser(updatedUserData.user);
-    } catch (error) {
-      alert("Lỗi khi xác nhận booking: " + error.message);
     }
+    setIsConfirmModalOpen(false);
+  };
+
+  // Đóng modal thành công và điều hướng
+  const handleSuccessModalClose = () => {
+    setIsSuccessModalOpen(false);
+    navigate("/"); // Hoặc navigate("/profile") nếu bạn muốn
   };
 
   return (
@@ -379,7 +389,7 @@ const PaymentPage = () => {
                   <p className="font-medium">{centerName}</p>
                 </div>
               </div>
-              {/* Booking details: Nếu có slotGroups thì hiển thị tiêu đề "Sân và Thời Gian:" và danh sách từng nhóm */}
+              {/* Booking details */}
               <div className="flex items-start gap-3">
                 <Calendar size={18} className="text-green-400" />
                 <div>
@@ -430,32 +440,74 @@ const PaymentPage = () => {
         accept="image/png, image/jpeg"
         ref={paymentFileInputRef}
         style={{ display: "none" }}
-        onChange={(e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-              setPaymentImageBase64(reader.result);
-            };
-            reader.readAsDataURL(file);
-          }
-        }}
+        onChange={handlePaymentImageUpload}
       />
+
       {/* Modal hiển thị QR Code */}
       {showQrModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500 bg-opacity-50">
           <div className="relative bg-white p-4 rounded-lg">
             <button
               onClick={() => setShowQrModal(false)}
               className="absolute top-2 right-2 text-gray-700 hover:text-gray-900"
             >
-              &#10005;
+              ✕
             </button>
             <img
               src="/images/Tiền.jpg"
               alt="QR Code for payment"
               className="max-w-full max-h-[80vh]"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Modal xác nhận thanh toán */}
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full transform transition-all duration-300 scale-100 hover:scale-105">
+            <h3 className="text-2xl font-bold text-green-900 mb-4 flex items-center gap-2">
+              <i className="fas fa-check-circle text-green-500"></i> Xác nhận thanh toán
+            </h3>
+            <p className="text-gray-700 mb-6 text-lg">
+              Bạn có chắc chắn về ảnh bill đã tải lên không? Vui lòng kiểm tra kỹ trước khi tiếp tục.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => handleModalAction("cancel")}
+                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => handleModalAction("confirm")}
+                className="px-6 py-2 bg-green-900 text-white rounded-md hover:bg-green-800 transition-colors flex items-center gap-2"
+              >
+                <i className="fas fa-check"></i> Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal thông báo thành công */}
+      {isSuccessModalOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full transform transition-all duration-300 scale-100 hover:scale-105">
+            <h3 className="text-2xl font-bold text-green-900 mb-4 flex items-center gap-2">
+              <i className="fas fa-check-circle text-green-500"></i> Thanh toán thành công
+            </h3>
+            <p className="text-gray-700 mb-6 text-lg">
+              Vui lòng vào phần lịch sử đặt sân để kiểm tra xem liệu admin đã duyệt đơn cho bạn chưa (admin thường mất một vài giây để duyệt).
+            </p>
+            <div className="flex justify-end">
+              <button
+                onClick={handleSuccessModalClose}
+                className="px-6 py-2 bg-green-900 text-white rounded-md hover:bg-green-800 transition-colors"
+              >
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}

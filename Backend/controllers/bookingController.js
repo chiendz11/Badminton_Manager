@@ -1,4 +1,3 @@
-// src/controllers/bookingPendingController.js
 import {
   togglePendingTimeslotMemory,
   pendingBookingToDB,
@@ -8,9 +7,10 @@ import {
   getBookingImageService,
   cancelBookingService,
   getPopularTimeSlot,
-  getBookingHistory
+  getBookingHistory,
+  deleteBookingService
 } from "../services/bookingServices.js";
-import Booking from "../models/bookings.js"; // Cho hàm checkPendingExists
+import Booking from "../models/bookings.js";
 
 export const togglePendingTimeslotController = async (req, res) => {
   try {
@@ -26,9 +26,9 @@ export const togglePendingTimeslotController = async (req, res) => {
 export const pendingBookingToDBController = async (req, res) => {
   try {
     const { userId, centerId, date, totalAmount } = req.body;
-    const username = req.user.username; // Lấy từ authMiddleware
-    const booking = await pendingBookingToDB(userId, centerId, date, totalAmount, username);
-    console.log(username);
+    const name = req.user.name;
+    const booking = await pendingBookingToDB(userId, centerId, date, totalAmount, name);
+    console.log(name);
     res.json({ success: true, booking });
   } catch (error) {
     console.error("Error confirming booking to DB (Controller):", error);
@@ -39,8 +39,6 @@ export const pendingBookingToDBController = async (req, res) => {
 export const bookedBookingInDBController = async (req, res) => {
   try {
     const { userId, centerId, date, totalAmount, paymentImage, note } = req.body;
-
-    // Gọi service để cập nhật booking từ pending -> paid
     const result = await bookedBookingInDB({
       userId,
       centerId,
@@ -49,7 +47,6 @@ export const bookedBookingInDBController = async (req, res) => {
       paymentImage,
       note
     });
-
     res.json({ success: true, booking: result.booking, totalPoints: result.totalPoints, pointsEarned: result.pointsEarned });
   } catch (error) {
     console.error("Lỗi khi xác nhận thanh toán booking (Controller):", error);
@@ -87,7 +84,6 @@ export const getPendingMappingController = async (req, res) => {
 export const checkPendingExistsController = async (req, res) => { 
   try {
     const { userId, centerId } = req.query;
-    // Tìm một pending booking dựa vào userId và centerId
     const pendingBooking = await Booking.findOne({
       userId,
       centerId,
@@ -104,8 +100,6 @@ export const checkPendingExistsController = async (req, res) => {
   }
 };
 
-
-
 export const getBookingImageController = async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -120,12 +114,9 @@ export const getBookingImageController = async (req, res) => {
   }
 };
 
-;
-
 export const cancelBookingController = async (req, res) => {
   try {
-    const userId = req.user._id; // Lấy từ authMiddleware
-
+    const userId = req.user._id;
     const result = await cancelBookingService(userId);
     res.status(200).json({
       success: true,
@@ -140,7 +131,6 @@ export const cancelBookingController = async (req, res) => {
 
 export const getPopularTimeSlotController = async (req, res) => {
   try {
-    // Lấy userId từ req.user (được thiết lập bởi auth middleware)
     const userId = req.user._id;
     const result = await getPopularTimeSlot(userId);
     res.json({ success: true, data: result });
@@ -150,7 +140,6 @@ export const getPopularTimeSlotController = async (req, res) => {
   }
 };
 
-
 export const getBookingHistoryController = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -159,5 +148,19 @@ export const getBookingHistoryController = async (req, res) => {
   } catch (error) {
     console.error("Error getting booking history:", error);
     return res.status(500).json({ success: false, message: error?.message || "Lỗi server" });
+  }
+};
+
+export const deleteBookingController = async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    const booking = await deleteBookingService(bookingId);
+    if (!booking) {
+      return res.status(404).json({ success: false, message: "Booking not found or not in paid status" });
+    }
+    res.json({ success: true, booking });
+  } catch (error) {
+    console.error("Error in deleteBookingController:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
