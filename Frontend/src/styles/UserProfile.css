@@ -17,6 +17,7 @@
   --warning-color: #ff9800;
   --danger-color: #f44336;
   --info-color: #2196f3;
+  --processing-color: #0288D1;
   --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -1408,8 +1409,8 @@ overflow-x: auto;
   color: var(--danger-color);
 }
 .status-processing {
-  background-color: #f97316;
-  color: #ffffff; /* chữ trắng */
+  background-color: rgba(2, 136, 209, 0.1); /* Sea blue with 10% opacity */
+  color: var(--processing-color); /* Sea blue text */
 }
 
 .action-buttons {
@@ -1781,6 +1782,16 @@ overflow-x: auto;
 .filter-chip.success:hover,
 .filter-chip.success input:checked+span {
   background-color: rgba(76, 175, 80, 0.2);
+}
+
+.filter-chip.processing {
+  background-color: rgba(2, 136, 209, 0.1); /* Sea blue with 10% opacity */
+  color: var(--processing-color); /* Sea blue text/icon */
+}
+
+.filter-chip.processing:hover,
+.filter-chip.processing input:checked+span {
+  background-color: rgba(2, 136, 209, 0.2); /* Sea blue with 20% opacity */
 }
 
 .filter-chip.warning {

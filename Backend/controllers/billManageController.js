@@ -1,5 +1,4 @@
-// controllers/billManageController.js
-import { getAllBillsWithDetails, updateBillStatusService, searchUsersService, getAllCentersService } from '../services/billManageServices.js';
+import { getAllBillsWithDetails, updateBillStatusService, searchUsersService, getAllCentersService, getAvailableCourts, createFixedBookings } from '../services/billManageServices.js';
 
 // Controller to get all bills with details
 export const getAllBillsController = async (req, res) => {
@@ -22,7 +21,7 @@ export const getAllBillsController = async (req, res) => {
 // Controller to update bill status
 export const updateBillStatusController = async (req, res) => {
     try {
-        const { billId, status } = req.body; // Lấy từ body thay vì query
+        const { billId, status } = req.body;
 
         if (!billId || !status) {
             return res.status(400).json({
@@ -87,6 +86,72 @@ export const getAllCentersController = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: error.message || 'Lỗi server khi lấy danh sách trung tâm',
+        });
+    }
+};
+
+// Controller to get available courts
+export const getAvailableCourtsController = async (req, res) => {
+    try {
+        const { centerId, startDate, timeslots, daysOfWeek } = req.body;
+
+        if (!centerId || !startDate || !timeslots || !daysOfWeek) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu tham số bắt buộc: centerId, startDate, timeslots, hoặc daysOfWeek",
+            });
+        }
+
+        const availableCourts = await getAvailableCourts({
+            centerId,
+            startDate: new Date(startDate),
+            timeslots,
+            daysOfWeek,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Danh sách sân trống được lấy thành công',
+            data: availableCourts,
+        });
+    } catch (error) {
+        console.error('Lỗi trong controller getAvailableCourts:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Lỗi server khi lấy danh sách sân trống',
+        });
+    }
+};
+
+// Controller to create fixed bookings
+export const createFixedBookingsController = async (req, res) => {
+    try {
+        const { userId, centerId, bookings, type } = req.body;
+
+        if (!userId || !centerId || !bookings || !type) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu tham số bắt buộc: userId, centerId, bookings, hoặc type",
+            });
+        }
+
+        const newBookings = await createFixedBookings({
+            userId,
+            centerId,
+            bookings,
+            type,
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: 'Tạo booking cố định thành công',
+            data: newBookings,
+        });
+    } catch (error) {
+        console.error('Lỗi trong controller createFixedBookings:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Lỗi server khi tạo booking cố định',
         });
     }
 };

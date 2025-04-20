@@ -5,8 +5,10 @@ import React from "react";
  * - Hiển thị các trạng thái:
  *   - "booked" (màu đỏ)
  *   - "pending" (màu vàng)
+ *   - "chờ xử lý" (màu xanh nước biển, --processing-color: #0288D1)
  *   - "locked" (màu xám)
  *   - "trống" (màu trắng)
+ * - Hiển thị username trong các ô "đã đặt", "pending", và "chờ xử lý".
  * - Không cho người dùng click để toggle.
  */
 const BookingTable = ({ courts, bookingData, times, slotCount }) => {
@@ -17,7 +19,7 @@ const BookingTable = ({ courts, bookingData, times, slotCount }) => {
           <tr>
             <th
               className="p-2 transparent text-center font-bold text-black"
-              style={{ width: "60px" }}
+              style={{ width: "80px" }} // Tăng từ 60px lên 80px
             ></th>
             {Array.from({ length: slotCount }, (_, i) => {
               const startHour = times[i];
@@ -26,7 +28,7 @@ const BookingTable = ({ courts, bookingData, times, slotCount }) => {
                 <th
                   key={i}
                   className="transparent text-black relative"
-                  style={{ width: "40px" }}
+                  style={{ width: "60px" }} // Tăng từ 40px lên 60px
                 >
                   <div
                     className="absolute bottom-0 bg-yellow-500"
@@ -73,7 +75,7 @@ const BookingTable = ({ courts, bookingData, times, slotCount }) => {
             <tr key={rowIndex} style={{ border: "1px solid black" }}>
               <td
                 className="bg-green-200 text-black text-center font-bold"
-                style={{ width: "60px", padding: "2px" }}
+                style={{ width: "80px", padding: "2px" }} // Tăng từ 60px lên 80px
               >
                 {court.name}
               </td>
@@ -87,13 +89,19 @@ const BookingTable = ({ courts, bookingData, times, slotCount }) => {
                     ? bookingData[court._id][colIndex]
                     : "trống";
 
-                const statusStr = typeof rawStatus === "string" ? rawStatus.toLowerCase() : "trống";
+                // Xử lý rawStatus là chuỗi hoặc đối tượng
+                const isObject = typeof rawStatus === "object";
+                const statusStr = isObject ? rawStatus.status?.toLowerCase() : rawStatus.toLowerCase();
+                const name = isObject ? rawStatus.name || "" : "";
 
+                // Xác định trạng thái
                 let status;
                 if (statusStr.includes("đã đặt") || statusStr.includes("booked")) {
                   status = "booked";
                 } else if (statusStr.includes("pending")) {
                   status = "pending";
+                } else if (statusStr.includes("chờ xử lý") || statusStr.includes("processing")) {
+                  status = "processing";
                 } else if (statusStr.includes("locked")) {
                   status = "locked";
                 } else {
@@ -105,12 +113,14 @@ const BookingTable = ({ courts, bookingData, times, slotCount }) => {
                     ? "bg-red-500"
                     : status === "pending"
                     ? "bg-yellow-500"
+                    : status === "processing"
+                    ? "bg-[#0288D1]" // Sử dụng --processing-color: #0288D1
                     : status === "locked"
                     ? "bg-gray-300"
                     : "bg-white";
 
                 const textColor =
-                  status === "booked" || status === "pending"
+                  status === "booked" || status === "pending" || status === "processing"
                     ? "text-white"
                     : "text-black";
 
@@ -118,16 +128,17 @@ const BookingTable = ({ courts, bookingData, times, slotCount }) => {
                   <td
                     key={colIndex}
                     style={{
-                      width: "40px",
-                      height: "30px",
+                      width: "60px", // Tăng từ 40px lên 60px
+                      height: "40px", // Tăng từ 30px lên 40px
                       padding: "0",
                       border: "1px solid black",
                     }}
                   >
                     <div
-                      className={`h-full flex items-center justify-center ${bgColor} ${textColor}`}
+                      className={`h-full flex items-center justify-center ${bgColor} ${textColor} text-xs font-medium`}
+                      title={name ? `${status === "processing" ? "Đang xử lý" : status === "booked" ? "Đã đặt" : "Pending"} bởi ${name}` : status}
                     >
-                      {/* Không hiển thị text, chỉ hiển thị màu */}
+                      {(status === "booked" || status === "pending" || status === "processing") && name ? name : ""}
                     </div>
                   </td>
                 );

@@ -1,10 +1,8 @@
-// src/services/userService.js
 import Rating from "../models/ratings.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/users.js";
 import mongoose from "mongoose";
-// services/chartDataService.js
 import Chart from "../models/charts.js";
 import dotenv from "dotenv";
 import Center from "../models/centers.js";
@@ -13,12 +11,15 @@ import { checkEmailExistsService, updateAvgRating, sendEmailService, generateRan
 
 dotenv.config();
 
+// Constants for level calculation
+const levels = ["Sắt", "Đồng", "Bạc", "Vàng", "Bạch kim"];
+const pointsPerLevel = 1000;
 
 /**
  * Đăng ký user mới
  */
 export const registerUserService = async (userData) => {
-    const { name, email, phone_number, address, username, password, avatar_image_path } = userData;
+    const { name, email, phone_number, username, password, avatar_image_path } = userData;
     const errors = {};
 
     if (!name || !name.trim()) errors.name = "Vui lòng nhập Họ và tên";
@@ -28,16 +29,13 @@ export const registerUserService = async (userData) => {
         errors.email = "Email không hợp lệ";
     }
     if (!phone_number || !phone_number.trim()) errors.phone_number = "Vui lòng nhập Số điện thoại";
-    if (!address || !address.trim()) errors.address = "Vui lòng nhập Địa chỉ";
     if (!username || !username.trim()) errors.username = "Vui lòng nhập Tên đăng nhập";
     if (!password) errors.password = "Vui lòng nhập Mật khẩu";
     if (password && password.length < 6) errors.password = "Mật khẩu phải có ít nhất 6 ký tự!";
 
-    // Kiểm tra email với Hunter.io (có thể bỏ qua nếu muốn giảm thời gian)
     const emailCheckResult = await checkEmailExistsService(email);
     if (!emailCheckResult.success) errors.email = emailCheckResult.message;
 
-    // Kiểm tra sự tồn tại của email, số điện thoại và username
     const [emailExists, phoneExists, usernameExists] = await Promise.all([
         User.findOne({ email }),
         User.findOne({ phone_number }),
@@ -52,7 +50,6 @@ export const registerUserService = async (userData) => {
         throw { status: 400, errors };
     }
 
-    // Hash mật khẩu
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -60,7 +57,6 @@ export const registerUserService = async (userData) => {
         name,
         email,
         phone_number,
-        address,
         username,
         password_hash: hashedPassword,
         avatar_image_path: avatar_image_path || ""
@@ -76,22 +72,21 @@ export const loginUserService = async (username, password) => {
     if (!user) {
       throw new Error("User không tồn tại!");
     }
-    // Debug log (chỉ dùng khi phát triển)
     console.log("Password nhập:", password);
     console.log("Hash DB:", user.password_hash);
-  
+
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
       throw new Error("Sai username hoặc password!");
     }
-  
+
     const token = jwt.sign(
-      { id: user._id, type: "user" }, // Thêm type: "user"
+      { id: user._id, type: "user" },
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );
     return { user, token };
-  };
+};
 
 /**
  * Cập nhật thông tin user
@@ -118,16 +113,45 @@ export const updateUserPasswordService = async (user, oldPassword, newPassword) 
     return user;
 };
 
+/**
+ * Tính và cập nhật level của user dựa trên points
+ */
+export const updateUserLevel = async (userId) => {
+    try {
+        // Tìm user theo userId
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error("User không tồn tại");
+        }
+
+        // Tính level dựa trên points
+        const userPoints = user.points || 0;
+        const currentLevelIndex = Math.min(Math.floor(userPoints / pointsPerLevel), levels.length - 1);
+        const currentLevelName = levels[currentLevelIndex];
+
+        // Cập nhật currentLevelName vào user document
+        user.level = currentLevelName;
+        await user.save();
+
+        console.log(`Cập nhật level cho user ${userId}: ${currentLevelName}`);
+        return { currentLevelName };
+    } catch (error) {
+        console.error("Lỗi khi cập nhật level cho user:", error);
+        throw new Error("Có lỗi xảy ra khi cập nhật level user");
+    }
+};
+
+/**
+ * Cập nhật số lượng completed bookings cho user
+ */
 export const updateCompletedBookingsForUser = async (userId) => {
     try {
-        // Đếm số bill có paymentStatus "paid" cho user
         const completedCount = await Booking.countDocuments({
             userId: new mongoose.Types.ObjectId(userId),
             paymentStatus: "paid"
         });
         console.log(`Đếm completed bookings cho user ${userId}: ${completedCount}`);
 
-        // Cập nhật stats.completedBookings trong document của user
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { $set: { "stats.completedBookings": completedCount } },
@@ -146,6 +170,9 @@ export const updateCompletedBookingsForUser = async (userId) => {
     }
 };
 
+/**
+ * Tăng tổng số bookings của user
+ */
 export const incrementTotalBookings = async (userId) => {
     const updatedUser = await User.findByIdAndUpdate(
         userId,
@@ -156,6 +183,9 @@ export const incrementTotalBookings = async (userId) => {
     return updatedUser.stats.totalBookings;
 };
 
+/**
+ * Đánh dấu booking bị hủy
+ */
 export const markBookingAsCancelled = async (userId) => {
     const updatedUser = await User.findByIdAndUpdate(
         userId,
@@ -165,6 +195,9 @@ export const markBookingAsCancelled = async (userId) => {
     return updatedUser;
 };
 
+/**
+ * Cập nhật điểm của user dựa trên totalAmount
+ */
 export const updateUserPoints = async (userId, totalAmount) => {
     let pointsToAdd = 0;
     if (totalAmount > 100000 && totalAmount < 200000) {
@@ -187,30 +220,31 @@ export const updateUserPoints = async (userId, totalAmount) => {
     console.log(
         `User ${userId} được cộng ${pointsToAdd} điểm, tổng điểm mới: ${updatedUser.points}`
     );
+
+    // Gọi hàm updateUserLevel để cập nhật level sau khi điểm thay đổi
+    await updateUserLevel(userId);
+
     return { totalPoints: updatedUser.points, pointsEarned: pointsToAdd };
 };
 
-
-
-// Hàm cập nhật số completed cho tháng tương ứng với ngày truyền vào (bill.date)
+/**
+ * Cập nhật số completed cho tháng tương ứng
+ */
 export const updateChartForCompleted = async (userId, date = new Date()) => {
-
     if (!(date instanceof Date)) {
         date = new Date(date);
     }
-    const monthNumber = date.getMonth() + 1; // 1 đến 12
+    const monthNumber = date.getMonth() + 1;
     const monthKey = "T" + monthNumber;
 
     let chartData = await Chart.findOne({ user: userId });
     if (!chartData) {
-        // Nếu chưa có, tạo mới với mảng mặc định 12 tháng
         const defaultMonths = [];
         for (let i = 1; i <= 12; i++) {
             defaultMonths.push({ month: "T" + i, completed: 0, cancelled: 0 });
         }
         chartData = new Chart({ user: userId, months: defaultMonths });
     }
-    // Tăng số completed cho tháng tương ứng
     const monthObj = chartData.months.find((m) => m.month === monthKey);
     if (monthObj) {
         monthObj.completed += 1;
@@ -219,9 +253,10 @@ export const updateChartForCompleted = async (userId, date = new Date()) => {
     return chartData;
 };
 
-// Hàm cập nhật số cancelled cho tháng tương ứng với ngày truyền vào (thường dùng new Date())
+/**
+ * Cập nhật số cancelled cho tháng tương ứng
+ */
 export const updateChartForCancelled = async (userId, date = new Date()) => {
-
     if (!(date instanceof Date)) {
         date = new Date(date);
     }
@@ -244,7 +279,9 @@ export const updateChartForCancelled = async (userId, date = new Date()) => {
     return chartData;
 };
 
-
+/**
+ * Lấy dữ liệu biểu đồ
+ */
 export const getChartService = async (userId) => {
     const chartData = await Chart.findOne({ user: userId });
     if (!chartData) {
@@ -257,27 +294,28 @@ export const getChartService = async (userId) => {
     return chartData.months;
 };
 
+/**
+ * So sánh thay đổi giữa hai khoảng thời gian
+ */
 const compareChange = (current, previous) => {
     if (previous === 0) return current > 0 ? 100 : 0;
     return ((current - previous) / previous) * 100;
 };
 
+/**
+ * Lấy thống kê booking của user
+ */
 export const getUserBookingStats = async (userId, period = "month") => {
     let currentStart, previousStart, previousEnd;
-    // Sử dụng múi giờ Việt Nam cho thời gian hiện tại
     const now = new Date();
 
     if (period === "week") {
-        // Giả sử tuần bắt đầu từ thứ Hai.
-        const dayOfWeek = now.getDay(); // 0 (Chủ nhật) - 6
-        // Tính khoảng cách tới thứ Hai: nếu ngày hiện tại là Chủ nhật (0) thì diff = 6, nếu không thì diff = dayOfWeek - 1
+        const dayOfWeek = now.getDay();
         const diffToMonday = (dayOfWeek + 6) % 7;
         currentStart = new Date(now);
         currentStart.setDate(now.getDate() - diffToMonday);
-        // Đặt giờ cho currentStart là 0:00:00
         currentStart.setHours(0, 0, 0, 0);
 
-        // Previous week: bắt đầu từ thứ Hai của tuần trước và kết thúc vào Chủ nhật của tuần trước.
         previousStart = new Date(currentStart);
         previousStart.setDate(currentStart.getDate() - 7);
         previousEnd = new Date(currentStart);
@@ -299,7 +337,6 @@ export const getUserBookingStats = async (userId, period = "month") => {
     console.log("Previous period start:", previousStart);
     console.log("Previous period end:", previousEnd);
 
-    // Sử dụng createdAt để lọc, ép kiểu bằng $toDate nếu cần
     const currentPaidBookingAgg = await Booking.aggregate([
         {
             $match: {
@@ -437,6 +474,9 @@ export const getUserBookingStats = async (userId, period = "month") => {
     };
 };
 
+/**
+ * Quên mật khẩu qua email
+ */
 export const forgotPasswordByEmailService = async (email) => {
     const user = await User.findOne({ email });
 
@@ -444,18 +484,13 @@ export const forgotPasswordByEmailService = async (email) => {
         return { success: false, message: "Không tìm thấy người dùng với email này." };
     }
 
-    // 1. Tạo mật khẩu ngẫu nhiên mới
-    const newPassword = generateRandomPassword(12); // Tạo mật khẩu 12 ký tự (ví dụ)
-
-    // 2. Hash mật khẩu mới
+    const newPassword = generateRandomPassword(12);
     const salt = await bcrypt.genSalt(10);
     const hashedNewPassword = await bcrypt.hash(newPassword, salt);
 
-    // 3. Cập nhật mật khẩu trong database
     user.password_hash = hashedNewPassword;
     await user.save();
 
-    // 4. Gửi mật khẩu mới đến email của người dùng
     const subject = "Mật khẩu Mới Của Bạn";
     const html = `<p>Chúng tôi đã đặt lại mật khẩu cho tài khoản của bạn.</p>
                   <p>Mật khẩu mới của bạn là: <strong>${newPassword}</strong></p>
@@ -470,8 +505,10 @@ export const forgotPasswordByEmailService = async (email) => {
     }
 };
 
+/**
+ * Thêm đánh giá
+ */
 export const insertRatingService = async ({ centerId, userId, stars, comment }) => {
-    // Kiểm tra dữ liệu đầu vào
     if (!centerId || !userId || !stars) {
         throw { status: 400, message: "Vui lòng điền đầy đủ thông tin!" };
     }
@@ -480,8 +517,6 @@ export const insertRatingService = async ({ centerId, userId, stars, comment }) 
         throw { status: 400, message: "Số sao phải từ 1 đến 5!" };
     }
 
-
-    // Tạo đánh giá mới
     const newRating = new Rating({
         center: centerId,
         user: userId,
@@ -489,53 +524,48 @@ export const insertRatingService = async ({ centerId, userId, stars, comment }) 
         comment,
     });
 
-    // Lưu đánh giá vào database
     await newRating.save();
     console.log("✅ Đã thêm rating thành công!");
 
-    // Cập nhật điểm trung bình của center
     await updateAvgRating(centerId);
 
     return newRating;
 };
 
+/**
+ * Cập nhật trung tâm yêu thích
+ */
 export const updateFavouriteCenter = async (userId, centerId) => {
     try {
-        // Kiểm tra xem user có tồn tại hay không
         const user = await User.findById(userId);
         if (!user) {
             throw new Error("User không tồn tại");
         }
 
-        // Tìm trung tâm theo centerId để lấy centerName
         const center = await Center.findById(centerId);
         if (!center) {
             throw new Error("Trung tâm không tồn tại");
         }
 
-        const centerName = center.name; // Lấy centerName từ trung tâm
+        const centerName = center.name;
 
-        // Kiểm tra nếu trung tâm đã có trong danh sách yêu thích của user
         const existingFavourite = user.favouriteCenter.find(
             (item) => item.centerName === centerName
         );
 
         if (existingFavourite) {
-            // Nếu trung tâm đã có, chỉ cập nhật thông tin bookingCount
             existingFavourite.bookingCount += 1;
         } else {
-            // Nếu trung tâm chưa có, thêm mới vào danh sách favouriteCenter
             user.favouriteCenter.push({
-                centerName: centerName,  // Lưu lại centerName
+                centerName: centerName,
                 bookingCount: 1,
             });
         }
 
-        // Cập nhật lại danh sách favouriteCenter của user
         await user.save();
 
         console.log(`Đã cập nhật danh sách yêu thích của user ${userId}`);
-        return user.favouriteCenter; // Trả về danh sách favouriteCenter mới của user
+        return user.favouriteCenter;
     } catch (error) {
         console.error("Error updating favourite center:", error);
         throw new Error("Có lỗi xảy ra khi cập nhật danh sách yêu thích");

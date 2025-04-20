@@ -20,7 +20,6 @@ export const registerUserController = async (req, res) => {
       name: user.name,
       email: user.email,
       phone_number: user.phone_number,
-      address: user.address,
       username: user.username,
       avatar_image_path: user.avatar_image_path,
       registration_date: user.registration_date,

@@ -1,8 +1,12 @@
+/* Đảm bảo html và body có chiều cao bằng viewport */
+
+
 .booking-page {
     min-height: 100vh;
+    overflow: hidden;
+    height: 100vh; /* Giới hạn chiều cao bằng viewport */
     background-color: #247a42;
     color: white;
-    padding-bottom: 60px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
@@ -208,7 +212,7 @@
     margin: 0 20px;
     background-color: #e8f5e9; /* Very light green */
     border-radius: 8px;
-    overflow: hidden;
+
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   }
   
@@ -683,6 +687,7 @@
   .legend-locked {
     background-color: #e0e0e0;
   }
+
   
   /* DatePicker Component Styles */
   .date-picker-container {
@@ -768,7 +773,6 @@
     width: 90%;
     max-width: 700px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
     animation: slideUp 0.4s ease;
     max-height: 90vh;
     display: flex;

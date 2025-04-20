@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { searchUsers, getAllCenters } from "../apis/billManaging";
-import toast from "react-hot-toast";
-import { ArrowLeftIcon, CalendarIcon, UserIcon } from "@heroicons/react/24/outline";
+import { searchUsers, getAllCenters, getAvailableCourts, createFixedBookings } from "../apis/billManaging";
+import { ArrowLeftIcon, CalendarIcon, UserIcon, XMarkIcon, BuildingOffice2Icon, CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import axiosInstance from "../config/axiosConfig";
 
 const CreateFixedBooking = () => {
     const navigate = useNavigate();
     const [centers, setCenters] = useState([]);
-    const [courts, setCourts] = useState([]);
+    const [availableCourtsByDay, setAvailableCourtsByDay] = useState({});
     const [selectedCenter, setSelectedCenter] = useState("");
     const [selectedDays, setSelectedDays] = useState([]);
     const [selectedTimeslots, setSelectedTimeslots] = useState([]);
     const [timeslotsByDay, setTimeslotsByDay] = useState({});
     const [selectedCourtsByDay, setSelectedCourtsByDay] = useState({});
-    const [startDate, setStartDate] = useState(new Date(2025, 3, 17));
-    const [courtAvailability, setCourtAvailability] = useState({});
+    const [startDate, setStartDate] = useState(new Date());
     const [loadingCenters, setLoadingCenters] = useState(false);
+    const [loadingCourts, setLoadingCourts] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [bookingsToCreate, setBookingsToCreate] = useState([]);
 
     // Tìm kiếm người dùng
     const [searchQuery, setSearchQuery] = useState("");
@@ -27,6 +27,13 @@ const CreateFixedBooking = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
+
+    // Modal thông báo thành công/thất bại
+    const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+    const [resultModalContent, setResultModalContent] = useState({
+        success: true,
+        message: "",
+    });
 
     // Tính ngày kết thúc (30 ngày sau ngày bắt đầu)
     const endDate = new Date(startDate);
@@ -46,10 +53,13 @@ const CreateFixedBooking = () => {
         { value: 0, label: "Chủ nhật" },
     ];
 
+    // Ngày hiện tại (19/04/2025)
+    const today = new Date(2025, 3, 19);
+
     // Xử lý nút quay lại của trình duyệt
     useEffect(() => {
         const handlePopState = () => {
-            navigate("/admin/bill-list", { replace: true });
+            navigate("/admin-bill-list", { replace: true });
         };
 
         window.addEventListener("popstate", handlePopState);
@@ -65,13 +75,22 @@ const CreateFixedBooking = () => {
             setLoadingCenters(true);
             try {
                 const centersData = await getAllCenters();
+                console.log('CreateFixedBooking - Centers fetched:', centersData);
                 if (centersData.length === 0) {
-                    toast.error("Không có trung tâm nào để hiển thị!");
+                    setResultModalContent({
+                        success: false,
+                        message: "Không có trung tâm nào để hiển thị!",
+                    });
+                    setIsResultModalOpen(true);
                 }
                 setCenters(centersData);
             } catch (error) {
-                console.error("Lỗi khi lấy danh sách trung tâm:", error);
-                toast.error("Không thể lấy danh sách trung tâm!");
+                console.error('CreateFixedBooking - Error fetching centers:', error);
+                setResultModalContent({
+                    success: false,
+                    message: "Không thể lấy danh sách trung tâm!",
+                });
+                setIsResultModalOpen(true);
                 setCenters([]);
             } finally {
                 setLoadingCenters(false);
@@ -80,7 +99,7 @@ const CreateFixedBooking = () => {
         fetchCenters();
     }, []);
 
-    // Tìm kiếm người dùng khi nhập query (trên username, phone_number, email)
+    // Tìm kiếm người dùng khi nhập query
     useEffect(() => {
         if (selectedUser || !searchQuery) {
             setUsers([]);
@@ -91,11 +110,16 @@ const CreateFixedBooking = () => {
         const fetchUsers = async () => {
             try {
                 const usersData = await searchUsers(searchQuery);
+                console.log('CreateFixedBooking - Users fetched:', usersData);
                 setUsers(usersData);
                 setShowDropdown(usersData.length > 0);
             } catch (error) {
-                console.error("Lỗi khi tìm kiếm người dùng:", error);
-                toast.error("Không thể tìm kiếm người dùng!");
+                console.error('CreateFixedBooking - Error fetching users:', error);
+                setResultModalContent({
+                    success: false,
+                    message: "Không thể tìm kiếm người dùng!",
+                });
+                setIsResultModalOpen(true);
                 setUsers([]);
                 setShowDropdown(false);
             }
@@ -116,25 +140,52 @@ const CreateFixedBooking = () => {
         };
     }, []);
 
-    // Lấy danh sách sân theo trung tâm
+    // Lấy danh sách sân trống
     useEffect(() => {
-        if (!selectedCenter) {
-            setCourts([]);
+        if (!selectedCenter || selectedDays.length === 0 || selectedTimeslots.length === 0) {
+            console.log('CreateFixedBooking - Skipping fetchAvailableCourts due to missing parameters');
+            setAvailableCourtsByDay({});
             setSelectedCourtsByDay({});
             return;
         }
 
-        const fetchCourts = async () => {
+        const fetchAvailableCourts = async () => {
+            setLoadingCourts(true);
+            console.log('CreateFixedBooking - Fetching available courts with parameters:', {
+                centerId: selectedCenter,
+                startDate: startDate.toISOString(),
+                timeslots: selectedTimeslots,
+                daysOfWeek: selectedDays
+            });
             try {
-                const response = await axiosInstance.get(`/api/courts?centerId=${selectedCenter}`);
-                setCourts(response.data.data || []);
+                const courtsByDay = await getAvailableCourts({
+                    centerId: selectedCenter,
+                    startDate: startDate.toISOString(),
+                    timeslots: selectedTimeslots,
+                    daysOfWeek: selectedDays,
+                });
+                console.log('CreateFixedBooking - Available courts received:', courtsByDay);
+                setAvailableCourtsByDay(courtsByDay);
+                const newCourtsByDay = {};
+                selectedDays.forEach((day) => {
+                    newCourtsByDay[day] = selectedCourtsByDay[day] || [];
+                });
+                console.log('CreateFixedBooking - Initialized selectedCourtsByDay:', newCourtsByDay);
+                setSelectedCourtsByDay(newCourtsByDay);
             } catch (error) {
-                console.error("Lỗi khi lấy danh sách sân:", error);
-                toast.error("Không thể lấy danh sách sân!");
+                console.error('CreateFixedBooking - Error fetching available courts:', error);
+                setResultModalContent({
+                    success: false,
+                    message: error.message || "Không thể lấy danh sách sân trống!",
+                });
+                setIsResultModalOpen(true);
+                setAvailableCourtsByDay({});
+            } finally {
+                setLoadingCourts(false);
             }
         };
-        fetchCourts();
-    }, [selectedCenter]);
+        fetchAvailableCourts();
+    }, [selectedCenter, selectedDays, selectedTimeslots, startDate]);
 
     // Cập nhật timeslotsByDay khi selectedDays hoặc selectedTimeslots thay đổi
     useEffect(() => {
@@ -142,92 +193,13 @@ const CreateFixedBooking = () => {
         selectedDays.forEach((day) => {
             newTimeslotsByDay[day] = selectedTimeslots;
         });
+        console.log('CreateFixedBooking - Updated timeslotsByDay:', newTimeslotsByDay);
         setTimeslotsByDay(newTimeslotsByDay);
     }, [selectedDays, selectedTimeslots]);
 
-    // Tính toán các ngày phù hợp và kiểm tra trạng thái sân
-    useEffect(() => {
-        if (!selectedCenter || courts.length === 0 || selectedDays.length === 0 || selectedTimeslots.length === 0) {
-            setCourtAvailability({});
-            return;
-        }
-
-        const fetchBillsAndCheckStatus = async () => {
-            try {
-                const response = await axiosInstance.get("/api/bills/range", {
-                    params: {
-                        startDate: startDate.toISOString(),
-                        endDate: endDate.toISOString(),
-                        centerId: selectedCenter,
-                    },
-                });
-                const bills = response.data.data || [];
-
-                const availability = {};
-                selectedDays.forEach((dayOfWeek) => {
-                    availability[dayOfWeek] = {};
-                    courts.forEach((court) => {
-                        availability[dayOfWeek][court._id] = {};
-                        selectedTimeslots.forEach((timeslot) => {
-                            const [hour] = timeslot.split(":");
-                            const startHour = parseInt(hour);
-                            const endHour = startHour + 1;
-
-                            const relevantDays = [];
-                            let currentDate = new Date(startDate);
-                            const today = new Date(2025, 3, 16);
-                            while (currentDate <= endDate) {
-                                if (currentDate.getDay() === dayOfWeek) {
-                                    if (currentDate >= today) {
-                                        relevantDays.push(new Date(currentDate));
-                                    }
-                                }
-                                currentDate.setDate(currentDate.getDate() + 1);
-                            }
-
-                            let isBooked = false;
-                            let isPending = false;
-                            const conflicts = [];
-                            relevantDays.forEach((day) => {
-                                const dayBills = bills.filter((bill) => {
-                                    const billDate = new Date(bill.date);
-                                    return (
-                                        billDate.toDateString() === day.toDateString() &&
-                                        bill.courtId === court._id &&
-                                        bill.timeslots.some((slot) => slot >= startHour && slot < endHour)
-                                    );
-                                });
-
-                                if (dayBills.some((bill) => bill.status === "paid")) {
-                                    isBooked = true;
-                                    conflicts.push(day.toLocaleDateString("vi-VN"));
-                                } else if (dayBills.some((bill) => bill.status === "pending" || bill.status === "processing")) {
-                                    isPending = true;
-                                    conflicts.push(day.toLocaleDateString("vi-VN"));
-                                }
-                            });
-
-                            if (isBooked) {
-                                availability[dayOfWeek][court._id][timeslot] = { status: "booked", conflicts };
-                            } else if (isPending) {
-                                availability[dayOfWeek][court._id][timeslot] = { status: "pending", conflicts };
-                            } else {
-                                availability[dayOfWeek][court._id][timeslot] = { status: "available", conflicts: [] };
-                            }
-                        });
-                    });
-                });
-                setCourtAvailability(availability);
-            } catch (error) {
-                console.error("Lỗi khi lấy danh sách bill:", error);
-                toast.error("Không thể lấy trạng thái sân!");
-            }
-        };
-        fetchBillsAndCheckStatus();
-    }, [selectedCenter, courts, selectedDays, selectedTimeslots, startDate]);
-
     // Xử lý chọn người dùng từ dropdown
     const handleSelectUser = (user) => {
+        console.log('CreateFixedBooking - Selected user:', user);
         setSelectedUser(user);
         setSearchQuery(user.username);
         setShowDropdown(false);
@@ -237,339 +209,453 @@ const CreateFixedBooking = () => {
     // Xử lý chọn timeslot
     const handleTimeslotChange = (timeslot) => {
         if (selectedTimeslots.includes(timeslot)) {
-            setSelectedTimeslots(selectedTimeslots.filter(t => t !== timeslot));
+            setSelectedTimeslots(selectedTimeslots.filter((t) => t !== timeslot));
         } else {
             setSelectedTimeslots([...selectedTimeslots, timeslot].sort());
         }
+        console.log('CreateFixedBooking - Updated selectedTimeslots:', selectedTimeslots);
     };
 
     // Xử lý chọn ngày trong tuần
     const handleDayChange = (day) => {
         if (selectedDays.includes(day)) {
-            setSelectedDays(selectedDays.filter(d => d !== day));
+            setSelectedDays(selectedDays.filter((d) => d !== day));
             setSelectedCourtsByDay((prev) => {
                 const newCourts = { ...prev };
                 delete newCourts[day];
+                console.log('CreateFixedBooking - Removed day from selectedDays:', day, 'New selectedCourtsByDay:', newCourts);
                 return newCourts;
             });
         } else {
             setSelectedDays([...selectedDays, day].sort());
-            setSelectedCourtsByDay((prev) => ({
-                ...prev,
-                [day]: [],
-            }));
+            setSelectedCourtsByDay((prev) => {
+                const newCourts = { ...prev, [day]: [] };
+                console.log('CreateFixedBooking - Added day to selectedDays:', day, 'New selectedCourtsByDay:', newCourts);
+                return newCourts;
+            });
         }
+        console.log('CreateFixedBooking - Updated selectedDays:', selectedDays);
     };
 
     // Xử lý chọn sân cho từng ngày trong tuần
     const handleCourtChange = (day, courtId) => {
         setSelectedCourtsByDay((prev) => {
             const currentCourts = prev[day] || [];
+            let newCourts;
             if (currentCourts.includes(courtId)) {
-                return {
-                    ...prev,
-                    [day]: currentCourts.filter(c => c !== courtId),
-                };
+                newCourts = currentCourts.filter((c) => c !== courtId);
             } else {
-                return {
-                    ...prev,
-                    [day]: [...currentCourts, courtId],
-                };
+                newCourts = [...currentCourts, courtId];
             }
+            const updatedCourtsByDay = { ...prev, [day]: newCourts };
+            console.log('CreateFixedBooking - Updated selectedCourtsByDay:', updatedCourtsByDay);
+            return updatedCourtsByDay;
         });
     };
 
-    // Tạo lịch đặt cố định
-    const handleCreateFixedBooking = async () => {
+    // Xử lý mở modal xác nhận
+    const handleOpenConfirmModal = () => {
         if (
             !selectedUser ||
             !selectedCenter ||
             selectedDays.length === 0 ||
             selectedTimeslots.length === 0 ||
-            Object.values(selectedCourtsByDay).some(courts => courts.length === 0)
+            Object.values(selectedCourtsByDay).some((courts) => courts.length === 0)
         ) {
-            toast.error("Vui lòng chọn người dùng, khung giờ, ngày và sân!");
-            return;
-        }
-
-        let hasConflict = false;
-        const conflictDetails = [];
-        selectedDays.forEach((dayOfWeek) => {
-            const timeslots = timeslotsByDay[dayOfWeek] || [];
-            const selectedCourts = selectedCourtsByDay[dayOfWeek] || [];
-            timeslots.forEach((timeslot) => {
-                selectedCourts.forEach((courtId) => {
-                    const status = courtAvailability[dayOfWeek]?.[courtId]?.[timeslot]?.status;
-                    if (status === "booked" || status === "pending") {
-                        hasConflict = true;
-                        const conflicts = courtAvailability[dayOfWeek][courtId][timeslot].conflicts;
-                        conflictDetails.push(
-                            `Sân ${courts.find(c => c._id === courtId).name} tại khung giờ ${timeslot} vào ${daysOfWeek.find(d => d.value === dayOfWeek).label} đã ${
-                                status === "booked" ? "được đặt" : "đang chờ duyệt"
-                            } vào các ngày: ${conflicts.join(", ")}`
-                        );
-                    }
-                });
+            console.log('CreateFixedBooking - Validation failed:', {
+                selectedUser,
+                selectedCenter,
+                selectedDays,
+                selectedTimeslots,
+                selectedCourtsByDay
             });
-        });
-
-        if (hasConflict) {
-            toast.error(`Không thể đặt lịch do xung đột:\n${conflictDetails.join("\n")}`);
+            setResultModalContent({
+                success: false,
+                message: "Vui lòng chọn người dùng, khung giờ, ngày và sân!",
+            });
+            setIsResultModalOpen(true);
             return;
         }
 
-        setLoading(true);
-        try {
-            const bookings = [];
-            let currentDate = new Date(startDate);
-            const today = new Date(2025, 3, 16);
-            while (currentDate <= endDate) {
-                const dayOfWeek = currentDate.getDay();
-                if (selectedDays.includes(dayOfWeek) && currentDate >= today) {
-                    const timeslots = timeslotsByDay[dayOfWeek] || [];
-                    const selectedCourts = selectedCourtsByDay[dayOfWeek] || [];
-                    selectedCourts.forEach((courtId) => {
-                        bookings.push({
-                            date: new Date(currentDate),
-                            courtId,
-                            timeslots: timeslots.map((slot) => {
-                                const [hour] = slot.split(":");
-                                return parseInt(hour);
-                            }),
-                        });
-                    });
-                }
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
+        // Kiểm tra tính hợp lệ của sân đã chọn
+        const isValidCourts = selectedDays.every((day) =>
+            (selectedCourtsByDay[day] || []).every((courtId) =>
+                (availableCourtsByDay[day] || []).some((court) => court._id === courtId)
+            )
+        );
+        if (!isValidCourts) {
+            console.log('CreateFixedBooking - Invalid courts selected:', selectedCourtsByDay);
+            setResultModalContent({
+                success: false,
+                message: "Một số sân đã chọn không còn trống!",
+            });
+            setIsResultModalOpen(true);
+            return;
+        }
 
-            const response = await axiosInstance.post("/api/bookings/fixed", {
+        // Tạo danh sách bookings để hiển thị trong modal
+        const bookings = [];
+        let currentDate = new Date(startDate);
+        const todayForValidation = new Date(2025, 3, 16);
+        while (currentDate <= endDate) {
+            const dayOfWeek = currentDate.getDay();
+            if (selectedDays.includes(dayOfWeek) && currentDate >= todayForValidation) {
+                const timeslots = timeslotsByDay[dayOfWeek] || [];
+                const selectedCourts = selectedCourtsByDay[dayOfWeek] || [];
+                selectedCourts.forEach((courtId) => {
+                    const court = (availableCourtsByDay[dayOfWeek] || []).find((c) => c._id === courtId);
+                    bookings.push({
+                        date: new Date(currentDate).toISOString(), // Chuyển thành ISO string để gửi lên backend
+                        courtId,
+                        courtName: court ? court.name : courtId,
+                        timeslots: timeslots.map((slot) => {
+                            const [hour] = slot.split(":");
+                            return parseInt(hour);
+                        }),
+                    });
+                });
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        console.log('CreateFixedBooking - Bookings to be confirmed:', bookings);
+        setBookingsToCreate(bookings);
+        setIsModalOpen(true);
+    };
+
+    // Tạo lịch đặt cố định sau khi xác nhận
+    const handleCreateFixedBooking = async () => {
+        setLoading(true);
+        setIsModalOpen(false);
+        try {
+            const response = await createFixedBookings({
                 userId: selectedUser._id,
                 centerId: selectedCenter,
-                bookings,
+                bookings: bookingsToCreate,
                 type: "fixed",
             });
+            console.log('CreateFixedBooking - Booking creation response:', response);
 
-            if (response.data.success) {
-                toast.success("Tạo lịch đặt cố định thành công!");
-                navigate("/admin/bill-list");
-            } else {
-                throw new Error(response.data.message || "Lỗi khi tạo lịch đặt cố định");
-            }
+            setResultModalContent({
+                success: true,
+                message: "Tạo lịch đặt cố định thành công!",
+            });
+            setIsResultModalOpen(true);
         } catch (error) {
-            console.error("Lỗi khi tạo lịch đặt cố định:", error);
-            toast.error(error.message || "Lỗi khi tạo lịch đặt cố định!");
+            console.error('CreateFixedBooking - Error creating fixed booking:', error);
+            setResultModalContent({
+                success: false,
+                message: error.message || "Lỗi khi tạo lịch đặt cố định!",
+            });
+            setIsResultModalOpen(true);
         } finally {
             setLoading(false);
         }
     };
 
+    // Xử lý khi đóng modal thông báo và chuyển hướng nếu thành công
+    const handleResultModalClose = () => {
+        setIsResultModalOpen(false);
+        if (resultModalContent.success) {
+            navigate("/admin-bill-list");
+        }
+    };
+
     return (
-        <div className="bg-gray-100 min-h-screen w-full font-inter">
-            <div className="bg-emerald-700 text-white flex items-center p-3">
-                <button onClick={() => navigate("/admin/bill-list")} className="mr-2">
-                    <ArrowLeftIcon className="h-6 w-6" />
+        <div className="min-h-screen w-full font-sans bg-gradient-to-br from-gray-50 to-gray-200">
+            {/* Header */}
+            <div className="bg-emerald-600 text-white flex items-center p-4 shadow-lg">
+                <button onClick={() => navigate("/admin/bill-list")} className="mr-4 hover:opacity-80 transition-opacity">
+                    <ArrowLeftIcon className="h-7 w-7" />
                 </button>
-                <h1 className="text-lg font-semibold flex-1 text-center">
-                    Đặt lịch cố định
-                </h1>
+                <h1 className="text-2xl font-bold flex-1 text-center">Đặt Lịch Cố Định</h1>
             </div>
 
-            <div className="max-w-3xl mx-auto p-4">
-                {/* Tìm kiếm người dùng */}
-                <div className="mb-4 relative" ref={dropdownRef}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tìm kiếm khách hàng:
-                    </label>
-                    <div className="relative">
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Nhập tên người dùng, số điện thoại hoặc email"
-                            className="border border-gray-300 rounded-md p-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
-                        />
-                        <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-500" />
-                    </div>
-                    {showDropdown && (
-                        <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
-                            {users.map((user) => (
-                                <div
-                                    key={user._id}
-                                    onClick={() => handleSelectUser(user)}
-                                    className="p-2 hover:bg-gray-100 cursor-pointer flex items-center space-x-2"
+            {/* Main Content */}
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+                <div className="bg-white rounded-xl shadow-xl p-6 space-y-6">
+                    {/* Tìm kiếm người dùng, chọn trung tâm và ngày bắt đầu (trên cùng một dòng) */}
+                    <div className="flex flex-col lg:flex-row lg:space-x-4 space-y-4 lg:space-y-0">
+                        {/* Tìm kiếm người dùng */}
+                        <div className="flex-1 relative" ref={dropdownRef}>
+                            <label className="block text-sm font-semibold text-gray-800 mb-2">Tìm kiếm khách hàng</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Tên người dùng, số điện thoại hoặc email"
+                                    className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+                                />
+                                <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                            </div>
+                            {showDropdown && (
+                                <div className="absolute z-20 w-full bg-white border border-gray-200 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-xl">
+                                    {users.map((user) => (
+                                        <div
+                                            key={user._id}
+                                            onClick={() => handleSelectUser(user)}
+                                            className="p-3 hover:bg-emerald-50 cursor-pointer flex items-center space-x-3 transition-colors"
+                                        >
+                                            <span className="text-sm font-medium text-gray-800">{user.username}</span>
+                                            <span className="text-sm text-gray-500">
+                                                ({user.email}, {user.phone_number})
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Chọn trung tâm */}
+                        <div className="flex-1">
+                            <label className="block text-sm font-semibold text-gray-800 mb-2">Chọn trung tâm</label>
+                            <div className="relative">
+                                <select
+                                    value={selectedCenter}
+                                    onChange={(e) => setSelectedCenter(e.target.value)}
+                                    className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all appearance-none"
+                                    disabled={loadingCenters}
                                 >
-                                    <span className="text-sm font-medium">{user.username}</span>
-                                    <span className="text-sm text-gray-500">({user.email}, {user.phoneNumber})</span>
+                                    <option value="">Chọn trung tâm</option>
+                                    {centers.map((center) => (
+                                        <option key={center._id} value={center._id}>
+                                            {center.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <BuildingOffice2Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                            </div>
+                            {loadingCenters && (
+                                <p className="text-sm text-gray-500 mt-2">Đang tải danh sách trung tâm...</p>
+                            )}
+                        </div>
+
+                        {/* Chọn ngày bắt đầu */}
+                        <div className="flex-1">
+                            <label className="block text-sm font-semibold text-gray-800 mb-2">Ngày bắt đầu</label>
+                            <div className="relative">
+                                <DatePicker
+                                    selected={startDate}
+                                    onChange={(date) => setStartDate(date)}
+                                    dateFormat="dd/MM/yyyy"
+                                    placeholderText="Chọn ngày bắt đầu"
+                                    className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all cursor-pointer caret-transparent"
+                                    onKeyDown={(e) => e.preventDefault()}
+                                    minDate={today}
+                                />
+                                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-500" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Hiển thị thông tin người dùng và khoảng thời gian */}
+                    <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+                        {/* Hiển thị thông tin người dùng */}
+                        {selectedUser && (
+                            <div className="flex-1 p-4 bg-emerald-50 rounded-lg">
+                                <h3 className="text-sm font-semibold text-emerald-800 mb-2">Thông tin khách hàng</h3>
+                                <p className="text-sm text-gray-700">
+                                    <span className="font-medium">Tên người dùng:</span> {selectedUser.username}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                    <span className="font-medium">Số điện thoại:</span> {selectedUser.phone_number}
+                                </p>
+                                <p className="text-sm text-gray-700">
+                                    <span className="font-medium">Email:</span> {selectedUser.email}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Hiển thị khoảng thời gian */}
+                        <div className="flex-1 p-4 bg-gray-50 rounded-lg">
+                            <h3 className="text-sm font-semibold text-gray-800 mb-2">Khoảng thời gian áp dụng</h3>
+                            <p className="text-sm text-gray-600">
+                                Từ <span className="font-medium">{startDate.toLocaleDateString("vi-VN")}</span> đến{" "}
+                                <span className="font-medium">{endDate.toLocaleDateString("vi-VN")}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Chọn thời gian và ngày trong tuần */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-800 mb-2">Chọn thời gian</label>
+                        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-2 mb-4">
+                            {availableTimeslots.map((timeslot) => (
+                                <div
+                                    key={timeslot}
+                                    onClick={() => handleTimeslotChange(timeslot)}
+                                    className={`text-center p-2 rounded-lg cursor-pointer border transition-all ${
+                                        selectedTimeslots.includes(timeslot)
+                                            ? "bg-emerald-500 text-white border-emerald-500 shadow-md"
+                                            : "bg-gray-50 text-gray-700 border-gray-300 hover:bg-emerald-100"
+                                    }`}
+                                >
+                                    {timeslot}
                                 </div>
                             ))}
                         </div>
-                    )}
-                </div>
 
-                {/* Hiển thị thông tin người dùng */}
-                {selectedUser && (
-                    <div className="mb-4 p-4 bg-gray-50 rounded-md">
-                        <h3 className="text-sm font-medium text-gray-700 mb-2">Thông tin khách hàng:</h3>
-                        <p className="text-sm text-gray-600">
-                            <strong>Tên người dùng:</strong> {selectedUser.username}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                            <strong>Số điện thoại:</strong> {selectedUser.phoneNumber}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                            <strong>Email:</strong> {selectedUser.email}
-                        </p>
-                    </div>
-                )}
+                        <label className="block text-sm font-semibold text-gray-800 mb-2">Chọn ngày trong tuần</label>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2 mb-4">
+                            {daysOfWeek.map((day) => (
+                                <div
+                                    key={day.value}
+                                    onClick={() => handleDayChange(day.value)}
+                                    className={`text-center p-2 rounded-lg cursor-pointer border transition-all ${
+                                        selectedDays.includes(day.value)
+                                            ? "bg-emerald-500 text-white border-emerald-500 shadow-md"
+                                            : "bg-gray-50 text-gray-700 border-gray-300 hover:bg-emerald-100"
+                                    }`}
+                                >
+                                    {day.label}
+                                </div>
+                            ))}
+                        </div>
 
-                {/* Chọn trung tâm */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Trung tâm:
-                    </label>
-                    <select
-                        value={selectedCenter}
-                        onChange={(e) => setSelectedCenter(e.target.value)}
-                        className="border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
-                        disabled={loadingCenters}
-                    >
-                        <option value="">Chọn trung tâm</option>
-                        {centers.map((center) => (
-                            <option key={center._id} value={center._id}>
-                                {center.name}
-                            </option>
-                        ))}
-                    </select>
-                    {loadingCenters && (
-                        <p className="text-sm text-gray-500 mt-1">Đang tải danh sách trung tâm...</p>
-                    )}
-                </div>
-
-                {/* Chọn ngày bắt đầu */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Ngày bắt đầu:
-                    </label>
-                    <div className="relative flex-1">
-                        <DatePicker
-                            selected={startDate}
-                            onChange={(date) => setStartDate(date)}
-                            dateFormat="dd/MM/yyyy"
-                            placeholderText="Chọn ngày bắt đầu"
-                            className="border border-gray-300 rounded-md p-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 w-full"
-                            onKeyDown={(e) => e.preventDefault()}
-                        />
-                        <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-emerald-500" />
-                    </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                        Áp dụng từ {startDate.toLocaleDateString("vi-VN")} đến {endDate.toLocaleDateString("vi-VN")}
-                    </p>
-                </div>
-
-                {/* Chọn thời gian và ngày trong tuần */}
-                <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Chọn thời gian:
-                    </label>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {availableTimeslots.map((timeslot) => (
-                            <div
-                                key={timeslot}
-                                onClick={() => handleTimeslotChange(timeslot)}
-                                className={`flex-1 min-w-[60px] text-center p-2 rounded-md cursor-pointer border ${
-                                    selectedTimeslots.includes(timeslot)
-                                        ? "bg-emerald-500 text-white border-emerald-500"
-                                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
-                                }`}
-                            >
-                                {timeslot}
+                        {/* Hiển thị sân trống */}
+                        {selectedDays.length > 0 && selectedTimeslots.length > 0 && (
+                            <div className="mt-4">
+                                <label className="block text-sm font-semibold text-gray-800 mb-2">Sân trống</label>
+                                {loadingCourts ? (
+                                    <p className="text-sm text-gray-500">Đang tải danh sách sân trống...</p>
+                                ) : (
+                                    daysOfWeek
+                                        .filter((day) => selectedDays.includes(day.value))
+                                        .map((day) => (
+                                            <div key={day.value} className="mb-4">
+                                                <h4 className="text-sm font-semibold text-gray-800 mb-2">{day.label}</h4>
+                                                {(availableCourtsByDay[day.value] || []).length === 0 ? (
+                                                    <p className="text-sm text-red-600">
+                                                        Không có sân trống cho {day.label} tại các khung giờ đã chọn.
+                                                    </p>
+                                                ) : (
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                                                        {(availableCourtsByDay[day.value] || []).map((court) => (
+                                                            <div
+                                                                key={court._id}
+                                                                onClick={() => handleCourtChange(day.value, court._id)}
+                                                                className={`text-center p-2 rounded-lg cursor-pointer border transition-all ${
+                                                                    (selectedCourtsByDay[day.value] || []).includes(
+                                                                        court._id
+                                                                    )
+                                                                        ? "bg-emerald-500 text-white border-emerald-500 shadow-md"
+                                                                        : "bg-gray-50 text-gray-700 border-gray-300 hover:bg-emerald-100"
+                                                                }`}
+                                                            >
+                                                                {court.name}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
+                                )}
                             </div>
-                        ))}
+                        )}
                     </div>
 
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Chọn ngày trong tuần:
-                    </label>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {daysOfWeek.map((day) => (
-                            <div
-                                key={day.value}
-                                onClick={() => handleDayChange(day.value)}
-                                className={`flex-1 min-w-[80px] text-center p-2 rounded-md cursor-pointer border ${
-                                    selectedDays.includes(day.value)
-                                        ? "bg-emerald-500 text-white border-emerald-500"
-                                        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                    {/* Nút xác nhận */}
+                    <button
+                        onClick={handleOpenConfirmModal}
+                        disabled={loading}
+                        className={`w-full bg-yellow-500 text-white py-3 rounded-lg font-semibold transition-all ${
+                            loading ? "opacity-50 cursor-not-allowed" : "hover:bg-yellow-600 shadow-lg"
+                        }`}
+                    >
+                        {loading ? "Đang xử lý..." : "Đặt trước"}
+                    </button>
+                </div>
+            </div>
+
+            {/* Modal xác nhận */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+                    <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-800">Xác nhận đặt cố định</h2>
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700">
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <p className="text-sm text-gray-600">
+                                Bạn đang đặt cố định cho <span className="font-medium">{selectedUser?.username}</span> tại{" "}
+                                <span className="font-medium">
+                                    {centers.find((c) => c._id === selectedCenter)?.name}
+                                </span>
+                                .
+                            </p>
+                            <p className="text-sm text-gray-600">
+                                Từ <span className="font-medium">{startDate.toLocaleDateString("vi-VN")}</span> đến{" "}
+                                <span className="font-medium">{endDate.toLocaleDateString("vi-VN")}</span>.
+                            </p>
+                            <h3 className="text-sm font-semibold text-gray-800">Chi tiết đặt sân:</h3>
+                            {bookingsToCreate.map((booking, index) => (
+                                <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                                    <p className="text-sm text-gray-700">
+                                        <span className="font-medium">Ngày:</span>{" "}
+                                        {new Date(booking.date).toLocaleDateString("vi-VN")}
+                                    </p>
+                                    <p className="text-sm text-gray-700">
+                                        <span className="font-medium">Sân:</span> {booking.courtName}
+                                    </p>
+                                    <p className="text-sm text-gray-700">
+                                        <span className="font-medium">Khung giờ:</span>{" "}
+                                        {booking.timeslots.join(", ")}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex space-x-3 mt-6">
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="flex-1 bg-gray-300 text-gray-800 py-2 rounded-lg font-semibold hover:bg-gray-400 transition-all"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleCreateFixedBooking}
+                                className="flex-1 bg-emerald-500 text-white py-2 rounded-lg font-semibold hover:bg-emerald-600 transition-all"
+                            >
+                                Xác nhận
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal thông báo kết quả */}
+            {isResultModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+                    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+                        <div className="flex items-center justify-center mb-4">
+                            {resultModalContent.success ? (
+                                <CheckCircleIcon className="h-12 w-12 text-emerald-500" />
+                            ) : (
+                                <ExclamationCircleIcon className="h-12 w-12 text-red-500" />
+                            )}
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-800 text-center mb-4">
+                            {resultModalContent.success ? "Thành công!" : "Thất bại!"}
+                        </h2>
+                        <p className="text-sm text-gray-600 text-center mb-6">
+                            {resultModalContent.message}
+                        </p>
+                        <div className="flex justify-center">
+                            <button
+                                onClick={handleResultModalClose}
+                                className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                                    resultModalContent.success
+                                        ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                                        : "bg-gray-300 text-gray-800 hover:bg-gray-400"
                                 }`}
                             >
-                                {day.label}
+                                {resultModalContent.success ? "Đi đến danh sách hóa đơn" : "Đóng"}
+                            </button>
                         </div>
-                        ))}
                     </div>
-
-                    {/* Hiển thị sân trống cho các ngày và khung giờ đã chọn */}
-                    {selectedDays.length > 0 && selectedTimeslots.length > 0 && (
-                        <div className="mt-4">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Sân trống:
-                            </label>
-                            {daysOfWeek
-                                .filter((day) => selectedDays.includes(day.value))
-                                .map((day) => (
-                                    <div key={day.value} className="mb-4">
-                                        <h4 className="text-sm font-semibold text-gray-700 mb-2">{day.label}</h4>
-                                        <div className="space-y-2">
-                                            {courts.map((court) => {
-                                                const timeslots = timeslotsByDay[day.value] || [];
-                                                const hasConflict = timeslots.some((timeslot) => {
-                                                    const status = courtAvailability[day.value]?.[court._id]?.[timeslot]?.status;
-                                                    return status === "booked" || status === "pending";
-                                                });
-                                                const conflicts = timeslots
-                                                    .map((timeslot) => courtAvailability[day.value]?.[court._id]?.[timeslot]?.conflicts || [])
-                                                    .flat();
-
-                                                return (
-                                                    <label key={court._id} className="flex items-center space-x-2">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={(selectedCourtsByDay[day.value] || []).includes(court._id)}
-                                                            onChange={() => handleCourtChange(day.value, court._id)}
-                                                            disabled={hasConflict}
-                                                            className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
-                                                        />
-                                                        <span
-                                                            className={`text-sm ${
-                                                                !hasConflict
-                                                                    ? "text-green-600"
-                                                                    : hasConflict && conflicts.length > 0
-                                                                    ? "text-red-600"
-                                                                    : "text-yellow-600"
-                                                            }`}
-                                                        >
-                                                            {court.name}{" "}
-                                                            {hasConflict && conflicts.length > 0 ? `(Xung đột: ${conflicts.join(", ")})` : ""}
-                                                        </span>
-                                                    </label>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
-                        </div>
-                    )}
                 </div>
-
-                {/* Nút xác nhận */}
-                <button
-                    onClick={handleCreateFixedBooking}
-                    disabled={loading}
-                    className={`w-full bg-yellow-500 text-white py-3 rounded-md font-semibold ${
-                        loading ? "opacity-50 cursor-not-allowed" : "hover:bg-yellow-600"
-                    }`}
-                >
-                    {loading ? "Đang xử lý..." : "Đặt trước"}
-                </button>
-            </div>
+            )}
         </div>
     );
 };

@@ -9,25 +9,29 @@ const BookingTable = ({
   currentUserId,
 }) => {
   return (
-    <div className="mt-4 bg-green-100 p-4 rounded-md overflow-auto">
+    <div className="mt-4 bg-green-100 p-2 rounded-md">
       <table className="table-fixed w-full" style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <th
-              className="p-3 bg-green-100 text-center font-bold text-black"
-              style={{ width: "100px" }}
+              className="p-2 bg-green-100 text-center font-bold text-black"
+              style={{ width: "60px", height: "50px" }}
             ></th>
             {Array.from({ length: slotCount }, (_, i) => {
               const startHour = times[i];
               const endHour = times[i + 1];
               return (
-                <th key={i} className="bg-green-100 text-black relative" style={{ width: "80px" }}>
+                <th
+                  key={i}
+                  className="bg-green-100 text-black relative"
+                  style={{ width: "50px", height: "50px" }} // Đảm bảo tất cả các cột có độ rộng 50px
+                >
                   <div
                     className="absolute bottom-0 bg-yellow-500"
-                    style={{ left: "-0.5px", width: "2px", height: "6px" }}
+                    style={{ left: "-0.5px", width: "2px", height: "4px" }}
                   />
                   <div
-                    className="absolute font-bold text-xs"
+                    className="absolute font-bold text-[10px]"
                     style={{
                       left: 0,
                       top: "50%",
@@ -41,14 +45,14 @@ const BookingTable = ({
                     <>
                       <div
                         className="absolute bottom-0 bg-yellow-500"
-                        style={{ right: "-0.5px", width: "2px", height: "5px" }}
+                        style={{ right: "-0.5px", width: "2px", height: "4px" }}
                       />
                       <div
-                        className="absolute font-bold text-xs"
+                        className="absolute font-bold text-[10px]"
                         style={{
                           right: 0,
                           top: "50%",
-                          transform: "translate(50%, -50%)",
+                          transform: "translate(20%, -50%)", // Giảm translate để nhãn không tràn ra ngoài quá nhiều
                           whiteSpace: "nowrap",
                         }}
                       >
@@ -66,7 +70,7 @@ const BookingTable = ({
             <tr key={rowIndex} style={{ border: "1px solid black" }}>
               <td
                 className="bg-green-200 text-black text-center font-bold"
-                style={{ width: "100px", padding: "4px" }}
+                style={{ width: "60px", height: "40px", padding: "2px" }}
               >
                 {court.name}
               </td>
@@ -75,17 +79,36 @@ const BookingTable = ({
                   bookingData && bookingData[court._id]
                     ? bookingData[court._id][colIndex]
                     : "trống";
-                const status =
-                  typeof rawStatus === "object" && rawStatus !== null
-                    ? rawStatus.userId.toString() === currentUserId.toString()
-                      ? "myPending"
-                      : "pending"
-                    : rawStatus;
-                
-                // Chỉ cho phép thao tác nếu ô trống hoặc myPending
-                const clickable = status === "trống" || status === "myPending";
 
-                // Đặt màu nền dựa theo trạng thái
+                const isObject = typeof rawStatus === "object" && rawStatus !== null;
+                const statusStr = isObject ? rawStatus.status?.toLowerCase() : rawStatus.toLowerCase();
+                const username = isObject ? rawStatus.username || "" : "";
+
+                let userId = isObject ? rawStatus.userId : "";
+                if (userId && typeof userId === "string" && userId.includes("_id")) {
+                  try {
+                    const parsed = JSON.parse(userId);
+                    userId = parsed._id || userId;
+                  } catch (e) {
+                    console.warn(`Không thể parse userId: ${userId}`);
+                  }
+                }
+
+                let status;
+                if (statusStr.includes("đã đặt") || statusStr.includes("booked")) {
+                  status = "đã đặt";
+                } else if (statusStr.includes("pending")) {
+                  status = userId && userId.toString() === currentUserId?.toString() ? "myPending" : "pending";
+                } else if (statusStr.includes("chờ xử lý") || statusStr.includes("processing")) {
+                  status = userId && userId.toString() === currentUserId?.toString() ? "myProcessing" : "processing";
+                } else if (statusStr.includes("locked")) {
+                  status = "locked";
+                } else {
+                  status = "trống";
+                }
+
+                const clickable = status === "trống" || status === "myPending" || status === "myProcessing";
+
                 const bgColor =
                   status === "trống"
                     ? "bg-white"
@@ -93,15 +116,24 @@ const BookingTable = ({
                     ? "bg-yellow-500"
                     : status === "myPending"
                     ? "bg-green-500"
+                    : status === "processing"
+                    ? "bg-[#0288D1]"
+                    : status === "myProcessing"
+                    ? "bg-[#0288D1]"
                     : status === "đã đặt"
                     ? "bg-red-500"
                     : "bg-gray-500";
+
                 const textColor =
                   status === "trống"
                     ? "text-black"
                     : status === "pending"
                     ? "text-black"
                     : status === "myPending"
+                    ? "text-white"
+                    : status === "processing"
+                    ? "text-white"
+                    : status === "myProcessing"
                     ? "text-white"
                     : status === "đã đặt"
                     ? "text-white"
@@ -112,7 +144,7 @@ const BookingTable = ({
                     key={colIndex}
                     className="relative"
                     style={{
-                      width: "80px",
+                      width: "50px", // Đảm bảo tất cả các cột có độ rộng 50px
                       height: "40px",
                       padding: "0",
                       border: "1px solid black",
@@ -125,7 +157,14 @@ const BookingTable = ({
                       }
                     }}
                   >
-                    <div className={`h-full flex items-center justify-center ${bgColor} ${textColor}`}>
+                    <div
+                      className={`h-full flex items-center justify-center ${bgColor} ${textColor}`}
+                      title={
+                        username
+                          ? `${status === "myProcessing" || status === "processing" ? "Đang xử lý" : status === "myPending" || status === "pending" ? "Pending" : "Đã đặt"} bởi ${username}`
+                          : status
+                      }
+                    >
                       {/* Không hiển thị text, chỉ hiển thị màu */}
                     </div>
                   </td>

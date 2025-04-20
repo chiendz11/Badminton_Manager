@@ -31,15 +31,14 @@ export const initSocket = (io) => {
       });
     });
 
-    socket.on("toggleBooking", async ({ centerId, date, courtId, colIndex, userId, username }) => {
+    socket.on("toggleBooking", async ({ centerId, date, courtId, colIndex, userId, name }) => {
       const timeslot = TIMES[colIndex];
       try {
-        await togglePendingTimeslotMemory(username, userId, centerId, date, courtId, timeslot, 60);
+        await togglePendingTimeslotMemory(name, userId, centerId, date, courtId, timeslot, 60);
         const mapping = await getFullPendingMapping(centerId, date);
-        // Giữ nguyên logic cũ: gửi updateBookings đến tất cả client
-        // Sửa định dạng dữ liệu để khớp với CourtStatusPage.js
-        io.emit("updateBookings", { [date]: mapping });
-        console.log(`Emitted updateBookings to all clients for center=${centerId}, date=${date}`);
+        const room = `${centerId}:${date}`;
+        io.to(room).emit("updateBookings", { [date]: mapping });
+        console.log(`Emitted updateBookings to room ${room}:`, { [date]: mapping });
       } catch (error) {
         console.error("Error in toggleBooking (Cache):", error);
       }
@@ -54,15 +53,19 @@ export const initSocket = (io) => {
 
   // Khi một key trong cache hết hạn, emit update
   inMemoryCache.on("expired", async (key, value) => {
+    console.log("Cache expired event triggered. Key:", key, "Value:", value);
     const parts = key.split(":");
-    if (parts.length === 4) {
+    if (parts.length === 5 && parts[0] === "pending") {
       const centerId = parts[1];
       const date = parts[2];
       console.log(`Cache key expired: ${key}. Emitting updateBookings for center=${centerId}, date=${date}`);
       const mapping = await getFullPendingMapping(centerId, date);
-      // Giữ nguyên logic cũ: gửi updateBookings đến tất cả client
-      io.emit("updateBookings", { [date]: mapping });
-      console.log(`Emitted updateBookings to all clients for center=${centerId}, date=${date}`);
+      console.log("Mapping after cache expiration:", mapping);
+      const room = `${centerId}:${date}`;
+      io.to(room).emit("updateBookings", { [date]: mapping });
+      console.log(`Emitted updateBookings to room ${room}:`, { [date]: mapping });
+    } else {
+      console.log(`Invalid cache key format: ${key}. Expected format: booking:centerId:date:timeslot:courtId`);
     }
   });
 

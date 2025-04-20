@@ -1,5 +1,6 @@
 import axiosInstance from "../config/axiosConfig";
 
+// Đăng ký người dùng
 export const registerUser = async (userData) => {
   try {
     const response = await axiosInstance.post("/api/users/register", userData);
@@ -11,12 +12,10 @@ export const registerUser = async (userData) => {
   }
 };
 
-
-
+// Đăng nhập người dùng
 export const loginUser = async ({ username, password }) => {
   try {
     const response = await axiosInstance.post("/api/users/login", { username, password });
-    // Giả sử API trả về { success: true, token: ..., ... }
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error.response?.data || error.message);
@@ -24,16 +23,18 @@ export const loginUser = async ({ username, password }) => {
   }
 };
 
+// Lấy thông tin người dùng
 export const fetchUserInfo = async () => {
   try {
     const response = await axiosInstance.get("/api/users/me");
-    return response.data; // Giả sử trả về { success: true, user: { ... } }
+    return response.data;
   } catch (error) {
     console.error("Error fetching user info:", error.response?.data || error.message);
     throw error;
   }
 };
 
+// Đăng xuất người dùng
 export const logoutUser = async () => {
   try {
     const response = await axiosInstance.post('/api/users/logout', {});
@@ -43,18 +44,18 @@ export const logoutUser = async () => {
   }
 };
 
+// Cập nhật thông tin người dùng
 export const updateUserInfo = async (payload) => {
   try {
-    const response = await axiosInstance.put("/api/users/update", payload, {
-    });
-    return response.data; // Giả sử trả về { success: true, user: { ... } }
+    const response = await axiosInstance.put("/api/users/update", payload);
+    return response.data;
   } catch (error) {
     console.error("Error updating user info:", error.response?.data || error.message);
     throw error;
   }
 };
 
-
+// Cập nhật mật khẩu người dùng
 export const updateUserPassword = async (payload) => {
   try {
     const response = await axiosInstance.put("/api/users/change-password", payload);
@@ -64,9 +65,9 @@ export const updateUserPassword = async (payload) => {
   }
 };
 
+// Lấy dữ liệu biểu đồ
 export const getChartData = async () => {
   try {
-    // Không cần truyền userId, token từ cookie sẽ được gửi tự động
     const response = await axiosInstance.get("/api/users/get-chart");
     return response.data;
   } catch (error) {
@@ -74,6 +75,7 @@ export const getChartData = async () => {
   }
 };
 
+// Lấy thống kê đặt sân chi tiết
 export const getDetailedBookingStats = async (period = "month") => {
   try {
     const response = await axiosInstance.get(`/api/users/detailed-stats?period=${period}`);
@@ -83,24 +85,26 @@ export const getDetailedBookingStats = async (period = "month") => {
   }
 };
 
+// Quên mật khẩu qua email
 export const forgotPasswordByEmailSimpleApi = async (email) => {
   try {
-      const response = await axiosInstance.post("/api/users/forgot-password-email", { email });
-      return response.data;
+    const response = await axiosInstance.post("/api/users/forgot-password-email", { email });
+    return response.data;
   } catch (error) {
-      console.error("Lỗi yêu cầu quên mật khẩu:", error.response?.data || error.message);
-      throw error;
+    console.error("Lỗi yêu cầu quên mật khẩu:", error.response?.data || error.message);
+    throw error;
   }
 };
 
+// Gửi đánh giá
 export const submitRating = async (ratingData) => {
   try {
-    // Gửi dữ liệu đánh giá đến endpoint /api/ratings, withCredentials đảm bảo gửi cookie xác thực
     const response = await axiosInstance.post("/api/users/insert-ratings", ratingData);
-    return response.data; // Giả sử trả về { message, rating }
+    return response.data;
   } catch (error) {
     throw error.response && error.response.data.message
       ? error.response.data.message
       : error.message;
   }
 };
+

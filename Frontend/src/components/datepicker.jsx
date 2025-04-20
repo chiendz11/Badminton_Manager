@@ -2,7 +2,7 @@ import React from "react";
 
 const DatePicker = ({ value, onDateChange }) => {
   // Lấy ngày hôm nay theo định dạng "YYYY-MM-DD"
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA");
   
   // Tính ngày 1 tháng sau
   const oneMonthLater = new Date();

@@ -1,13 +1,11 @@
-// src/pages/Login.jsx
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 import { loginUser, registerUser } from '../apis/users';
 import { AuthContext } from '../contexts/AuthContext.jsx';
-import { forgotPasswordByEmailSimpleApi } from '../apis/users'; // Giả sử bạn đã tạo API này trong users.js
+import { forgotPasswordByEmailSimpleApi } from '../apis/users';
 
 const LoginModal = ({ isOpen, onClose }) => {
-  // activeMode: "login", "register", "forgot", hoặc "registerSuccess"
   const [activeMode, setActiveMode] = useState("login");
   const modalRef = useRef(null);
   const { login } = useContext(AuthContext);
@@ -17,25 +15,24 @@ const LoginModal = ({ isOpen, onClose }) => {
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [isLoginLoading, setIsLoginLoading] = useState(false); // State loading cho đăng nhập
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
 
   // State cho form đăng ký
   const [signupData, setSignupData] = useState({
     name: '',
     email: '',
     phone_number: '',
-    address: '',
     username: '',
     password: '',
     confirmPassword: '',
   });
   const [signupError, setSignupError] = useState('');
-  const [signupSuccess, setSignupSuccess] = useState(''); // Message từ API đăng ký thành công
+  const [signupSuccess, setSignupSuccess] = useState('');
 
   // State cho form quên mật khẩu
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotMessage, setForgotMessage] = useState('');
-  const [isForgotLoading, setIsForgotLoading] = useState(false); // State loading cho quên mật khẩu
+  const [isForgotLoading, setIsForgotLoading] = useState(false);
 
   // Quản lý lỗi từng trường
   const [fieldErrors, setFieldErrors] = useState({});
@@ -47,12 +44,11 @@ const LoginModal = ({ isOpen, onClose }) => {
   // Trạng thái loading cho form đăng ký
   const [isLoading, setIsLoading] = useState(false);
 
-  // Tạo ref cho từng trường nếu cần
+  // Tạo ref cho từng trường
   const refs = {
     name: useRef(null),
     email: useRef(null),
     phone_number: useRef(null),
-    address: useRef(null),
     username: useRef(null),
     password: useRef(null),
     confirmPassword: useRef(null),
@@ -119,7 +115,6 @@ const LoginModal = ({ isOpen, onClose }) => {
       const { confirmPassword, ...payload } = signupData;
       const result = await registerUser(payload);
       console.log('Đăng ký thành công:', result);
-      // Sau khi đăng ký thành công, lưu thông báo và chuyển sang mode "registerSuccess"
       setSignupSuccess(result.message || "Đăng ký thành công!");
       setActiveMode("registerSuccess");
     } catch (error) {
@@ -171,7 +166,6 @@ const LoginModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="modal-overlay">
-      {/* class "active" giúp tạo hiệu ứng chuyển tiếp qua CSS */}
       <div ref={modalRef} className={`container ${activeMode !== "login" ? 'active' : ''}`}>
         <button className="close-modal-btn" onClick={onClose}>
           <i className="fas fa-times"></i>
@@ -209,14 +203,11 @@ const LoginModal = ({ isOpen, onClose }) => {
               </button>
               <p className="social-text">Đăng nhập khác</p>
               <div className="social-icons">
-                <a href="https://facebook.com" className="social-icon facebook">
+                <a href="/auth/facebook" className="social-icon facebook">
                   <i className="fab fa-facebook-f"></i>
                 </a>
-                <a href="https://instagram.com" className="social-icon instagram">
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="https://twitter.com" className="social-icon twitter">
-                  <i className="fab fa-twitter"></i>
+                <a href="/auth/google" className="social-icon google">
+                  <i className="fab fa-google"></i>
                 </a>
               </div>
             </form>
@@ -245,7 +236,7 @@ const LoginModal = ({ isOpen, onClose }) => {
           </div>
         )}
 
-        {/* FORM ĐĂNG KÝ - hiển thị cho activeMode "register" và "registerSuccess" */}
+        {/* FORM ĐĂNG KÝ */}
         {(activeMode === "register" || activeMode === "registerSuccess") && (
           <div className="form-box register">
             <form onSubmit={handleSignupSubmit} noValidate>
@@ -294,18 +285,6 @@ const LoginModal = ({ isOpen, onClose }) => {
                   <i className="bx bxs-phone"></i>
                 </div>
                 {fieldErrors.phone_number && <p className="field-error">{fieldErrors.phone_number}</p>}
-                <div className={`input-box ${fieldErrors.address ? 'invalid' : signupData.address.trim() ? 'valid' : ''}`}>
-                  <input
-                    type="text"
-                    name="address"
-                    placeholder="Địa chỉ"
-                    value={signupData.address}
-                    onChange={handleChange}
-                    ref={refs.address}
-                  />
-                  <i className="bx bxs-map"></i>
-                </div>
-                {fieldErrors.address && <p className="field-error">{fieldErrors.address}</p>}
                 <div className={`input-box ${fieldErrors.username ? 'invalid' : signupData.username.trim() ? 'valid' : ''}`}>
                   <input
                     type="text"
@@ -361,14 +340,11 @@ const LoginModal = ({ isOpen, onClose }) => {
                 </button>
                 <p className="social-text">Đăng ký khác</p>
                 <div className="social-icons">
-                  <a href="https://facebook.com" className="social-icon facebook">
+                  <a href="/auth/facebook" className="social-icon facebook">
                     <i className="fab fa-facebook-f"></i>
                   </a>
-                  <a href="https://instagram.com" className="social-icon instagram">
-                    <i className="fab fa-instagram"></i>
-                  </a>
-                  <a href="https://twitter.com" className="social-icon twitter">
-                    <i className="fab fa-twitter"></i>
+                  <a href="/auth/google" className="social-icon google">
+                    <i className="fab fa-google"></i>
                   </a>
                 </div>
               </div>
@@ -379,8 +355,6 @@ const LoginModal = ({ isOpen, onClose }) => {
         {/* TOGGLE BOX */}
         <div className="toggle-box">
           <div className="toggle-panel toggle-left">
-            {/* Với activeMode "login" thì bên trái không thay đổi.  
-                Với activeMode "register" hoặc "registerSuccess", bên trái vẫn giữ form đăng ký (để người dùng có thể "đăng ký tiếp" nếu cần) */}
             {activeMode === "login" && (
               <>
                 <h1>Xin chào bạn!</h1>
@@ -409,13 +383,11 @@ const LoginModal = ({ isOpen, onClose }) => {
                 <h1 className='pb-10 whitespace-nowrap'>Đăng ký thành công🥳</h1>
                 <div className="toggle-buttons">
                   <button className="btn register-btn" onClick={() => {
-                    // "Đăng ký tiếp": reset thông báo và dữ liệu đăng ký, chuyển lại mode "register"
                     setSignupSuccess('');
                     setSignupData({
                       name: '',
                       email: '',
                       phone_number: '',
-                      address: '',
                       username: '',
                       password: '',
                       confirmPassword: '',
