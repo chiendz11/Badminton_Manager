@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 const DashboardAdmin = () => {
   const navigate = useNavigate();
 
-  const goToCenter = () => navigate('/centersmanagement');
-  const goToUsers = () => navigate('/users');
+  const goToCenter = () => navigate('/center-status');
+  const goToUsers = () => navigate('/users-manage');
   const goToNews = () => navigate('/news');
-  const goToBooking = () => navigate('/bookingsmanagement');
+  const goToBooking = () => navigate('/admin-bill-list');
   const goToRating = () => navigate('/ratings');
   const goToAccount = () => navigate('/account');
   const goToShop = () => navigate('/shop');
@@ -23,7 +23,7 @@ const DashboardAdmin = () => {
     { title: 'Quản lý kho', onClick: goToStock, color: '#4DA8DA' },
     { title: 'Báo cáo doanh thu', onClick: goToReport, color: '#FF7F50' }, // ✅ Thêm dòng này
     { title: 'Quản lý khách hàng', onClick: goToUsers, color: '#5CB85C' },
-    { title: 'Quản lý đơn hàng', onClick: goToBooking, color: '#9370DB' },
+    { title: 'Quản lý đơn', onClick: goToBooking, color: '#9370DB' },
     { title: 'Quản lý Tài khoản', onClick: goToAccount, color: '#7B68EE' },
   ];
 

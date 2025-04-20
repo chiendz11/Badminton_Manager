@@ -1,10 +1,7 @@
 // newsService.js
 import New from "../models/news.js";
 
-// Lấy tất cả tin tức, sắp xếp giảm dần theo thời gian tạo
-export const fetchAllNews = async () => {
-  return await New.find().sort({ createdAt: -1 });
-};
+
 
 // Thêm tin tức mới
 export const addNews = async (newsData) => {
@@ -25,4 +22,14 @@ export const modifyNews = async (id, updateData) => {
 // Xoá tin tức theo ID
 export const removeNews = async (id) => {
   return await New.findByIdAndDelete(id);
+};
+
+export const getAllNews = async () => {
+  try {
+    // Trả về tất cả các bản tin, sắp xếp theo thời gian tạo mới nhất
+    const news = await New.find({}).sort({ createdAt: -1 });
+    return news;
+  } catch (error) {
+    throw new Error("Error retrieving news: " + error.message);
+  }
 };

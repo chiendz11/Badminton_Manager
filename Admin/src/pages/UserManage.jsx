@@ -17,6 +17,7 @@ import {
   faSort,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 function UserManage() {
   const [searchValue, setSearchValue] = useState("");
@@ -25,6 +26,8 @@ function UserManage() {
   const [sortName, setSortName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate(); // Khởi tạo useNavigate
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -100,7 +103,7 @@ function UserManage() {
   };
 
   const handleBack = () => {
-    alert("Quay lại trang trước");
+    navigate("/dashboard"); // Điều hướng về /dashboard
   };
 
   // Hàm lấy biểu tượng phù hợp cho mỗi cấp bậc
