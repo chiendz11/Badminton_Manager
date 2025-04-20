@@ -2,6 +2,7 @@ import Booking from '../models/bookings.js';
 import Court from '../models/courts.js';
 import User from '../models/users.js';
 import Center from '../models/centers.js';
+import { updateUserPoints } from './userServices.js'; // Giả sử bạn có một service để cập nhật điểm cho người dùng  
 
 // Hàm gộp timeslots liên tiếp
 const formatTimeslots = (timeslots) => {
@@ -43,8 +44,15 @@ const getAllBillsWithDetails = async () => {
             .populate("centerId", "name")
             .lean();
 
-        const bills = await Promise.all(
-            bookings.map(async (booking) => {
+        // Tách daily và fixed bookings
+        const dailyBookings = bookings.filter(booking => booking.type === "daily");
+        const fixedBookings = bookings.filter(booking => booking.type === "fixed");
+
+        let bills = [];
+
+        // Xử lý daily bookings (giữ nguyên logic)
+        const dailyBills = await Promise.all(
+            dailyBookings.map(async (booking) => {
                 let paymentImage = null;
                 if (booking.paymentImage && booking.imageType) {
                     try {
@@ -67,7 +75,7 @@ const getAllBillsWithDetails = async () => {
                         const courtDoc = await Court.findById(court.courtId).select("name");
                         const courtName = courtDoc ? courtDoc.name : court.courtId;
                         const timeslotRange = formatTimeslots(court.timeslots);
-                        return `Sân ${courtName}: ${timeslotRange}`;
+                        return `${courtName}: ${timeslotRange}`;
                     })
                 );
                 const courtTime = courtTimeArray.join("; ");
@@ -89,6 +97,103 @@ const getAllBillsWithDetails = async () => {
                 };
             })
         );
+
+        bills.push(...dailyBills);
+
+        // Gộp fixed bookings
+        const fixedGroups = {};
+
+        for (const booking of fixedBookings) {
+            // Tạo key để gộp dựa trên centerId và courts
+            const courtsKey = JSON.stringify(booking.courts.map(court => ({
+                courtId: court.courtId.toString(),
+                timeslots: court.timeslots.sort()
+            })));
+            const groupKey = `${booking.centerId}-${courtsKey}`;
+
+            if (!fixedGroups[groupKey]) {
+                fixedGroups[groupKey] = {
+                    bookingIds: [],
+                    dates: [],
+                    userName: booking.userId.name,
+                    centerId: booking.centerId,
+                    centerName: booking.centerId.name,
+                    courts: booking.courts,
+                    status: booking.status,
+                    totalAmount: 0, // Khởi tạo totalAmount là 0
+                    paymentMethod: booking.paymentMethod,
+                    bookingCode: booking.bookingCode.split("-").slice(0, 2).join("-"),
+                    type: booking.type,
+                    note: booking.note,
+                    paymentImage: null,
+                    createdAt: booking.createdAt
+                };
+            }
+
+            // Thêm bookingId và date vào group
+            fixedGroups[groupKey].bookingIds.push(booking._id.toString());
+            fixedGroups[groupKey].dates.push(new Date(booking.date));
+
+            // Cộng dồn totalAmount của booking lẻ vào tổng của group
+            fixedGroups[groupKey].totalAmount += booking.totalAmount || 0;
+
+            // Cập nhật paymentImage nếu có
+            if (booking.paymentImage && booking.imageType) {
+                try {
+                    const base64Image = Buffer.isBuffer(booking.paymentImage)
+                        ? booking.paymentImage.toString("base64")
+                        : booking.paymentImage.toString("base64");
+                    const validMimeTypes = ["image/jpeg", "image/png", "image/gif"];
+                    const mimeType = validMimeTypes.includes(booking.imageType)
+                        ? booking.imageType
+                        : "image/jpeg";
+                    fixedGroups[groupKey].paymentImage = `data:${mimeType};base64,${base64Image}`;
+                } catch (error) {
+                    console.error(`Lỗi khi xử lý paymentImage cho booking ${booking._id}:`, error);
+                }
+            }
+        }
+
+        // Chuyển các fixed groups thành bill entries
+        for (const groupKey in fixedGroups) {
+            const group = fixedGroups[groupKey];
+
+            const courtTimeArray = await Promise.all(
+                group.courts.map(async (court) => {
+                    const courtDoc = await Court.findById(court.courtId).select("name");
+                    const courtName = courtDoc ? courtDoc.name : court.courtId;
+                    const timeslotRange = formatTimeslots(court.timeslots);
+                    return `${courtName}: ${timeslotRange}`;
+                })
+            );
+            const courtTime = courtTimeArray.join("; ");
+
+            // Tìm startDate và endDate
+            const dates = group.dates.sort((a, b) => a - b);
+            const startDate = dates[0];
+            const endDate = dates[dates.length - 1];
+
+            bills.push({
+                _id: group.bookingIds, // Mảng các bookingId
+                userName: group.userName,
+                centerName: group.centerName,
+                courtTime: courtTime,
+                date: startDate, // Dùng startDate để sắp xếp
+                startDate: startDate,
+                endDate: endDate,
+                status: group.status,
+                totalAmount: group.totalAmount, // Tổng giá của tất cả booking lẻ trong nhóm
+                paymentMethod: group.paymentMethod,
+                bookingCode: group.bookingCode,
+                type: group.type,
+                note: group.note,
+                paymentImage: group.paymentImage,
+                createdAt: group.createdAt
+            });
+        }
+
+        // Sắp xếp bills theo createdAt (mới nhất trước)
+        bills.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         return bills;
     } catch (error) {
@@ -117,6 +222,14 @@ const updateBillStatusService = async (billId, status) => {
         }
 
         bill.status = status;
+
+        // Nếu trạng thái là "paid", cập nhật điểm cho người dùng
+        if (status === "paid") {
+            const pointsUpdateResult = await updateUserPoints(bill.userId, bill.totalAmount);
+            bill.pointEarned = pointsUpdateResult.pointsEarned;
+            console.log(`User ${bill.userId} được cộng ${pointsUpdateResult.pointsEarned} điểm từ booking ${billId}`);
+        }
+
         await bill.save();
 
         const updatedBill = await Booking.findById(billId)
@@ -135,7 +248,7 @@ const updateBillStatusService = async (billId, status) => {
                 const courtDoc = await Court.findById(court.courtId).select("name");
                 const courtName = courtDoc ? courtDoc.name : court.courtId;
                 const timeslotRange = formatTimeslots(court.timeslots);
-                return `Sân ${courtName}: ${timeslotRange}`;
+                return `${courtName}: ${timeslotRange}`;
             })
         );
         const courtTime = courtTimeArray.join("; ");
@@ -154,6 +267,7 @@ const updateBillStatusService = async (billId, status) => {
             note: updatedBill.note,
             paymentImage: paymentImage,
             createdAt: updatedBill.createdAt,
+            pointEarned: updatedBill.pointEarned, // Thêm pointEarned vào kết quả trả về
         };
     } catch (error) {
         throw new Error(`Lỗi khi cập nhật trạng thái bill: ${error.message}`);
@@ -204,13 +318,15 @@ const getAllCentersService = async () => {
         throw new Error(`Lỗi khi lấy danh sách trung tâm: ${error.message}`);
     }
 };
-
-// Service để lấy danh sách sân trống
 const getAvailableCourts = async ({ centerId, startDate, timeslots, daysOfWeek }) => {
     try {
+        // Chuẩn hóa startDate về 00:00:00 UTC
+        const normalizedStartDate = new Date(startDate);
+        normalizedStartDate.setUTCHours(0, 0, 0, 0);
+
         console.log('getAvailableCourts - Input:', {
             centerId,
-            startDate: startDate.toISOString(),
+            startDate: normalizedStartDate.toISOString(),
             timeslots,
             daysOfWeek
         });
@@ -220,10 +336,10 @@ const getAvailableCourts = async ({ centerId, startDate, timeslots, daysOfWeek }
         }
 
         // Tính ngày kết thúc (30 ngày sau ngày bắt đầu)
-        const endDate = new Date(startDate);
+        const endDate = new Date(normalizedStartDate);
         endDate.setDate(endDate.getDate() + 30);
         console.log('getAvailableCourts - Time range:', {
-            startDate: startDate.toISOString(),
+            startDate: normalizedStartDate.toISOString(),
             endDate: endDate.toISOString()
         });
 
@@ -238,10 +354,18 @@ const getAvailableCourts = async ({ centerId, startDate, timeslots, daysOfWeek }
         // Lấy danh sách booking trong khoảng thời gian
         const bookings = await Booking.find({
             centerId,
-            date: { $gte: startDate, $lte: endDate },
+            date: { $gte: normalizedStartDate, $lte: endDate },
             status: { $in: ["paid", "pending", "processing"] },
+            deleted: false // Chỉ lấy booking chưa bị xóa
         }).lean();
         console.log('getAvailableCourts - Bookings found:', bookings);
+
+        // Chuẩn hóa ngày trong bookings để so sánh
+        const normalizedBookings = bookings.map(booking => {
+            const normalizedDate = new Date(booking.date);
+            normalizedDate.setUTCHours(0, 0, 0, 0); // Chuẩn hóa về 00:00:00 UTC
+            return { ...booking, date: normalizedDate };
+        });
 
         // Tạo object lưu sân trống theo dayOfWeek
         const availableCourtsByDay = {};
@@ -258,42 +382,40 @@ const getAvailableCourts = async ({ centerId, startDate, timeslots, daysOfWeek }
 
                 // Tìm tất cả các ngày tương ứng với dayOfWeek trong khoảng thời gian
                 const relevantDays = [];
-                let currentDate = new Date(startDate);
+                let currentDate = new Date(normalizedStartDate);
+                currentDate.setUTCHours(0, 0, 0, 0); // Chuẩn hóa startDate
                 while (currentDate <= endDate) {
-                    if (currentDate.getDay() === dayOfWeek) {
+                    if (currentDate.getUTCDay() === dayOfWeek) {
                         relevantDays.push(new Date(currentDate));
                     }
                     currentDate.setDate(currentDate.getDate() + 1);
                 }
                 console.log(`getAvailableCourts - Relevant days for dayOfWeek ${dayOfWeek}:`, relevantDays.map(d => d.toISOString()));
 
-                // Kiểm tra từng khung giờ
-                for (const timeslot of timeslots) {
-                    const [hour] = timeslot.split(":");
-                    const startHour = parseInt(hour);
-                    const endHour = startHour + 1;
-                    console.log(`getAvailableCourts - Checking timeslot ${timeslot} (startHour: ${startHour}, endHour: ${endHour})`);
+                // Chuẩn hóa timeslots thành mảng các slot (ví dụ: "13:00" -> [13])
+                const requestedSlots = timeslots.map(slot => {
+                    const [hour] = slot.split(":");
+                    return parseInt(hour);
+                });
 
-                    // Kiểm tra xem sân có bị đặt hoặc đang chờ duyệt trong bất kỳ ngày nào không
-                    for (const day of relevantDays) {
-                        const conflictingBookings = bookings.filter((booking) => {
-                            const bookingDate = new Date(booking.date);
-                            return (
-                                bookingDate.toDateString() === day.toDateString() &&
-                                booking.courts.some((c) => c.courtId.toString() === court._id.toString()) &&
-                                booking.courts.some((c) =>
-                                    c.timeslots.some((slot) => slot >= startHour && slot < endHour)
-                                )
-                            );
-                        });
+                // Kiểm tra từng ngày
+                for (const day of relevantDays) {
+                    const conflictingBookings = normalizedBookings.filter((booking) => {
+                        const bookingDate = new Date(booking.date);
+                        return (
+                            bookingDate.toISOString() === day.toISOString() && // So sánh ngày chính xác
+                            booking.courts.some((c) => c.courtId.toString() === court._id.toString()) &&
+                            booking.courts.some((c) =>
+                                c.timeslots.some((slot) => requestedSlots.includes(slot)) // Kiểm tra trùng timeslot
+                            )
+                        );
+                    });
 
-                        if (conflictingBookings.length > 0) {
-                            console.log(`getAvailableCourts - Conflicting bookings found for court ${court.name} on ${day.toISOString()}:`, conflictingBookings);
-                            isAvailable = false;
-                            break;
-                        }
+                    if (conflictingBookings.length > 0) {
+                        console.log(`getAvailableCourts - Conflicting bookings found for court ${court.name} on ${day.toISOString()}:`, conflictingBookings);
+                        isAvailable = false;
+                        break;
                     }
-                    if (!isAvailable) break;
                 }
 
                 if (isAvailable) {
@@ -314,7 +436,6 @@ const getAvailableCourts = async ({ centerId, startDate, timeslots, daysOfWeek }
     }
 };
 
-// Service để tạo nhiều booking cố định (fixed)
 const createFixedBookings = async ({ userId, centerId, bookings, type }) => {
     try {
         console.log('createFixedBookings - Input:', { userId, centerId, bookings, type });
@@ -335,11 +456,17 @@ const createFixedBookings = async ({ userId, centerId, bookings, type }) => {
         }
         console.log('createFixedBookings - User found:', user);
 
-        const center = await Center.findById(centerId).lean();
+        const center = await Center.findById(centerId).select("pricing").lean();
         if (!center) {
             throw new Error("Không tìm thấy trung tâm");
         }
         console.log('createFixedBookings - Center found:', center);
+        console.log('createFixedBookings - Center pricing:', center.pricing);
+
+        // Kiểm tra pricing có dữ liệu không
+        if (!center.pricing || (!center.pricing.weekday.length && !center.pricing.weekend.length)) {
+            console.warn('createFixedBookings - Warning: Center pricing is empty or invalid');
+        }
 
         // Lấy danh sách tất cả sân của trung tâm
         const courts = await Court.find({ centerId }).select("_id").lean();
@@ -430,6 +557,24 @@ const createFixedBookings = async ({ userId, centerId, bookings, type }) => {
             }
         }
 
+        // Hàm phụ để tìm giá áp dụng cho một timeslot
+        const getPriceForTimeslot = (timeslot, pricingRules) => {
+            const timeslotStr = `${timeslot}:00`; // Chuyển thành định dạng "HH:00"
+            console.log(`getPriceForTimeslot - Checking timeslot ${timeslotStr} against pricing rules:`, pricingRules);
+            for (const rule of pricingRules) {
+                console.log(`getPriceForTimeslot - Comparing ${timeslotStr} with rule: startTime=${rule.startTime}, endTime=${rule.endTime}`);
+                if (
+                    timeslotStr >= rule.startTime &&
+                    timeslotStr < rule.endTime
+                ) {
+                    console.log(`getPriceForTimeslot - Match found: Price = ${rule.price}`);
+                    return rule.price;
+                }
+            }
+            console.warn(`getPriceForTimeslot - No matching pricing rule found for timeslot ${timeslotStr}. Defaulting to 0.`);
+            return 0; // Giá mặc định nếu không tìm thấy khung giờ
+        };
+
         // Tạo các booking mới
         const newBookings = await Promise.all(
             bookings.map(async (booking) => {
@@ -445,6 +590,29 @@ const createFixedBookings = async ({ userId, centerId, bookings, type }) => {
                     throw new Error(`Ngày không hợp lệ trong booking khi tạo mới: ${JSON.stringify(booking)}`);
                 }   
 
+                // Tính giá cho booking
+                const bookingDate = new Date(date);
+                const dayOfWeek = bookingDate.getUTCDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Chủ nhật (0) hoặc Thứ 7 (6)
+                const pricingRules = isWeekend ? center.pricing.weekend : center.pricing.weekday;
+                console.log(`createFixedBookings - Calculating price for booking on ${bookingDate.toISOString()}:`, {
+                    dayOfWeek,
+                    isWeekend,
+                    pricingRules,
+                    timeslots
+                });
+
+                let totalPrice = 0;
+                for (const timeslot of timeslots) {
+                    const pricePerHour = getPriceForTimeslot(timeslot, pricingRules);
+                    totalPrice += pricePerHour;
+                    console.log(`createFixedBookings - Price for timeslot ${timeslot}: ${pricePerHour}, Running total: ${totalPrice}`);
+                }
+
+                if (totalPrice === 0) {
+                    console.warn(`createFixedBookings - Total price for booking on ${bookingDate.toISOString()} is 0. Check pricing rules and timeslots.`);
+                }
+
                 const newBooking = new Booking({
                     userId,
                     centerId,
@@ -457,7 +625,7 @@ const createFixedBookings = async ({ userId, centerId, bookings, type }) => {
                     ],
                     status: "paid", // Trạng thái là paid
                     type: "fixed", // Loại booking cố định
-                    totalAmount: 0, // Có thể thêm logic tính giá sau
+                    totalAmount: totalPrice, // Tổng giá đã tính
                     paymentMethod: "banking", // Đặt cố định không cần thanh toán
                     bookingCode: `FIXED-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`, // Mã booking
                     note: "Đặt cố định từ hệ thống",
@@ -474,10 +642,11 @@ const createFixedBookings = async ({ userId, centerId, bookings, type }) => {
                     date: newBooking.date,
                     courts: newBooking.courts.map(court => ({
                         courtId: court.courtId.toString(),
-                        timeslots: court.timeslots,
+                        timeslots: court.timeslots, // Sửa lỗi: truy cập trực tiếp court.timeslots
                     })),
                     status: newBooking.status,
                     type: newBooking.type,
+                    totalAmount: newBooking.totalAmount,
                     bookingCode: newBooking.bookingCode,
                     createdAt: newBooking.createdAt,
                 };

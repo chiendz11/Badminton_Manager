@@ -14,35 +14,34 @@ const CreateFixedBooking = () => {
     const [selectedTimeslots, setSelectedTimeslots] = useState([]);
     const [timeslotsByDay, setTimeslotsByDay] = useState({});
     const [selectedCourtsByDay, setSelectedCourtsByDay] = useState({});
-    const [startDate, setStartDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(() => {
+        const date = new Date();
+        date.setUTCHours(0, 0, 0, 0);
+        return date;
+    });
     const [loadingCenters, setLoadingCenters] = useState(false);
     const [loadingCourts, setLoadingCourts] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [bookingsToCreate, setBookingsToCreate] = useState([]);
 
-    // Tìm kiếm người dùng
     const [searchQuery, setSearchQuery] = useState("");
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef(null);
 
-    // Modal thông báo thành công/thất bại
     const [isResultModalOpen, setIsResultModalOpen] = useState(false);
     const [resultModalContent, setResultModalContent] = useState({
         success: true,
         message: "",
     });
 
-    // Tính ngày kết thúc (30 ngày sau ngày bắt đầu)
     const endDate = new Date(startDate);
     endDate.setDate(startDate.getDate() + 30);
 
-    // Danh sách khung giờ (từ 5:00 đến 23:00, mỗi khung giờ 1 tiếng)
     const availableTimeslots = Array.from({ length: 19 }, (_, i) => `${i + 5}:00`);
 
-    // Danh sách ngày trong tuần
     const daysOfWeek = [
         { value: 1, label: "Thứ 2" },
         { value: 2, label: "Thứ 3" },
@@ -53,10 +52,9 @@ const CreateFixedBooking = () => {
         { value: 0, label: "Chủ nhật" },
     ];
 
-    // Ngày hiện tại (19/04/2025)
-    const today = new Date(2025, 3, 19);
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
 
-    // Xử lý nút quay lại của trình duyệt
     useEffect(() => {
         const handlePopState = () => {
             navigate("/admin-bill-list", { replace: true });
@@ -69,7 +67,6 @@ const CreateFixedBooking = () => {
         };
     }, [navigate]);
 
-    // Lấy danh sách trung tâm
     useEffect(() => {
         const fetchCenters = async () => {
             setLoadingCenters(true);
@@ -99,7 +96,6 @@ const CreateFixedBooking = () => {
         fetchCenters();
     }, []);
 
-    // Tìm kiếm người dùng khi nhập query
     useEffect(() => {
         if (selectedUser || !searchQuery) {
             setUsers([]);
@@ -127,7 +123,6 @@ const CreateFixedBooking = () => {
         fetchUsers();
     }, [searchQuery, selectedUser]);
 
-    // Đóng dropdown khi click ra ngoài
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -140,7 +135,6 @@ const CreateFixedBooking = () => {
         };
     }, []);
 
-    // Lấy danh sách sân trống
     useEffect(() => {
         if (!selectedCenter || selectedDays.length === 0 || selectedTimeslots.length === 0) {
             console.log('CreateFixedBooking - Skipping fetchAvailableCourts due to missing parameters');
@@ -151,16 +145,18 @@ const CreateFixedBooking = () => {
 
         const fetchAvailableCourts = async () => {
             setLoadingCourts(true);
+            const normalizedStartDate = new Date(startDate);
+            normalizedStartDate.setUTCHours(0, 0, 0, 0);
             console.log('CreateFixedBooking - Fetching available courts with parameters:', {
                 centerId: selectedCenter,
-                startDate: startDate.toISOString(),
+                startDate: normalizedStartDate.toISOString(),
                 timeslots: selectedTimeslots,
                 daysOfWeek: selectedDays
             });
             try {
                 const courtsByDay = await getAvailableCourts({
                     centerId: selectedCenter,
-                    startDate: startDate.toISOString(),
+                    startDate: normalizedStartDate,
                     timeslots: selectedTimeslots,
                     daysOfWeek: selectedDays,
                 });
@@ -187,7 +183,6 @@ const CreateFixedBooking = () => {
         fetchAvailableCourts();
     }, [selectedCenter, selectedDays, selectedTimeslots, startDate]);
 
-    // Cập nhật timeslotsByDay khi selectedDays hoặc selectedTimeslots thay đổi
     useEffect(() => {
         const newTimeslotsByDay = {};
         selectedDays.forEach((day) => {
@@ -197,7 +192,6 @@ const CreateFixedBooking = () => {
         setTimeslotsByDay(newTimeslotsByDay);
     }, [selectedDays, selectedTimeslots]);
 
-    // Xử lý chọn người dùng từ dropdown
     const handleSelectUser = (user) => {
         console.log('CreateFixedBooking - Selected user:', user);
         setSelectedUser(user);
@@ -206,7 +200,6 @@ const CreateFixedBooking = () => {
         setUsers([]);
     };
 
-    // Xử lý chọn timeslot
     const handleTimeslotChange = (timeslot) => {
         if (selectedTimeslots.includes(timeslot)) {
             setSelectedTimeslots(selectedTimeslots.filter((t) => t !== timeslot));
@@ -216,7 +209,6 @@ const CreateFixedBooking = () => {
         console.log('CreateFixedBooking - Updated selectedTimeslots:', selectedTimeslots);
     };
 
-    // Xử lý chọn ngày trong tuần
     const handleDayChange = (day) => {
         if (selectedDays.includes(day)) {
             setSelectedDays(selectedDays.filter((d) => d !== day));
@@ -237,7 +229,6 @@ const CreateFixedBooking = () => {
         console.log('CreateFixedBooking - Updated selectedDays:', selectedDays);
     };
 
-    // Xử lý chọn sân cho từng ngày trong tuần
     const handleCourtChange = (day, courtId) => {
         setSelectedCourtsByDay((prev) => {
             const currentCourts = prev[day] || [];
@@ -253,7 +244,6 @@ const CreateFixedBooking = () => {
         });
     };
 
-    // Xử lý mở modal xác nhận
     const handleOpenConfirmModal = () => {
         if (
             !selectedUser ||
@@ -277,7 +267,6 @@ const CreateFixedBooking = () => {
             return;
         }
 
-        // Kiểm tra tính hợp lệ của sân đã chọn
         const isValidCourts = selectedDays.every((day) =>
             (selectedCourtsByDay[day] || []).every((courtId) =>
                 (availableCourtsByDay[day] || []).some((court) => court._id === courtId)
@@ -293,7 +282,6 @@ const CreateFixedBooking = () => {
             return;
         }
 
-        // Tạo danh sách bookings để hiển thị trong modal
         const bookings = [];
         let currentDate = new Date(startDate);
         const todayForValidation = new Date(2025, 3, 16);
@@ -305,7 +293,7 @@ const CreateFixedBooking = () => {
                 selectedCourts.forEach((courtId) => {
                     const court = (availableCourtsByDay[dayOfWeek] || []).find((c) => c._id === courtId);
                     bookings.push({
-                        date: new Date(currentDate).toISOString(), // Chuyển thành ISO string để gửi lên backend
+                        date: new Date(currentDate).toISOString(),
                         courtId,
                         courtName: court ? court.name : courtId,
                         timeslots: timeslots.map((slot) => {
@@ -322,7 +310,6 @@ const CreateFixedBooking = () => {
         setIsModalOpen(true);
     };
 
-    // Tạo lịch đặt cố định sau khi xác nhận
     const handleCreateFixedBooking = async () => {
         setLoading(true);
         setIsModalOpen(false);
@@ -335,9 +322,26 @@ const CreateFixedBooking = () => {
             });
             console.log('CreateFixedBooking - Booking creation response:', response);
 
+            // Tính tổng giá tiền từ response
+            const totalAmount = response.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
+
+            // Cập nhật bookingsToCreate với totalAmount
+            const updatedBookings = bookingsToCreate.map((booking) => {
+                const matchingBooking = response.find((resBooking) =>
+                    resBooking.date === booking.date &&
+                    resBooking.courts.some((court) => court.courtId === booking.courtId)
+                );
+                return {
+                    ...booking,
+                    totalAmount: matchingBooking ? matchingBooking.totalAmount : 0,
+                };
+            });
+
+            setBookingsToCreate(updatedBookings);
+
             setResultModalContent({
                 success: true,
-                message: "Tạo lịch đặt cố định thành công!",
+                message: `Tạo lịch đặt cố định thành công! Tổng giá tiền: ${totalAmount.toLocaleString('vi-VN')} VNĐ`,
             });
             setIsResultModalOpen(true);
         } catch (error) {
@@ -352,7 +356,6 @@ const CreateFixedBooking = () => {
         }
     };
 
-    // Xử lý khi đóng modal thông báo và chuyển hướng nếu thành công
     const handleResultModalClose = () => {
         setIsResultModalOpen(false);
         if (resultModalContent.success) {
@@ -360,9 +363,11 @@ const CreateFixedBooking = () => {
         }
     };
 
+    // Tính tổng giá tiền trong modal xác nhận
+    const totalAmount = bookingsToCreate.reduce((sum, booking) => sum + (booking.totalAmount || 0), 0);
+
     return (
         <div className="min-h-screen w-full font-sans bg-gradient-to-br from-gray-50 to-gray-200">
-            {/* Header */}
             <div className="bg-emerald-600 text-white flex items-center p-4 shadow-lg">
                 <button onClick={() => navigate("/admin/bill-list")} className="mr-4 hover:opacity-80 transition-opacity">
                     <ArrowLeftIcon className="h-7 w-7" />
@@ -370,12 +375,9 @@ const CreateFixedBooking = () => {
                 <h1 className="text-2xl font-bold flex-1 text-center">Đặt Lịch Cố Định</h1>
             </div>
 
-            {/* Main Content */}
             <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
                 <div className="bg-white rounded-xl shadow-xl p-6 space-y-6">
-                    {/* Tìm kiếm người dùng, chọn trung tâm và ngày bắt đầu (trên cùng một dòng) */}
                     <div className="flex flex-col lg:flex-row lg:space-x-4 space-y-4 lg:space-y-0">
-                        {/* Tìm kiếm người dùng */}
                         <div className="flex-1 relative" ref={dropdownRef}>
                             <label className="block text-sm font-semibold text-gray-800 mb-2">Tìm kiếm khách hàng</label>
                             <div className="relative">
@@ -406,7 +408,6 @@ const CreateFixedBooking = () => {
                             )}
                         </div>
 
-                        {/* Chọn trung tâm */}
                         <div className="flex-1">
                             <label className="block text-sm font-semibold text-gray-800 mb-2">Chọn trung tâm</label>
                             <div className="relative">
@@ -430,13 +431,16 @@ const CreateFixedBooking = () => {
                             )}
                         </div>
 
-                        {/* Chọn ngày bắt đầu */}
                         <div className="flex-1">
                             <label className="block text-sm font-semibold text-gray-800 mb-2">Ngày bắt đầu</label>
                             <div className="relative">
                                 <DatePicker
                                     selected={startDate}
-                                    onChange={(date) => setStartDate(date)}
+                                    onChange={(date) => {
+                                        const normalizedDate = new Date(date);
+                                        normalizedDate.setUTCHours(0, 0, 0, 0);
+                                        setStartDate(normalizedDate);
+                                    }}
                                     dateFormat="dd/MM/yyyy"
                                     placeholderText="Chọn ngày bắt đầu"
                                     className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all cursor-pointer caret-transparent"
@@ -448,9 +452,7 @@ const CreateFixedBooking = () => {
                         </div>
                     </div>
 
-                    {/* Hiển thị thông tin người dùng và khoảng thời gian */}
                     <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
-                        {/* Hiển thị thông tin người dùng */}
                         {selectedUser && (
                             <div className="flex-1 p-4 bg-emerald-50 rounded-lg">
                                 <h3 className="text-sm font-semibold text-emerald-800 mb-2">Thông tin khách hàng</h3>
@@ -466,7 +468,6 @@ const CreateFixedBooking = () => {
                             </div>
                         )}
 
-                        {/* Hiển thị khoảng thời gian */}
                         <div className="flex-1 p-4 bg-gray-50 rounded-lg">
                             <h3 className="text-sm font-semibold text-gray-800 mb-2">Khoảng thời gian áp dụng</h3>
                             <p className="text-sm text-gray-600">
@@ -476,7 +477,6 @@ const CreateFixedBooking = () => {
                         </div>
                     </div>
 
-                    {/* Chọn thời gian và ngày trong tuần */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-800 mb-2">Chọn thời gian</label>
                         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-9 gap-2 mb-4">
@@ -512,7 +512,6 @@ const CreateFixedBooking = () => {
                             ))}
                         </div>
 
-                        {/* Hiển thị sân trống */}
                         {selectedDays.length > 0 && selectedTimeslots.length > 0 && (
                             <div className="mt-4">
                                 <label className="block text-sm font-semibold text-gray-800 mb-2">Sân trống</label>
@@ -554,7 +553,6 @@ const CreateFixedBooking = () => {
                         )}
                     </div>
 
-                    {/* Nút xác nhận */}
                     <button
                         onClick={handleOpenConfirmModal}
                         disabled={loading}
@@ -567,7 +565,6 @@ const CreateFixedBooking = () => {
                 </div>
             </div>
 
-            {/* Modal xác nhận */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
                     <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl">
@@ -603,8 +600,18 @@ const CreateFixedBooking = () => {
                                         <span className="font-medium">Khung giờ:</span>{" "}
                                         {booking.timeslots.join(", ")}
                                     </p>
+                                    <p className="text-sm text-gray-700">
+                                        <span className="font-medium">Giá tiền:</span>{" "}
+                                        {booking.totalAmount ? booking.totalAmount.toLocaleString('vi-VN') : '0'} VNĐ
+                                    </p>
                                 </div>
                             ))}
+                            <div className="p-3 bg-emerald-50 rounded-lg">
+                                <p className="text-sm font-semibold text-emerald-800">
+                                    <span className="font-medium">Tổng giá tiền:</span>{" "}
+                                    {totalAmount.toLocaleString('vi-VN')} VNĐ
+                                </p>
+                            </div>
                         </div>
                         <div className="flex space-x-3 mt-6">
                             <button
@@ -624,7 +631,6 @@ const CreateFixedBooking = () => {
                 </div>
             )}
 
-            {/* Modal thông báo kết quả */}
             {isResultModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
                     <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">

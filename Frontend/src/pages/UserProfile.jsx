@@ -99,6 +99,7 @@ const UserProfile = () => {
         const data = await getDetailedBookingStats(statsPeriod);
         if (data.success) {
           setDetailedStats(data.stats);
+          console.log("Detailed stats:", data.stats); // Log detailed stats
         } else {
           console.error("Error fetching booking stats:", data.message);
         }

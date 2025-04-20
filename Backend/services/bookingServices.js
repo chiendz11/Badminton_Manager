@@ -3,7 +3,7 @@ import Booking from "../models/bookings.js";
 import mongoose from "mongoose";
 import Center from "../models/centers.js";
 import Court from "../models/courts.js";
-import { updateFavouriteCenter, updateCompletedBookingsForUser, markBookingAsCancelled, incrementTotalBookings, updateUserPoints, updateChartForCancelled, updateChartForCompleted } from "./userServices.js";
+import { updateFavouriteCenter, updateCompletedBookingsForUser, markBookingAsCancelled, incrementTotalBookings, updateChartForCancelled, updateChartForCompleted } from "./userServices.js";
 
 // ============== CÁC CONSTANT VÀ HÀM PHỤ TRỢ ==============
 const TIMES = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
@@ -127,14 +127,6 @@ export const bookedBookingInDB = async ({
       }
     }
 
-    let pointsUpdateResult = {};
-    if (totalAmount) {
-      pointsUpdateResult = await updateUserPoints(userId, totalAmount);
-      console.log(
-        `User ${userId} được cộng ${pointsUpdateResult.pointsEarned} điểm, tổng điểm mới: ${pointsUpdateResult.totalPoints}`
-      );
-    }
-
     booking.status = "processing";
     booking.totalAmount = totalAmount;
     booking.paymentMethod = "banking";
@@ -143,7 +135,7 @@ export const bookedBookingInDB = async ({
     booking.type = "daily";
     booking.imageType = imageType;
     await booking.save();
-    console.log(`Booking đã chuyển sang trạng thái paid. _id=${booking._id}, bookingCode=${booking.bookingCode}`);
+    console.log(`Booking đã chuyển sang trạng thái processing. _id=${booking._id}, bookingCode=${booking.bookingCode}`);
 
     const completedCount = await updateCompletedBookingsForUser(userId);
     console.log(`User ${userId} có ${completedCount} booking đã thanh toán, hãy chờ để Admin duyệt.`);
@@ -155,9 +147,7 @@ export const bookedBookingInDB = async ({
     console.log(`Danh sách yêu thích của user ${userId} đã được cập nhật`);
 
     return {
-      booking,
-      totalPoints: pointsUpdateResult.totalPoints,
-      pointsEarned: pointsUpdateResult.pointsEarned
+      booking
     };
   } catch (error) {
     console.error("Lỗi khi xác nhận và thanh toán booking:", error);
@@ -458,9 +448,14 @@ export const getBookingHistory = async (userId) => {
   try {
     const bookings = await Booking.find({ userId, deleted: { $ne: true } });
 
+    // Tách daily và fixed bookings
+    const dailyBookings = bookings.filter(booking => booking.type === "daily");
+    const fixedBookings = bookings.filter(booking => booking.type === "fixed");
+
     let history = [];
 
-    for (const booking of bookings) {
+    // Xử lý daily bookings (giữ nguyên logic)
+    for (const booking of dailyBookings) {
       const center = await Center.findById(booking.centerId).select("name");
 
       const courtTimeArray = await Promise.all(
@@ -473,7 +468,7 @@ export const getBookingHistory = async (userId) => {
 
       history.push({
         bookingId: booking._id, // Thêm bookingId là _id
-        orderId: booking.status === "pending" ? booking._id : booking.bookingCode, // Giữ nguyên orderId
+        orderId: booking.status === "pending" ? booking._id : booking.bookingCode,
         status: booking.status,
         orderType: booking.type,
         center: center ? center.name : "Không xác định",
@@ -484,6 +479,69 @@ export const getBookingHistory = async (userId) => {
       });
     }
 
+    // Gộp fixed bookings
+    const fixedGroups = {};
+
+    for (const booking of fixedBookings) {
+      // Tạo key để gộp dựa trên centerId và courts
+      const courtsKey = JSON.stringify(booking.courts.map(court => ({
+        courtId: court.courtId.toString(),
+        timeslots: court.timeslots.sort()
+      })));
+      const groupKey = `${booking.centerId}-${courtsKey}`;
+
+      if (!fixedGroups[groupKey]) {
+        fixedGroups[groupKey] = {
+          bookingIds: [],
+          dates: [],
+          centerId: booking.centerId,
+          courts: booking.courts,
+          status: booking.status,
+          totalAmount: booking.totalAmount,
+          paymentMethod: booking.paymentMethod,
+          bookingCode: booking.bookingCode.split("-").slice(0, 2).join("-") // Lấy phần cố định của bookingCode
+        };
+      }
+
+      fixedGroups[groupKey].bookingIds.push(booking._id);
+      fixedGroups[groupKey].dates.push(new Date(booking.date));
+    }
+
+    // Chuyển các fixed groups thành history entries
+    for (const groupKey in fixedGroups) {
+      const group = fixedGroups[groupKey];
+      
+      const center = await Center.findById(group.centerId).select("name");
+
+      const courtTimeArray = await Promise.all(
+        group.courts.map(async (court) => {
+          const courtDoc = await Court.findById(court.courtId).select("name");
+          return `${courtDoc ? courtDoc.name : court.courtId} - ${court.timeslots.join(", ")}`;
+        })
+      );
+      const courtTime = courtTimeArray.join("; ");
+
+      // Tìm startDate và endDate
+      const dates = group.dates.sort((a, b) => a - b);
+      const startDate = dates[0];
+      const endDate = dates[dates.length - 1];
+
+      history.push({
+        bookingId: group.bookingIds, // Mảng các bookingId
+        orderId: group.status === "pending" ? group.bookingIds[0] : group.bookingCode,
+        status: group.status,
+        orderType: "fixed",
+        center: center ? center.name : "Không xác định",
+        court_time: courtTime,
+        date: startDate, // Sử dụng startDate để sắp xếp
+        startDate: startDate,
+        endDate: endDate,
+        price: group.totalAmount,
+        paymentMethod: group.status === "paid" ? group.paymentMethod : ""
+      });
+    }
+
+    // Sắp xếp history theo ngày (dùng date cho daily và startDate cho fixed)
     history.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return history;

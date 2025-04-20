@@ -210,7 +210,13 @@ const HistoryTab = ({
                         </React.Fragment>
                       ))}
                     </td>
-                    <td>{new Date(booking.date).toLocaleDateString()}</td>
+                    <td>
+                      {booking.orderType === 'fixed' ? (
+                        `${new Date(booking.startDate).toLocaleDateString()} - ${new Date(booking.endDate).toLocaleDateString()}`
+                      ) : (
+                        new Date(booking.date).toLocaleDateString()
+                      )}
+                    </td>
                     <td className="booking-price">{booking.price}</td>
                     <td>{booking.paymentMethod}</td>
                     <td>{booking.orderType}</td>

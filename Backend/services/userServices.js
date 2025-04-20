@@ -306,28 +306,27 @@ const compareChange = (current, previous) => {
  * Lấy thống kê booking của user
  */
 export const getUserBookingStats = async (userId, period = "month") => {
-    let currentStart, previousStart, previousEnd;
     const now = new Date();
+    const currentYear = now.getUTCFullYear();
+    const currentMonth = now.getUTCMonth();
+    const currentDate = now.getUTCDate();
+
+    let currentStart, previousStart, previousEnd;
 
     if (period === "week") {
-        const dayOfWeek = now.getDay();
+        const dayOfWeek = now.getUTCDay();
         const diffToMonday = (dayOfWeek + 6) % 7;
-        currentStart = new Date(now);
-        currentStart.setDate(now.getDate() - diffToMonday);
-        currentStart.setHours(0, 0, 0, 0);
-
-        previousStart = new Date(currentStart);
-        previousStart.setDate(currentStart.getDate() - 7);
-        previousEnd = new Date(currentStart);
-        previousEnd.setDate(currentStart.getDate() - 1);
+        currentStart = new Date(Date.UTC(currentYear, currentMonth, currentDate - diffToMonday, 0, 0, 0, 0));
+        previousStart = new Date(Date.UTC(currentYear, currentMonth, currentDate - diffToMonday - 7, 0, 0, 0, 0));
+        previousEnd = new Date(Date.UTC(currentYear, currentMonth, currentDate - diffToMonday - 1, 23, 59, 59, 999));
     } else if (period === "month") {
-        currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
-        previousStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        previousEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+        currentStart = new Date(Date.UTC(currentYear, currentMonth, 1, 0, 0, 0, 0));
+        previousStart = new Date(Date.UTC(currentYear, currentMonth - 1, 1, 0, 0, 0, 0));
+        previousEnd = new Date(Date.UTC(currentYear, currentMonth, 0, 23, 59, 59, 999));
     } else if (period === "year") {
-        currentStart = new Date(now.getFullYear(), 0, 1);
-        previousStart = new Date(now.getFullYear() - 1, 0, 1);
-        previousEnd = new Date(now.getFullYear() - 1, 11, 31);
+        currentStart = new Date(Date.UTC(currentYear, 0, 1, 0, 0, 0, 0));
+        previousStart = new Date(Date.UTC(currentYear - 1, 0, 1, 0, 0, 0, 0));
+        previousEnd = new Date(Date.UTC(currentYear - 1, 11, 31, 23, 59, 59, 999));
     } else {
         throw new Error("Invalid period parameter. Use 'week', 'month' or 'year'.");
     }
@@ -341,13 +340,8 @@ export const getUserBookingStats = async (userId, period = "month") => {
         {
             $match: {
                 userId: new mongoose.Types.ObjectId(userId),
-                paymentStatus: "paid",
-                $expr: {
-                    $and: [
-                        { $gte: [{ $toDate: "$createdAt" }, currentStart] },
-                        { $lte: [{ $toDate: "$createdAt" }, now] }
-                    ]
-                }
+                status: "paid",
+                createdAt: { $gte: currentStart, $lte: now }
             }
         },
         {
@@ -369,13 +363,8 @@ export const getUserBookingStats = async (userId, period = "month") => {
         {
             $match: {
                 userId: new mongoose.Types.ObjectId(userId),
-                paymentStatus: "cancelled",
-                $expr: {
-                    $and: [
-                        { $gte: [{ $toDate: "$createdAt" }, currentStart] },
-                        { $lte: [{ $toDate: "$createdAt" }, now] }
-                    ]
-                }
+                status: "cancelled",
+                createdAt: { $gte: currentStart, $lte: now }
             }
         },
         {
@@ -394,13 +383,8 @@ export const getUserBookingStats = async (userId, period = "month") => {
         {
             $match: {
                 userId: new mongoose.Types.ObjectId(userId),
-                paymentStatus: "paid",
-                $expr: {
-                    $and: [
-                        { $gte: [{ $toDate: "$createdAt" }, previousStart] },
-                        { $lte: [{ $toDate: "$createdAt" }, previousEnd] }
-                    ]
-                }
+                status: "paid",
+                createdAt: { $gte: previousStart, $lte: previousEnd }
             }
         },
         {
@@ -422,13 +406,8 @@ export const getUserBookingStats = async (userId, period = "month") => {
         {
             $match: {
                 userId: new mongoose.Types.ObjectId(userId),
-                paymentStatus: "cancelled",
-                $expr: {
-                    $and: [
-                        { $gte: [{ $toDate: "$createdAt" }, previousStart] },
-                        { $lte: [{ $toDate: "$createdAt" }, previousEnd] }
-                    ]
-                }
+                status: "cancelled",
+                createdAt: { $gte: previousStart, $lte: previousEnd }
             }
         },
         {
