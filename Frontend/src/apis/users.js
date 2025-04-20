@@ -47,7 +47,24 @@ export const logoutUser = async () => {
 // Cập nhật thông tin người dùng
 export const updateUserInfo = async (payload) => {
   try {
-    const response = await axiosInstance.put("/api/users/update", payload);
+    let config = {};
+    if (payload instanceof FormData) {
+      // Nếu payload là FormData (dùng để gửi file avatar_image_path)
+      config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+    } else {
+      // Nếu payload là JSON (dùng để gửi các field khác như name, email, v.v.)
+      config = {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
+    }
+
+    const response = await axiosInstance.put("/api/users/update", payload, config);
     return response.data;
   } catch (error) {
     console.error("Error updating user info:", error.response?.data || error.message);

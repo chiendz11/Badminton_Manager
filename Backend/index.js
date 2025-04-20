@@ -15,10 +15,13 @@ import newsRoutes from "./routes/newsRoute.js"; // Import route tin tức
 import ratingRoutes from "./routes/ratingRoute.js"; // Import route đánh giá
 import billManageRoute from "./routes/billManageRoute.js"; // Import route quản lý bill
 import centerStatusRoute from "./routes/centerStatusRoute.js"; // Import route trạng thái trung tâm
+import path from "path"; // Thêm path để xử lý đường dẫn thư mục
+import { fileURLToPath } from "url"; // Thêm để lấy đường dẫn file hiện tại
 
 // Kết nối tới MongoDB
 connectDB();
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json({ limit: "10mb" })); // Tăng limit để fix lỗi 413
 
@@ -32,17 +35,22 @@ app.use(
 
 app.use(cookieParser());
 
+// Xác định đường dẫn tuyệt đối đến thư mục uploads
+const uploadDir = path.join(__dirname, "uploads");
+
+// Phục vụ file tĩnh từ thư mục uploads
+app.use("/uploads", express.static(uploadDir));
+
 app.use("/api/users", userRoutes);
 app.use("/api/centers", centerRoute);
 app.use("/api/booking", bookingPendingRoute);
-app.use("/api/contact", contactRoutes); 
+app.use("/api/contact", contactRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/admin/user-manage", UserManageRoute); // Đường dẫn cho admin quản lý người dùng
 app.use("/api/admin", adminRoute); // Đường dẫn cho admin quản lý trung tâm
 app.use("/api/admin/bill-manage", billManageRoute); // Đường dẫn cho admin quản lý booking
 app.use("/api/admin/center-status", centerStatusRoute);
-
 
 const server = http.createServer(app);
 

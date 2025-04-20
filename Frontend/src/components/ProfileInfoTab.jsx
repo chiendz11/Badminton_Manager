@@ -1,9 +1,12 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import EditableInfoCard from '../components/EditableInfoCard';
 
 // Constants (pointsPerLevel is still needed for progress bar calculation)
 const pointsPerLevel = 1000;
+
+// Định nghĩa base URL của backend
+const BACKEND_URL = "http://localhost:3000"; // Backend chạy trên port 3000
 
 const ProfileInfoTab = ({
   user,
@@ -34,8 +37,72 @@ const ProfileInfoTab = ({
 }) => {
   const { setUser } = useContext(AuthContext);
 
+  // Xử lý đường dẫn ảnh: thêm domain của backend nếu cần
+  const getAvatarImagePath = (path) => {
+    if (!path) return "https://placehold.co/150x150?text=Avatar";
+    // Nếu đường dẫn đã là URL đầy đủ (bắt đầu bằng http), trả về nguyên gốc
+    if (path.startsWith("http")) return path;
+    // Nếu đường dẫn là tương đối (bắt đầu bằng /uploads), thêm domain của backend
+    return `${BACKEND_URL}${path}`;
+  };
+
+  const [previewImage, setPreviewImage] = useState(getAvatarImagePath(user?.avatar_image_path));
+  const [error, setError] = useState("");
+  const fileInputRef = useRef(null);
+
+  // Cập nhật previewImage khi user.avatar_image_path thay đổi
+  useEffect(() => {
+    const imagePath = getAvatarImagePath(user?.avatar_image_path);
+    setPreviewImage(imagePath);
+    console.log("Cập nhật ảnh đại diện:", imagePath);
+  }, [user?.avatar_image_path]);
+
+  // Xử lý khi người dùng chọn ảnh
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Kiểm tra định dạng file
+      const validTypes = ["image/jpeg", "image/png", "image/gif"];
+      if (!validTypes.includes(file.type)) {
+        setError("Vui lòng chọn file ảnh (JPEG, PNG, GIF)!");
+        return;
+      }
+
+      // Kiểm tra kích thước file (tối đa 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        setError("Kích thước ảnh không được vượt quá 5MB!");
+        return;
+      }
+
+      // Xóa lỗi nếu file hợp lệ
+      setError("");
+
+      // Hiển thị ảnh xem trước
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+
+      // Gửi file ảnh qua handleUpdateField
+      try {
+        await handleUpdateField("avatar_image_path", file);
+      } catch (err) {
+        setError("Lỗi khi cập nhật ảnh đại diện. Vui lòng thử lại!");
+        const imagePath = getAvatarImagePath(user?.avatar_image_path);
+        setPreviewImage(imagePath); // Khôi phục ảnh cũ
+      }
+    }
+  };
+
+  // Mở file input khi nhấp vào nút "Thay đổi avatar"
+  const handleChangeAvatarClick = () => {
+    fileInputRef.current.click();
+  };
+
   const userPoints = user?.points || 0;
-  const currentLevelName = user?.level || "Sắt"; // Use the level from the backend
+  const currentLevelName = user?.level || "Sắt";
   const currentLevelIndex = user?.level ? ["Sắt", "Đồng", "Bạc", "Vàng", "Bạch kim"].indexOf(currentLevelName) : 0;
   const nextLevelIndex = currentLevelIndex < 4 ? currentLevelIndex + 1 : null;
   const pointsInCurrentLevel = userPoints - currentLevelIndex * pointsPerLevel;
@@ -55,18 +122,31 @@ const ProfileInfoTab = ({
           <div className="profile-overview">
             <div className="profile-image-container">
               <img
-                src={user?.avatar_image_path || "https://via.placeholder.com/150"}
+                src={previewImage}
                 alt="Avatar"
                 className="profile-image"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/150?text=Avatar";
+                  e.target.src = "https://placehold.co/150x150?text=Avatar";
                 }}
               />
-              <button className="change-avatar-btn">
+              <button
+                className="change-avatar-btn"
+                onClick={handleChangeAvatarClick}
+                title="Thay đổi ảnh đại diện"
+              >
                 <i className="fas fa-camera"></i>
               </button>
+              {/* Input file ẩn */}
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/gif"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                style={{ display: "none" }}
+              />
             </div>
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             <h3 className="profile-name">{user?.name}</h3>
             <p className="profile-email">{user?.email}</p>
             <div className="membership-badge">

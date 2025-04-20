@@ -9,10 +9,21 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState(null); // Lưu trữ trang đích
 
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, loading } = useContext(AuthContext);
   const navigate = useNavigate();
   const logo = "/images/shuttleCock.png";
+
+  // Định nghĩa base URL của backend
+  const BACKEND_URL = "http://localhost:3000"; // Backend chạy trên port 3000
+
+  // Xử lý đường dẫn ảnh: thêm domain của backend nếu cần
+  const getAvatarImagePath = (path) => {
+    if (!path) return "/default-avatar.png"; // Sử dụng hình ảnh mặc định từ public
+    if (path.startsWith("http")) return path;
+    return `${BACKEND_URL}${path}`;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,8 +37,9 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   };
 
-  const openLoginModal = (e) => {
+  const openLoginModal = (e, redirectPath = null) => {
     e.preventDefault();
+    setRedirectAfterLogin(redirectPath); // Lưu trữ trang đích
     setIsLoginModalOpen(true);
     closeMenu();
   };
@@ -38,6 +50,10 @@ const Header = () => {
     setIsDropdownOpen(false);
     closeMenu();
   };
+
+  if (loading) {
+    return <div>Đang tải...</div>;
+  }
 
   return (
     <>
@@ -110,16 +126,25 @@ const Header = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    to="/service"
-                    onClick={closeMenu}
-                    className="hover:text-yellow-300 transition-colors"
-                  >
-                    Dịch vụ
-                  </Link>
+                  {user ? (
+                    <Link
+                      to="/service"
+                      onClick={closeMenu}
+                      className="hover:text-yellow-300 transition-colors"
+                    >
+                      Dịch vụ
+                    </Link>
+                  ) : (
+                    <a
+                      href="#login"
+                      onClick={(e) => openLoginModal(e, "/service")} // Truyền trang đích
+                      className="hover:text-yellow-300 transition-colors"
+                    >
+                      Dịch vụ
+                    </a>
+                  )}
                 </li>
                 <li>
-                  {/* Nếu chưa đăng nhập, mở modal đăng nhập */}
                   {user ? (
                     <Link
                       to="/contact"
@@ -131,7 +156,7 @@ const Header = () => {
                   ) : (
                     <a
                       href="#login"
-                      onClick={openLoginModal}
+                      onClick={(e) => openLoginModal(e, "/contact")} // Truyền trang đích
                       className="hover:text-yellow-300 transition-colors"
                     >
                       Liên Hệ
@@ -146,11 +171,16 @@ const Header = () => {
                         className="flex items-center border border-white text-white rounded-md px-3 py-1 hover:bg-white hover:bg-opacity-20 transition-colors cursor-pointer"
                       >
                         <img
-                          src={user.avatar_image_path || "/default-avatar.png"}
+                          src={getAvatarImagePath(user.avatar_image_path)}
                           alt="Avatar"
                           className="w-10 h-10 rounded-full object-cover mr-2"
+                          onError={(e) => {
+                            console.log("Lỗi tải ảnh trong Header:", user.avatar_image_path);
+                            e.target.onerror = null;
+                            e.target.src = "/default-avatar.png"; // Sử dụng hình ảnh mặc định từ public
+                          }}
                         />
-                        <span className="text-lg">{user.username}</span>
+                        <span className="text-lg">{user.name}</span>
                         <i className="fas fa-chevron-down text-sm ml-1"></i>
                       </button>
                       {isDropdownOpen && (
@@ -185,7 +215,7 @@ const Header = () => {
                   <li className="login-btn">
                     <a
                       href="#login"
-                      onClick={openLoginModal}
+                      onClick={(e) => openLoginModal(e)}
                       className="hover:text-yellow-300 transition-colors"
                     >
                       <i className="fas fa-user"></i> Đăng Nhập
@@ -201,6 +231,7 @@ const Header = () => {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+        redirectAfterLogin={redirectAfterLogin} // Truyền prop redirectAfterLogin
       />
     </>
   );

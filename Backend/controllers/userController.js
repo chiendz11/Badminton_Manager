@@ -1,4 +1,3 @@
-// src/controllers/userController.js
 import { insertRatingService, forgotPasswordByEmailService, registerUserService, loginUserService, updateUserService, updateUserPasswordService, getChartService, getUserBookingStats } from "../services/userServices.js";
 import jwt from "jsonwebtoken";
 
@@ -73,7 +72,6 @@ export const loginUserController = async (req, res) => {
   }
 };
 
-
 /**
  * Controller lấy thông tin user (dùng trong AuthContext)
  */
@@ -95,10 +93,15 @@ export const getUserInfoController = async (req, res) => {
 export const updateUserController = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const updatedUser = await updateUserService(userId, req.body);
+    // req.body đã được bổ sung avatar_image_path (URL của ảnh) từ middleware multer trong route
+    const payload = req.body;
+
+    // Gọi service để cập nhật thông tin user
+    const updatedUser = await updateUserService(userId, payload);
     if (!updatedUser) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
+
     res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
     console.error("Error in updateUserController:", error);

@@ -497,14 +497,18 @@ export const getBookingHistory = async (userId) => {
           centerId: booking.centerId,
           courts: booking.courts,
           status: booking.status,
-          totalAmount: booking.totalAmount,
+          totalAmount: 0, // Khởi tạo totalAmount là 0
           paymentMethod: booking.paymentMethod,
           bookingCode: booking.bookingCode.split("-").slice(0, 2).join("-") // Lấy phần cố định của bookingCode
         };
       }
 
+      // Thêm bookingId và date vào group
       fixedGroups[groupKey].bookingIds.push(booking._id);
       fixedGroups[groupKey].dates.push(new Date(booking.date));
+
+      // Cộng dồn totalAmount của booking lẻ vào tổng của group
+      fixedGroups[groupKey].totalAmount += booking.totalAmount || 0;
     }
 
     // Chuyển các fixed groups thành history entries
@@ -536,7 +540,7 @@ export const getBookingHistory = async (userId) => {
         date: startDate, // Sử dụng startDate để sắp xếp
         startDate: startDate,
         endDate: endDate,
-        price: group.totalAmount,
+        price: group.totalAmount, // Tổng giá của tất cả booking lẻ trong nhóm
         paymentMethod: group.status === "paid" ? group.paymentMethod : ""
       });
     }

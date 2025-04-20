@@ -8,9 +8,13 @@ import dotenv from "dotenv";
 import Center from "../models/centers.js";
 import Booking from "../models/bookings.js";
 import { checkEmailExistsService, updateAvgRating, sendEmailService, generateRandomPassword } from "../middleware/userMiddleware.js";
+import path from "path";
+import fs from "fs/promises";
+import { fileURLToPath } from "url";
 
 dotenv.config();
-
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // Constants for level calculation
 const levels = ["Sắt", "Đồng", "Bạc", "Vàng", "Bạch kim"];
 const pointsPerLevel = 1000;
@@ -22,17 +26,76 @@ export const registerUserService = async (userData) => {
     const { name, email, phone_number, username, password, avatar_image_path } = userData;
     const errors = {};
 
+    // Kiểm tra Họ và tên
     if (!name || !name.trim()) errors.name = "Vui lòng nhập Họ và tên";
+
+    // Kiểm tra Email
     if (!email || !email.trim()) {
         errors.email = "Vui lòng nhập Email";
     } else if (!/^\S+@\S+\.\S+$/.test(email)) {
         errors.email = "Email không hợp lệ";
     }
-    if (!phone_number || !phone_number.trim()) errors.phone_number = "Vui lòng nhập Số điện thoại";
-    if (!username || !username.trim()) errors.username = "Vui lòng nhập Tên đăng nhập";
+
+    // Kiểm tra Số điện thoại
+    if (!phone_number || !phone_number.trim()) {
+        errors.phone_number = "Vui lòng nhập Số điện thoại";
+    } else {
+        // Danh sách các đầu số di động hợp lệ của Việt Nam
+        const validPrefixes = [
+            "032", "033", "034", "035", "036", "037", "038", "039", // Đầu số 03x
+            "055", "056", "057", "058", "059", // Đầu số 05x
+            "070", "076", "077", "078", "079", // Đầu số 07x
+            "081", "082", "083", "084", "085", "086", "087", "088", "089", // Đầu số 08x
+            "090", "091", "092", "093", "094", "095", "096", "097", "098", "099" // Đầu số 09x
+        ];
+
+        // Kiểm tra định dạng số điện thoại
+        let isValidPhone = false;
+        let phoneError = "Số điện thoại không hợp lệ!";
+
+        // Trường hợp bắt đầu bằng +84
+        if (phone_number.startsWith("+84")) {
+            const phoneWithoutPrefix = phone_number.slice(3); // Bỏ "+84"
+            if (/^\d{9}$/.test(phoneWithoutPrefix)) { // Phải có đúng 9 chữ số
+                const mobilePrefix = phoneWithoutPrefix.slice(0, 3); // Lấy 3 chữ số đầu
+                if (validPrefixes.includes("0" + mobilePrefix)) {
+                    isValidPhone = true;
+                } else {
+                    phoneError = "Đầu số không hợp lệ!";
+                }
+            }
+        }
+        // Trường hợp bắt đầu bằng 0
+        else if (phone_number.startsWith("0")) {
+            if (/^\d{10}$/.test(phone_number)) { // Phải có đúng 10 chữ số
+                const mobilePrefix = phone_number.slice(0, 3); // Lấy 3 chữ số đầu
+                if (validPrefixes.includes(mobilePrefix)) {
+                    isValidPhone = true;
+                } else {
+                    phoneError = "Đầu số không hợp lệ!";
+                }
+            }
+        } else {
+            phoneError = "Số điện thoại phải bắt đầu bằng 0 hoặc +84!";
+        }
+
+        if (!isValidPhone) {
+            errors.phone_number = phoneError;
+        }
+    }
+
+    // Kiểm tra Tên đăng nhập
+    if (!username || !username.trim()) {
+        errors.username = "Vui lòng nhập Tên đăng nhập";
+    } else if (/\s/.test(username)) {
+        errors.username = "Tên đăng nhập không được chứa khoảng trắng!";
+    }
+
+    // Kiểm tra Mật khẩu
     if (!password) errors.password = "Vui lòng nhập Mật khẩu";
     if (password && password.length < 6) errors.password = "Mật khẩu phải có ít nhất 6 ký tự!";
 
+    // Kiểm tra sự tồn tại của email, phone_number, username
     const emailCheckResult = await checkEmailExistsService(email);
     if (!emailCheckResult.success) errors.email = emailCheckResult.message;
 
@@ -92,12 +155,36 @@ export const loginUserService = async (username, password) => {
  * Cập nhật thông tin user
  */
 export const updateUserService = async (userId, payload) => {
-    const updatedUser = await User.findOneAndUpdate(
-        { _id: userId },
-        { $set: payload },
-        { new: true }
-    );
-    return updatedUser;
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error("Không tìm thấy người dùng!");
+        }
+
+        // Xóa ảnh cũ nếu cập nhật avatar_image_path
+        if (payload.avatar_image_path && user.avatar_image_path) {
+            const oldPath = path.join(__dirname, "../", user.avatar_image_path);
+            try {
+                await fs.access(oldPath); // Kiểm tra xem file có tồn tại không
+                await fs.unlink(oldPath); // Xóa file bất đồng bộ
+                console.log(`Đã xóa ảnh cũ tại: ${oldPath}`);
+            } catch (error) {
+                if (error.code !== "ENOENT") {
+                    // Chỉ ghi log lỗi nếu không phải lỗi "file không tồn tại"
+                    console.error(`Lỗi khi xóa ảnh cũ tại ${oldPath}:`, error);
+                }
+            }
+        }
+
+        const updatedUser = await User.findOneAndUpdate(
+            { _id: userId },
+            { $set: payload },
+            { new: true }
+        );
+        return updatedUser;
+    } catch (error) {
+        throw error;
+    }
 };
 
 /**

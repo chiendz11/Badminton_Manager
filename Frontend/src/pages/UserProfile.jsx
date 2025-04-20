@@ -8,7 +8,7 @@ import ProfileInfoTab from '../components/ProfileInfoTab';
 import StatsTab from '../components/StatusTab';
 import HistoryTab from '../components/HistoryTab';
 import { getBookingHistory, cancelBooking, deleteBooking } from '../apis/booking';
-import { getDetailedBookingStats, getChartData, fetchUserInfo, updateUserInfo, updateUserPassword } from '../apis/users';
+import { getDetailedBookingStats, getChartData, fetchUserInfo, updateUserInfo } from '../apis/users';
 import '../styles/UserProfile.css';
 
 // Helper functions
@@ -66,6 +66,16 @@ const UserProfile = () => {
   const slotGroupsFromLS = JSON.parse(localStorage.getItem("slotGroups") || "[]");
   const totalAmountLS = Number(localStorage.getItem("totalAmount")) || 0;
 
+  // Định nghĩa base URL của backend
+  const BACKEND_URL = "http://localhost:3000"; // Backend chạy trên port 3000
+
+  // Xử lý đường dẫn ảnh: thêm domain của backend nếu cần
+  const getAvatarImagePath = (path) => {
+    if (!path) return "/default-avatar.png"; // Sử dụng hình ảnh mặc định từ public
+    if (path.startsWith("http")) return path;
+    return `${BACKEND_URL}${path}`;
+  };
+
   useEffect(() => {
     localStorage.setItem('activeTab', activeTab);
   }, [activeTab]);
@@ -75,7 +85,7 @@ const UserProfile = () => {
       if (user && user._id) {
         try {
           const data = await getBookingHistory();
-          console.log("Booking history response:", data); // Log response
+          console.log("Booking history response:", data);
           if (data.success) {
             setBookingHistory(data.bookingHistory);
             setFilteredHistory(data.bookingHistory);
@@ -99,7 +109,7 @@ const UserProfile = () => {
         const data = await getDetailedBookingStats(statsPeriod);
         if (data.success) {
           setDetailedStats(data.stats);
-          console.log("Detailed stats:", data.stats); // Log detailed stats
+          console.log("Detailed stats:", data.stats);
         } else {
           console.error("Error fetching booking stats:", data.message);
         }
@@ -158,16 +168,27 @@ const UserProfile = () => {
 
   const handleUpdateField = async (field, newValue) => {
     try {
-      const payload = { [field]: newValue };
+      let payload;
+      if (field === "avatar_image_path" && newValue instanceof File) {
+        // Nếu cập nhật avatar_image_path, gửi file qua FormData
+        payload = new FormData();
+        payload.append(field, newValue);
+      } else {
+        // Các field khác (name, phone_number, email) gửi dạng JSON
+        payload = { [field]: newValue };
+      }
+
       const data = await updateUserInfo(payload);
       if (data.success) {
-        setUser((prevUser) => ({ ...prevUser, [field]: newValue }));
+        // Cập nhật user trong AuthContext
+        setUser((prevUser) => ({ ...prevUser, [field]: data.user[field] }));
         alert("Cập nhật thông tin thành công!");
       } else {
         alert("Cập nhật thất bại: " + data.message);
       }
     } catch (error) {
       alert("Lỗi cập nhật: " + error.message);
+      throw error; // Ném lỗi để ProfileInfoTab xử lý
     }
   };
 
@@ -301,12 +322,13 @@ const UserProfile = () => {
           <div className="header-content">
             <div className="avatar-container">
               <img
-                src={user?.avatar_image_path || "https://via.placeholder.com/150"}
+                src={getAvatarImagePath(user?.avatar_image_path)}
                 alt="Avatar"
                 className="user-avatar"
                 onError={(e) => {
+                  console.log("Lỗi tải ảnh trong UserProfile:", user?.avatar_image_path);
                   e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/150?text=Avatar";
+                  e.target.src = "/default-avatar.png"; // Sử dụng hình ảnh mặc định từ public
                 }}
               />
               <div className="level-badge">{user?.level}</div>
@@ -321,10 +343,6 @@ const UserProfile = () => {
                 <div className="detail-item">
                   <i className="fas fa-envelope"></i>
                   <span>{user?.email}</span>
-                </div>
-                <div className="detail-item">
-                  <i className="fas fa-map-marker-alt"></i>
-                  <span>{user?.address}</span>
                 </div>
               </div>
             </div>
