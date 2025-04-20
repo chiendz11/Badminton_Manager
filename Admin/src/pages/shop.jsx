@@ -1,450 +1,329 @@
-// src/pages/Shop.jsx
-import React, { useState, useEffect } from 'react';
-import { getInventories } from '../apis/inventoriesAPI.js';
-import AdminLayout from '../components/AdminLayout.jsx';
+import React, { useState, useEffect } from "react";
+import { getSellHistories, createSellHistory } from "../apis/sellhistoryAPI.js";
+import { getInventoryList } from "../apis/inventoriesAPI.js";
 
-// Các style cải tiến (không dùng background image có sẵn)
-const containerStyle = {
-  width: '100vw',
-  minHeight: '100vh',
-  padding: '2rem',
-  fontFamily: 'Arial, sans-serif',
-  background: 'linear-gradient(135deg, #f5f7fa, #c3cfe2)',
-  boxSizing: 'border-box',
-  overflowY: 'auto',
-};
+const centers = [
+  { id: "67ca6e3cfc964efa218ab7d8", name: "Nhà thi đấu quận Thanh Xuân" },
+  { id: "67ca6e3cfc964efa218ab7d9", name: "Nhà thi đấu quận Cầu Giấy" },
+  { id: "67ca6e3cfc964efa218ab7d7", name: "Nhà thi đấu quận Tây Hồ" },
+  { id: "67ca6e3cfc964efa218ab7da", name: "Nhà thi đấu quận Bắc Từ Liêm" }
+];
 
-const productContainerStyle = {
-  maxWidth: '1200px',
-  margin: '0 auto',
-  backgroundColor: 'rgba(255,255,255,0.98)',
-  borderRadius: '8px',
-  padding: '2rem',
-  boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-};
-
-const headerStyle = {
-  textAlign: 'center',
-  marginBottom: '2rem',
-  color: '#333',
-};
-
-const mainContentStyle = {
-  display: 'flex',
-  gap: '2rem',
-  flexWrap: 'wrap',
-};
-
-const productListContainerStyle = {
-  flex: 2,
-};
-
-const productListStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-  gap: '1rem',
-  listStyle: 'none',
-  padding: 0,
-  margin: 0,
-};
-
-const productItemStyle = {
-  border: '1px solid #e0e0e0',
-  borderRadius: '6px',
-  padding: '1rem',
-  backgroundColor: '#fff',
-  transition: 'transform 0.2s',
-  boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-};
-
-const productItemHover = {
-  transform: 'scale(1.02)',
-};
-
-const productImageStyle = {
-  width: '100%',
-  height: '150px',
-  objectFit: 'cover',
-  marginBottom: '0.5rem',
-  borderRadius: '4px',
-};
-
-const paginationStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  marginTop: '1rem',
-  gap: '0.5rem',
-};
-
-const buttonStyle = {
-  padding: '0.5rem 1rem',
-  cursor: 'pointer',
-  borderRadius: '4px',
-  border: '1px solid #007bff',
-  backgroundColor: '#007bff',
-  color: '#fff',
-  transition: 'background-color 0.2s',
-};
-
-const cartContainerStyle = {
-  flex: 1,
-  backgroundColor: 'rgba(255,255,255,0.98)',
-  padding: '1rem',
-  borderRadius: '6px',
-  boxShadow: '0 0 5px rgba(0,0,0,0.1)',
-  maxHeight: '600px',
-  overflowY: 'auto',
-};
-
-const cartListStyle = {
-  listStyle: 'none',
-  padding: 0,
-  margin: 0,
-};
-
-const cartItemStyle = {
-  borderBottom: '1px solid #ddd',
-  paddingBottom: '1rem',
-  marginBottom: '1rem',
-};
-
-const modalOverlayStyle = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100vw',
-  height: '100vh',
-  backgroundColor: 'rgba(0,0,0,0.5)',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  zIndex: 9999,
-};
-
-const modalContentStyle = {
-  backgroundColor: '#fff',
-  width: '90%',
-  maxWidth: '400px',
-  borderRadius: '8px',
-  padding: '1rem',
-  boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-};
-
-const formContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1rem',
-};
-
-const formTitleStyle = {
-  backgroundColor: '#016e3d',
-  color: '#fff',
-  padding: '0.75rem',
-  borderRadius: '4px',
-  textAlign: 'center',
-  marginBottom: '1rem',
-};
-
-const labelStyle = {
-  fontWeight: 'bold',
-  marginBottom: '0.25rem',
-};
-
-const selectStyle = {
-  padding: '0.5rem',
-  borderRadius: '4px',
-  border: '1px solid #ccc',
-};
-
-const inputStyle = {
-  padding: '0.5rem',
-  borderRadius: '4px',
-  border: '1px solid #ccc',
-};
-
-const submitButtonStyle = {
-  padding: '0.75rem',
-  border: 'none',
-  borderRadius: '4px',
-  backgroundColor: '#016e3d',
-  color: '#fff',
-  cursor: 'pointer',
-  fontSize: '1rem',
-  fontWeight: 'bold',
-};
-
-const Shop = () => {
-  const [inventories, setInventories] = useState([]);
-  const [cart, setCart] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
-
-  // Modal state
+export default function Shop() {
+  const [sellHistories, setSellHistories] = useState([]);
+  const [selectedCenter, setSelectedCenter] = useState(centers[0].id);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [stockCode, setStockCode] = useState('');
-  const [supplier, setSupplier] = useState('');
-  const [serviceType, setServiceType] = useState('');
-  const [selectedItem, setSelectedItem] = useState('');
-  const [importType, setImportType] = useState('Đơn vị');
-  const [quantity, setQuantity] = useState(0);
+  const [inventoryList, setInventoryList] = useState([]);
+  const [invoiceItems, setInvoiceItems] = useState({});
+  const [paymentMethod, setPaymentMethod] = useState("Cash");
+  const [customerName, setCustomerName] = useState("");
+  const [customerContact, setCustomerContact] = useState("");
+  const [totalAmount, setTotalAmount] = useState(0);
+
+  // Fetch all sell histories
+  const fetchHistories = async () => {
+    try {
+      const res = await getSellHistories();
+      setSellHistories(res.data.data || []);
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi lấy danh sách hóa đơn.");
+    }
+  };
 
   useEffect(() => {
-    const fetchInventories = async () => {
-      try {
-        const data = await getInventories();
-        setInventories(data);
-      } catch (error) {
-        console.error('Error fetching inventories:', error);
-      }
-    };
-    fetchInventories();
+    fetchHistories();
   }, []);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = inventories.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(inventories.length / itemsPerPage);
+  // Calculate total amount
+  useEffect(() => {
+    const calculateTotal = () => {
+      return inventoryList.reduce((total, item) => {
+        const quantity = invoiceItems[item._id] || 0;
+        return total + (quantity * item.price);
+      }, 0);
+    };
+    setTotalAmount(calculateTotal());
+  }, [invoiceItems, inventoryList]);
 
-  const handleAddToCart = (product) => {
-    setCart((prevCart) => {
-      const existingProduct = prevCart.find((item) => item._id === product._id);
-      if (existingProduct) {
-        return prevCart.map((item) =>
-          item._id === product._id
-            ? { ...item, quantityInCart: item.quantityInCart + 1 }
-            : item
-        );
-      } else {
-        return [...prevCart, { ...product, quantityInCart: 1 }];
-      }
-    });
+  // Open modal and fetch inventory
+  const handleOpenModal = async () => {
+    try {
+      const res = await getInventoryList({ centerId: selectedCenter });
+      setInventoryList(res.data.data || []);
+      setInvoiceItems({});
+      setShowModal(true);
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi lấy danh sách kho.");
+    }
   };
 
-  const handleRemoveFromCart = (productId) => {
-    setCart((prevCart) => prevCart.filter((item) => item._id !== productId));
+  // Handle quantity change
+  const handleQuantityChange = (id, value) => {
+    const quantity = Math.max(0, Math.min(Number(value), inventoryList.find(item => item._id === id)?.quantity || 0));
+    setInvoiceItems(prev => ({ ...prev, [id]: quantity }));
   };
 
-  const handleCheckout = () => {
-    console.log('Checkout with cart:', cart);
-    setCart([]);
+  // Submit new invoice
+  const handleSubmit = async () => {
+    const items = inventoryList
+      .filter(item => invoiceItems[item._id] > 0)
+      .map(item => ({
+        inventoryId: item._id,
+        quantity: invoiceItems[item._id],
+        unitPrice: item.price
+      }));
+
+    if (items.length === 0) {
+      alert("Vui lòng nhập số lượng cho ít nhất 1 sản phẩm.");
+      return;
+    }
+
+    const payload = {
+      invoiceNumber: `INV-${Date.now()}`,
+      centerId: selectedCenter,
+      items,
+      totalAmount,
+      paymentMethod,
+      customer: { name: customerName, contact: customerContact }
+    };
+
+    try {
+      await createSellHistory(payload);
+      alert("Tạo hóa đơn thành công!");
+      setShowModal(false);
+      fetchHistories();
+    } catch (err) {
+      console.error(err);
+      alert("Lỗi khi tạo hóa đơn.");
+    }
   };
 
-  const openModal = () => {
-    setShowModal(true);
-  };
+  // Filter histories
+  const filteredHistories = sellHistories.filter(h => {
+    const date = new Date(h.createdAt);
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+    
+    return (!selectedCenter || h.centerId === selectedCenter) &&
+           (!start || date >= start) &&
+           (!end || date <= end.setHours(23, 59, 59, 999));
+  });
 
-  const closeModal = () => {
-    setShowModal(false);
-  };
-
-  const handleAddStock = (e) => {
-    e.preventDefault();
-    console.log('Đã nhập hàng:', {
-      stockCode,
-      supplier,
-      serviceType,
-      selectedItem,
-      importType,
-      quantity,
-    });
-    setStockCode('');
-    setSupplier('');
-    setServiceType('');
-    setSelectedItem('');
-    setImportType('Đơn vị');
-    setQuantity(0);
-    closeModal();
-  };
+  const getCenterName = id => centers.find(c => c.id === id)?.name || "";
 
   return (
-    <AdminLayout>
-      <div style={containerStyle}>
-        <div style={productContainerStyle}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1 style={headerStyle}>Shop</h1>
-            <button style={buttonStyle} onClick={openModal}>
-              Thêm hàng
-            </button>
-          </div>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-800">Quản lý Bán Hàng</h1>
+          <button
+            onClick={handleOpenModal}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-sm transition-colors flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            Tạo Hóa Đơn Mới
+          </button>
+        </div>
 
-          <div style={mainContentStyle}>
-            <div style={productListContainerStyle}>
-              {currentItems.length === 0 ? (
-                <p>No products available.</p>
-              ) : (
-                <ul style={productListStyle}>
-                  {currentItems.map((product) => (
-                    <li
-                      key={product._id}
-                      style={productItemStyle}
-                      onMouseEnter={(e) => (e.currentTarget.style.transform = productItemHover.transform)}
-                      onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}
-                    >
-                      <img src={product.image} alt={product.name} style={productImageStyle} />
-                      <h3>{product.name}</h3>
-                      <p>Category: {product.category}</p>
-                      <p>Supplier: {product.supplier}</p>
-                      <p>Stock: {product.quantity}</p>
-                      <p>
-                        Price:{' '}
-                        {new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: 'USD',
-                        }).format(product.price)}
-                      </p>
-                      <button style={buttonStyle} onClick={() => handleAddToCart(product)}>
-                        Add to cart
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {totalPages > 1 && (
-                <div style={paginationStyle}>
-                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                    <button
-                      key={page}
-                      style={{
-                        ...buttonStyle,
-                        backgroundColor: currentPage === page ? '#0056b3' : '#007bff',
-                      }}
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-              )}
+        {/* Filter Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Trung tâm</label>
+              <select
+                value={selectedCenter}
+                onChange={e => setSelectedCenter(e.target.value)}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                {centers.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
             </div>
-
-            <div style={cartContainerStyle}>
-              <h2>Cart</h2>
-              {cart.length === 0 ? (
-                <p>Your cart is empty.</p>
-              ) : (
-                <ul style={cartListStyle}>
-                  {cart.map((item) => (
-                    <li key={item._id} style={cartItemStyle}>
-                      <h3>{item.name}</h3>
-                      <p>Quantity: {item.quantityInCart}</p>
-                      <p>
-                        Subtotal:{' '}
-                        {new Intl.NumberFormat('en-US', {
-                          style: 'currency',
-                          currency: 'USD',
-                        }).format(item.quantityInCart * item.price)}
-                      </p>
-                      <button style={buttonStyle} onClick={() => handleRemoveFromCart(item._id)}>
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {cart.length > 0 && (
-                <button style={{ ...buttonStyle, marginTop: '1rem' }} onClick={handleCheckout}>
-                  Checkout
-                </button>
-              )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Từ ngày</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Đến ngày</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+              />
             </div>
           </div>
         </div>
 
+        {/* Sales Table */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mã HĐ</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trung Tâm</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày Tạo</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng Tiền</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PTTT</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredHistories.map(h => (
+                <tr key={h._id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{h.invoiceNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{getCenterName(h.centerId)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(h.createdAt).toLocaleDateString('vi-VN', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                    {h.totalAmount.toLocaleString('vi-VN')}₫
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                      {h.paymentMethod}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Create Invoice Modal */}
         {showModal && (
-          <div style={modalOverlayStyle} onClick={closeModal}>
-            <div style={modalContentStyle} onClick={(e) => e.stopPropagation()}>
-              <div style={formTitleStyle}>Thêm hàng nhập</div>
-              <form onSubmit={handleAddStock} style={formContainerStyle}>
-                <div>
-                  <label style={labelStyle}>Nhập/Quét mã nhập hàng</label>
-                  <input
-                    type="text"
-                    value={stockCode}
-                    onChange={(e) => setStockCode(e.target.value)}
-                    style={inputStyle}
-                    placeholder="Nhập mã..."
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>Nhà cung cấp</label>
-                  <input
-                    type="text"
-                    list="suppliersList"
-                    value={supplier}
-                    onChange={(e) => setSupplier(e.target.value)}
-                    style={inputStyle}
-                    placeholder="Nhập hoặc chọn..."
-                  />
-                  <datalist id="suppliersList">
-                    <option value="PepsiCo Vietnam" />
-                    <option value="Suntory PepsiCo" />
-                    <option value="Vinamilk" />
-                  </datalist>
-                </div>
-                <div>
-                  <label style={labelStyle}>Loại dịch vụ</label>
-                  <input
-                    type="text"
-                    list="servicesList"
-                    value={serviceType}
-                    onChange={(e) => setServiceType(e.target.value)}
-                    style={inputStyle}
-                    placeholder="Nhập hoặc chọn..."
-                  />
-                  <datalist id="servicesList">
-                    <option value="Nước giải khát" />
-                    <option value="Cầu lông" />
-                    <option value="Bóng đá" />
-                  </datalist>
-                </div>
-                <div>
-                  <label style={labelStyle}>Chọn một hàng</label>
-                  <input
-                    type="text"
-                    list="itemsList"
-                    value={selectedItem}
-                    onChange={(e) => setSelectedItem(e.target.value)}
-                    style={inputStyle}
-                    placeholder="Nhập hoặc chọn..."
-                  />
-                  <datalist id="itemsList">
-                    <option value="Nước cam Twister" />
-                    <option value="Bia Heineken" />
-                    <option value="Sữa tươi Vinamilk" />
-                  </datalist>
-                </div>
-                <div>
-                  <label style={labelStyle}>Chọn kiểu nhập hàng</label>
-                  <select
-                    value={importType}
-                    onChange={(e) => setImportType(e.target.value)}
-                    style={selectStyle}
-                  >
-                    <option value="Đơn vị">Đơn vị</option>
-                    <option value="Thùng">Thùng</option>
-                    <option value="Kiện">Kiện</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>Số lượng</label>
-                  <input
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                    style={inputStyle}
-                    placeholder="Nhập số lượng..."
-                  />
-                </div>
-                <button type="submit" style={submitButtonStyle}>
-                  Tiếp tục
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Tạo Hóa Đơn Mới - {getCenterName(selectedCenter)}
+                </h2>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
-              </form>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {/* Customer Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tên Khách Hàng</label>
+                    <input
+                      type="text"
+                      value={customerName}
+                      onChange={e => setCustomerName(e.target.value)}
+                      className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Liên Hệ</label>
+                    <input
+                      type="text"
+                      value={customerContact}
+                      onChange={e => setCustomerContact(e.target.value)}
+                      className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phương Thức TT</label>
+                    <select
+                      value={paymentMethod}
+                      onChange={e => setPaymentMethod(e.target.value)}
+                      className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="Cash">Tiền Mặt</option>
+                      <option value="Card">Thẻ</option>
+                      <option value="Other">Khác</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Products Table */}
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sản Phẩm</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tồn Kho</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Đơn Giá</th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Số Lượng</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {inventoryList.map(item => (
+                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.name}</td>
+                          <td className="px-4 py-3 text-sm text-gray-500">{item.quantity}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{item.price.toLocaleString('vi-VN')}₫</td>
+                          <td className="px-4 py-3 text-right">
+                            <input
+                              type="number"
+                              min="0"
+                              max={item.quantity}
+                              value={invoiceItems[item._id] || ""}
+                              onChange={e => handleQuantityChange(item._id, e.target.value)}
+                              className="w-24 p-1 border rounded-md text-right focus:ring-2 focus:ring-blue-500"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Total Amount */}
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg flex items-center justify-between">
+                  <span className="text-lg font-semibold text-gray-800">Tổng Cộng:</span>
+                  <span className="text-2xl font-bold text-blue-600">
+                    {totalAmount.toLocaleString('vi-VN')}₫
+                  </span>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="px-5 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Hủy Bỏ
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                >
+                  Xác Nhận Hóa Đơn
+                </button>
+              </div>
             </div>
           </div>
         )}
       </div>
-    </AdminLayout>
+    </div>
   );
-};
-
-export default Shop;
+}

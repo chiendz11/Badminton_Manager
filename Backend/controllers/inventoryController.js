@@ -1,43 +1,54 @@
-import { getInventories as getInventoriesService, updateInventoryQuantity } from '../services/inventoriesService.js';
+import * as service from "../services/inventoriesService.js";
 
-export async function getInventories(req, res) {
+/**
+ * POST /api/inventory/import
+ * Nhập hàng: tạo bản ghi lịch sử và cập nhật kho
+ */
+export async function importStock(req, res, next) {
   try {
-    const inventories = await getInventoriesService();
-    res.status(200).json(inventories);
-  } catch (error) {
-    console.error("Error fetching inventories:", error);
-    res.status(500).json({ error: "Error fetching inventories" });
+    const { inventoryId, centerId, supplier, quantityImport, importPrice } = req.body;
+    const result = await service.importStock({ inventoryId, centerId, supplier, quantityImport, importPrice });
+    res.status(201).json({ message: "Nhập hàng thành công", data: result });
+  } catch (err) {
+    next(err);
   }
 }
 
-export async function createOrder(req, res) {
+/**
+ * GET /api/inventory/import-history
+ * Lấy lịch sử nhập hàng (filter theo inventoryId hoặc centerId)
+ */
+export async function getStockHistory(req, res, next) {
   try {
-    const { cartItems } = req.body;
-
-    if (!cartItems || cartItems.length === 0) {
-      return res.status(400).json({ message: "Cart is empty" });
-    }
-
-    const orderData = [];
-
-    // Cập nhật tồn kho cho từng sản phẩm trong giỏ hàng
-    for (const item of cartItems) {
-      const updatedInventory = await updateInventoryQuantity(item._id, item.quantityInCart);
-      if (!updatedInventory) {
-        return res.status(404).json({ message: `Product with id ${item._id} not found` });
-      }
-      orderData.push({
-        productId: item._id,
-        name: item.name,
-        quantity: item.quantityInCart,
-        price: item.price,
-      });
-    }
-
-    console.log("Order placed:", orderData);
-    res.status(201).json({ message: "Order placed successfully", order: orderData });
-  } catch (error) {
-    console.error("Error creating order:", error);
-    res.status(500).json({ error: "Error creating order" });
+    const { inventoryId, centerId } = req.query;
+    const history = await service.getStockHistory({ inventoryId, centerId });
+    res.json({ data: history });
+  } catch (err) {
+    next(err);
   }
 }
+
+export async function getInventoryList(req, res, next) {
+  try {
+    const { centerId, category } = req.query;
+    const items = await service.getInventoryList({ centerId, category });
+    res.json({ data: items });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function sellStock (req, res){
+  try {
+    const { inventoryId, centerId, quantityExport, exportPrice } = req.body;
+    const updatedInventory = await inventoryService.sellStock({
+      inventoryId,
+      centerId,
+      quantityExport,
+      exportPrice
+    });
+    res.status(200).json(updatedInventory);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};

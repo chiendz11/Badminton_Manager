@@ -1,23 +1,15 @@
+// =====================
+// File: routes/ratingRoutes.js
+// =====================
 import express from 'express';
-import {
-  updateRating,
-  deleteRating,
-  getAllRatings,
-  getRatingById,
-} from '../controllers/ratingController.js';
+import { getRatingsByCenterController, deleteRatingController } from '../controllers/ratingController.js';
 
 const router = express.Router();
 
-// Lấy danh sách tất cả rating
-router.get('/', getAllRatings);
+// GET /api/ratings/center/:centerId
+router.get('/center/:centerId', getRatingsByCenterController);
 
-// Lấy rating theo id
-router.get('/:id', getRatingById);
-
-// Cập nhật rating
-router.put('/:id', updateRating);
-
-// Xóa rating
-router.delete('/:id', deleteRating);
+// DELETE /api/ratings/:id
+router.delete('/:id', deleteRatingController);
 
 export default router;

@@ -1,4 +1,4 @@
-// src/api/adminAPI.js
+// src/apis/adminAPI.js
 import axios from 'axios';
   const API_URL = import.meta.env.VITE_API_URL;
 

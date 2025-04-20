@@ -1,12 +1,23 @@
-import express from 'express';
-import { getInventories, createOrder } from '../controllers/inventoryController.js';
+import express from "express";
+import {
+  importStock,
+  getStockHistory,
+  getInventoryList,   // ← import thêm
+  sellStock
+} from "../controllers/inventoryController.js";
 
 const router = express.Router();
 
-// GET /api/inventories
-router.get('/', getInventories);
+// Nhập hàng
+router.post("/import", importStock);
 
-// POST /api/inventories/checkout
-router.post('/checkout', createOrder);
+// Lịch sử nhập hàng
+router.get("/import-history", getStockHistory);
+
+// **Danh sách hàng trong kho**
+router.get("/list", getInventoryList);
+
+// Xuất kho (bán hàng)
+router.post('/export', sellStock);
 
 export default router;

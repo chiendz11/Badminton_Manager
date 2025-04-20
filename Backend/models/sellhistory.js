@@ -1,26 +1,31 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const { Schema, model } = mongoose;
-
-// Schema cho từng mặt hàng trong hóa đơn
-const SellItemSchema = new Schema({
-  productId:   { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-  name:        { type: String, required: true },
-  quantity:    { type: Number, required: true, min: 1 },
-  unitPrice:   { type: Number, required: true, min: 0 },
-  totalPrice:  { type: Number, required: true, min: 0 }
+// Schema cho mục chi tiết trong hóa đơn
+const sellItemSchema = new mongoose.Schema({
+  inventoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Inventory", required: true }, // Tham chiếu đến sản phẩm
+  quantity: { type: Number, required: true },  // Số lượng bán (đơn vị bán lẻ)
+  unitPrice: { type: Number, required: true }, // Giá bán mỗi đơn vị
+  totalPrice: { type: Number, required: true } // Thành tiền của mục
 });
 
-// Schema chính cho lịch sử đơn hàng
-const SellHistorySchema = new Schema({
-  invoiceNumber: { type: String, required: true, unique: true },
-  date:          { type: Date, default: Date.now },
-  items:         { type: [SellItemSchema], required: true, validate: v => Array.isArray(v) && v.length > 0 },
-  paymentMethod: { type: String, enum: ['cash', 'transfer', 'card', 'other'], default: 'cash' },
-  note:          { type: String, default: '' },
-  totalAmount:   { type: Number, required: true, min: 0 }
-}, {
-  timestamps: true // tạo thêm createdAt và updatedAt
+// Schema chính của hóa đơn bán hàng
+const sellHistorySchema = new mongoose.Schema({
+  invoiceNumber: { type: String, required: true, unique: true }, // Mã hóa đơn
+  centerId: { type: mongoose.Schema.Types.ObjectId, ref: "Center", required: true }, // Trung tâm thực hiện giao dịch
+  items: { type: [sellItemSchema], required: true }, // Danh sách các mục hàng
+  totalAmount: { type: Number, required: true }, // Tổng tiền của hóa đơn
+  paymentMethod: { 
+    type: String, 
+    enum: ["Cash", "Card", "Other"], 
+    default: "Cash" 
+  }, // Phương thức thanh toán
+  customer: {
+    name: { type: String },    // Tên khách hàng (nếu có)
+    contact: { type: String }  // Thông tin liên lạc của khách hàng
+  }
+}, { 
+  timestamps: true // Tự động thêm createdAt và updatedAt
 });
 
-export default model('SellHistory', SellHistorySchema);
+const SellHistory = mongoose.model("sellhistories", sellHistorySchema);
+export default SellHistory;

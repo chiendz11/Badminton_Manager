@@ -16,5 +16,5 @@ const stockHistorySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const StockHistory = mongoose.model("StockHistory", stockHistorySchema);
+const StockHistory = mongoose.model("stockhistories", stockHistorySchema);
 export default StockHistory;

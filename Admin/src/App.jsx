@@ -3,10 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Dashboard from "@/pages/Dashboard";
 import Login from "@/pages/Login";
 import CentersManagement from '@/pages/CentersManagement';
-import Shop from '@/pages/Shop';
 import News from '@/pages/News';
 import Rating from '@/pages/RatingManagement';
 import Account from '@/pages/Account';
+import Shop from '@/pages/Shop';
+import Stock from '@/pages/stockManagement';
+import Report from '@/pages/Report'
+
 
 
 function App() {
@@ -21,10 +24,12 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />        
         <Route path="/centersmanagement" element={<CentersManagement />} />        
-        <Route path="/shop" element={<Shop />} />    
         <Route path="/news" element={<News />} /> 
+        <Route path="/account" element={<Account />} />
+        <Route path="/shop" element={<Shop />}/> 
+        <Route path="/stock" element={<Stock />}/> 
+        <Route path="/report" element={<Report />}/> 
         <Route path="/ratings" element={<Rating />} /> 
-        <Route path="/account" element={<Account />} /> 
       
       </Routes>
     </Router>
