@@ -4,7 +4,9 @@ import { getFullPendingMapping } from "../services/bookingServices.js";
 
 export const watchBookingChanges = (io) => {
   try {
+    // Bắt đầu changeStream trên collection Booking, fullDocument: "updateLookup" để có document đầy đủ
     const changeStream = Booking.watch([], { fullDocument: "updateLookup" });
+    
     changeStream.on("change", async (change) => {
       console.log("Change detected in Booking collection:", change.operationType);
       // Xử lý các trường hợp: xóa, cập nhật (nếu status không còn là "pending")
@@ -26,10 +28,14 @@ export const watchBookingChanges = (io) => {
           date = new Date().toISOString().split("T")[0];
         }
         console.log(`Change event for center=${centerId} date=${date}`);
+
+        // Gọi hàm lấy danh sách booking pending dựa trên centerId và date
         const mapping = await getFullPendingMapping(centerId, date);
+        // Phát sự kiện cập nhật booking lên client qua Socket.io
         io.emit("updateBookings", { date, mapping });
       }
     });
+    
     changeStream.on("error", (error) => {
       console.error("Error in Booking Change Stream:", error);
     });

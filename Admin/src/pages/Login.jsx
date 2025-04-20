@@ -32,7 +32,7 @@ const Login = () => {
       // Lưu thông tin admin vào localStorage (bao gồm cả id)
       localStorage.setItem('admin', JSON.stringify(response.admin));
   
-      navigate('/users-manage'); // Chuyển hướng đến trang quản lý người dùng
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Đăng nhập thất bại');
     } finally {
