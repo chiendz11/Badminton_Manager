@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllNews, createNews, updateNews, deleteNews } from '../apis/newsAPI.js';
 import { Pencil, Trash2, Plus } from 'lucide-react';
-import AdminLayout from '../components/AdminLayout.jsx';
 
 const AdminNews = () => {
   const [newsList, setNewsList] = useState([]);
@@ -115,7 +114,6 @@ const AdminNews = () => {
   };
 
   return (
-    <AdminLayout>
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-4">Quản lý News</h1>
         {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -272,7 +270,7 @@ const AdminNews = () => {
           </div>
         )}
       </div>
-    </AdminLayout>
+
   );
 };
 

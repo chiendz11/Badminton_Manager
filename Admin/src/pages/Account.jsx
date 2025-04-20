@@ -1,73 +1,96 @@
-// src/pages/Account.jsx
-import { useEffect, useState } from "react";
-import { getCurrentAdmin, updateAdminAccount } from "../apis/accountAPI.js";
+import { useState } from "react";
+import { updateAdminProfileAPI } from "../apis/accountAPI.js";
 import { toast } from "react-toastify";
 
-function Account() {
-  const [admin, setAdmin] = useState(null);
-  const [form, setForm] = useState({ username: "", password: "", avatar: "" });
-
-  useEffect(() => {
-    getCurrentAdmin().then(data => {
-      setAdmin(data);
-      setForm({ username: data.username, avatar: data.avatar, password: "" });
-    });
-  }, []);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+const Account = ({ token, admin }) => {
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [avatar, setAvatar] = useState(admin?.avatar || "");
+  const [preview, setPreview] = useState(admin?.avatar || "");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      const updated = await updateAdminAccount(form);
-      setAdmin(updated);
-      toast.success("Cập nhật thành công");
-      setForm({ ...form, password: "" });
-    } catch (err) {
-      toast.error("Lỗi khi cập nhật tài khoản");
+      const payload = {
+        ...(oldPassword && newPassword ? { oldPassword, newPassword } : {}),
+        ...(avatar ? { avatar } : {}),
+      };
+
+      const result = await updateAdminProfileAPI(token, payload);
+      toast.success(result.message);
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Cập nhật thất bại");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!admin) return <div>Loading...</div>;
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatar(reader.result); // base64
+      setPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h2 className="text-xl font-bold mb-4">Quản lý tài khoản</h2>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div>
-          <label className="block">Tên đăng nhập:</label>
+    <div className="max-w-md mx-auto mt-10 bg-white p-6 rounded-2xl shadow-md">
+      <h2 className="text-2xl font-bold mb-6 text-center">Cập nhật tài khoản</h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="text-center">
+          <img
+            src={preview || "/default-avatar.png"}
+            alt="avatar"
+            className="w-24 h-24 mx-auto rounded-full object-cover border"
+          />
           <input
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            className="w-full border px-2 py-1 rounded"
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarChange}
+            className="mt-2"
           />
         </div>
+
         <div>
-          <label className="block">Mật khẩu mới (bỏ trống nếu không đổi):</label>
+          <label className="block mb-1 font-medium">Mật khẩu cũ</label>
           <input
             type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            className="w-full border px-2 py-1 rounded"
+            className="w-full border p-2 rounded"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            placeholder="Nhập mật khẩu cũ"
           />
         </div>
+
         <div>
-          <label className="block">Avatar URL:</label>
+          <label className="block mb-1 font-medium">Mật khẩu mới</label>
           <input
-            name="avatar"
-            value={form.avatar}
-            onChange={handleChange}
-            className="w-full border px-2 py-1 rounded"
+            type="password"
+            className="w-full border p-2 rounded"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Nhập mật khẩu mới"
           />
         </div>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded">Lưu thay đổi</button>
+
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          disabled={loading}
+        >
+          {loading ? "Đang cập nhật..." : "Cập nhật"}
+        </button>
       </form>
     </div>
   );
-}
+};
 
 export default Account;

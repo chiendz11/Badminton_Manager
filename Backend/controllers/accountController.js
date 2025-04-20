@@ -1,37 +1,25 @@
-// controllers/accountController.js
-import Admin from "../models/admin.js";
-import bcrypt from "bcrypt";
+import { updateAdminProfileService } from "../services/accountService.js";
 
-// Giả định bạn có middleware để gán req.adminId
-export const getCurrentAdmin = async (req, res) => {
+export const updateAdminProfile = async (req, res) => {
   try {
-    const adminId = req.adminId; // lấy từ middleware xác thực
-    const admin = await Admin.findById(adminId).select("-password");
-    if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
-    }
-    res.json(admin);
+    const adminId = req.user.id; // lấy từ middleware xác thực (ví dụ JWT)
+    const { oldPassword, newPassword, avatar } = req.body;
+
+    const updatedAdmin = await updateAdminProfileService(adminId, {
+      oldPassword,
+      newPassword,
+      avatar,
+    });
+
+    res.json({
+      message: "Cập nhật tài khoản thành công",
+      admin: {
+        id: updatedAdmin._id,
+        username: updatedAdmin.username,
+        avatar: updatedAdmin.avatar,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-export const updateAdminAccount = async (req, res) => {
-  try {
-    const { username, password, avatar } = req.body;
-    const updates = { username, avatar };
-
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      updates.password = await bcrypt.hash(password, salt);
-    }
-
-    const updatedAdmin = await Admin.findByIdAndUpdate(req.adminId, updates, {
-      new: true,
-    }).select("-password");
-
-    res.json(updatedAdmin);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
