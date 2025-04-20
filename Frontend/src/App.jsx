@@ -16,11 +16,14 @@ import UserProfile from "./pages/UserProfile";
 import Service from "./pages/Service"
 import { AuthProvider } from './contexts/AuthContext';
 import WeatherDisplay from './components/WeatherDisplay'; 
+import Scroll from './components/Scroll'; 
+
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+       <Scroll />
         <Routes>
           <Route
             path="/"

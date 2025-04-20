@@ -160,7 +160,7 @@ const Contact = () => {
                 <a href="https://instagram.com" target="_blank" rel="noreferrer" className="instagram">
                   <i className="fab fa-instagram"></i>
                 </a>
-                <a href="https://youtube.com" target="_blank" rel="noreferrer" className="youtube">
+                <a href="https://www.youtube.com/channel/UCDZ4Kmmnw84OgLZevnmvQXA" target="_blank" rel="noreferrer" className="youtube">
                   <i className="fab fa-youtube"></i>
                 </a>
               </div>

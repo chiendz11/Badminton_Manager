@@ -11,7 +11,7 @@ import '../styles/customer-testimonials.css';
       role: "Đơn vị tổ chức sự kiện thể thao",
       image: "/images/testimonials/customer2.jpg",
       logo: "/images/testimonials/logo-happyhub.png",
-      quote: "Happy Hub – The Playground và The Granary đã tin tưởng giải pháp quản lý sân thể thao ALOBO"
+      quote: "Happy Hub – The Playground và The Granary đã tin tưởng giải pháp quản lý sân thể thao DATSAN247"
     },
     {
       id: 2,
@@ -19,7 +19,7 @@ import '../styles/customer-testimonials.css';
       role: "Chủ CLB Cầu Lông",
       image: "/images/testimonials/customer1.jpg",
       logo: "/images/testimonials/logo-tada.png",
-      quote: "TADA BADMINTON quản lý hiệu quả hơn nhờ phần mềm ALOBO"
+      quote: "TADA BADMINTON quản lý hiệu quả hơn nhờ phần mềm DATSAN247"
     },
     {
       id: 3,
@@ -27,7 +27,7 @@ import '../styles/customer-testimonials.css';
       role: "Cụm sân thể thao",
       image: "/images/testimonials/customer3.jpg",
       logo: "/images/testimonials/truong-trinh.png",
-      quote: "Cụm sân cầu lông Bờ Trường Trinh – Tin tưởng và đồng hành cùng ALOBO từ những ngày đầu"
+      quote: "Cụm sân cầu lông Bờ Trường Trinh – Tin tưởng và đồng hành cùng DATSAN247 từ những ngày đầu"
     },
     {
       id: 4,
@@ -35,7 +35,7 @@ import '../styles/customer-testimonials.css';
       role: "Trung tâm thể thao",
       image: "/images/testimonials/customer4.jpg",
       logo: "/images/testimonials/vu-tru.png",
-      quote: "Trung tâm thể thao Vũ trụ badminton đã tiết kiệm 40% thời gian quản lý nhờ ALOBO"
+      quote: "Trung tâm thể thao Vũ trụ badminton đã tiết kiệm 40% thời gian quản lý nhờ DATSAN247"
     },
     {
       id: 5,
@@ -43,7 +43,7 @@ import '../styles/customer-testimonials.css';
       role: "Tổ hợp sân vận động",
       image: "/images/testimonials/customer5.jpg",
       logo: "/images/testimonials/logo-stadium.png",
-      quote: "Stadium Complex - Hài lòng với dịch vụ và tính năng quản lý của ALOBO"
+      quote: "Stadium Complex - Hài lòng với dịch vụ và tính năng quản lý của DATSAN247"
     }
   ];
 

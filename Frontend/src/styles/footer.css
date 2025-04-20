@@ -95,6 +95,9 @@
 .social-icon.twitter:hover {
   background-color: #1da1f2;
 }
+.social-icon.youtube:hover {
+  background-color: #ff0000; 
+}
 
 .footer-about, .footer-categories {
   flex: 0 0 25%;
