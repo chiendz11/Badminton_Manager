@@ -71,3 +71,34 @@ export const getAllCenters = async () => {
     throw error;
   }
 };
+
+/**
+ * Lấy danh sách kho hàng theo trung tâm và danh mục
+ * @param {{ centerId?: string, category?: string }} params
+ */
+export const getInventoryList = async (params = {}) => {
+  try {
+    const response = await axiosInstance.get("/api/inventories/list", { params });
+    // Giả sử API trả về { success: true, data: [...] }
+    return response.data.data; // Trả về mảng sản phẩm
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách kho hàng:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+/**
+ * Tạo hóa đơn mới
+ * @param {Object} payload - { invoiceNumber, centerId, items, totalAmount, paymentMethod, customer }
+ * @returns {Promise<Object>} - Dữ liệu hóa đơn được tạo
+ */
+export const createSellHistory = async (payload) => {
+  try {
+    const response = await axiosInstance.post("/api/sell-histories", payload);
+    // Giả sử API trả về { success: true, data: {...} }
+    return response.data.data; // Trả về dữ liệu hóa đơn
+  } catch (error) {
+    console.error("Lỗi khi tạo hóa đơn:", error.response?.data || error.message);
+    throw error;
+  }
+};

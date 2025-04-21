@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Search, ShoppingCart, X, Plus, Minus, Trash2 } from 'lucide-react';
 import '../styles/service.css';
 import CoinFlip from '../pages/CoinFlip';
+import { getInventoryList, createSellHistory } from '../apis/centers';
+import { AuthContext } from '../contexts/AuthContext';
 
 const RacketCarousel = () => {
   const [activeCard, setActiveCard] = useState(null);
@@ -20,7 +22,6 @@ const RacketCarousel = () => {
     setAnimationState('running');
   };
 
-  // Mảng hình ảnh cho carousel
   const images = [
     '/images/racket/vot1.jpg',
     '/images/racket/vot2.webp',
@@ -34,7 +35,6 @@ const RacketCarousel = () => {
     '/images/racket/vot10.webp'
   ];
 
-  // Xử lý phím ESC để đóng modal
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -58,7 +58,7 @@ const RacketCarousel = () => {
         height: '400px', 
         position: 'relative',
         marginBottom: '30px'
-         }}>
+      }}>
         <div 
           className="inner" 
           style={{ 
@@ -101,7 +101,6 @@ const RacketCarousel = () => {
         </div>
       </div>
 
-      {/* Modal overlay */}
       {activeCard !== null && (
         <>
           <div 
@@ -145,7 +144,7 @@ const RacketCarousel = () => {
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
                 backgroundImage: images[activeCard] ? `url(${images[activeCard]})` : 'none',
-                backgroundColor: images[activeCard] ? 'transparent' : `rgba(${142 + (activeCard * 10)}, ${249 - (activeCard * 10)}, ${252 - (activeCard * 20)}, 0.3)`
+                backgroundColor: images[activeCard] ? 'transparent' : `rgba(${142 + (activeCard * 10)}, ${249 - (activeCard * 10)}, ${252 - (index * 20)}, 0.3)`
               }}
             />
           </div>
@@ -156,6 +155,88 @@ const RacketCarousel = () => {
 };
 
 const Service = () => {
+  const { user, loading: authLoading } = useContext(AuthContext);
+  const [centerId, setCenterId] = useState(null);
+  const [orderDate, setOrderDate] = useState(null);
+  const [centerName, setCenterName] = useState("");
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const navigate = useNavigate();
+
+  const mapCategory = (apiCategory, productName) => {
+    if (apiCategory === "Nước giải khát") return "drink";
+    if (apiCategory === "Dụng cụ cầu lông") {
+      return "badmintonGear";
+    }
+    if (apiCategory === "Phụ kiện cầu lông") {
+      return "accessories";
+    }
+    return "other";
+  };
+
+  const fetchInventory = async (centerId) => {
+    try {
+      const inventoryData = await getInventoryList({ centerId });
+      const mappedProducts = inventoryData.map(item => ({
+        id: item._id,
+        name: item.name,
+        category: mapCategory(item.category, item.name),
+        price: item.price,
+        image: item.image,
+        description: item.description,
+        available: item.quantity > 0,
+        quantity: item.quantity,
+      }));
+
+      const centerNameFromData = inventoryData.length > 0 ? inventoryData[0].centerId.name : "Trung tâm không xác định";
+      setCenterName(centerNameFromData);
+      setProducts(mappedProducts);
+      setLoading(false);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu từ API:", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const storedCenterId = localStorage.getItem("orderCenterId");
+    const storedDate = localStorage.getItem("orderDate");
+    console.log("Stored Center ID:", storedCenterId); // Debug giá trị
+    console.log("Stored Date:", storedDate);
+
+    if (!storedCenterId) {
+      // Nếu không có centerId trong localStorage, điều hướng về trang chính
+      alert("Không tìm thấy thông tin trung tâm. Vui lòng chọn lại trung tâm!");
+      navigate('/');
+      return;
+    }
+
+    setCenterId(storedCenterId);
+    setOrderDate(storedDate || "Không có dữ liệu");
+
+    if (storedCenterId) {
+      fetchInventory(storedCenterId);
+    } else {
+      setLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    window.history.pushState(null, null, window.location.href);
+
+    const handlePopState = (event) => {
+      event.preventDefault();
+      navigate('/', { replace: true });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [navigate]);
+
   const calculateEndDate = () => {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + 100); 
@@ -202,196 +283,15 @@ const Service = () => {
   const categories = [
     { id: 'all', name: 'Tất cả sản phẩm', icon: '📦' },
     { id: 'drink', name: 'Đồ uống', icon: '🥤' },
-    { id: 'shuttlecock', name: 'Hộp cầu', icon: '/images/cau.png' },
-    { id: 'racket', name: 'Vợt cầu lông', icon: '🏸' },
-    { id: 'shoes', name: 'Giày cầu lông', icon: '👟' }
-  ];
-
-  const products = [
-    {
-      id: 1,
-      name: 'Hộp Cầu Lông Yonex AS-30',
-      category: 'shuttlecock',
-      price: 450000,
-      image: '/images/shuttlecocks/shuttlecock1.webp',
-      description: 'Cầu lông cao cấp Yonex AS-30, 12 quả/hộp, độ bền cao, phù hợp thi đấu',
-      available: true
-    },
-    {
-      id: 2,
-      name: 'Nước khoáng Lavie 500ml',
-      category: 'drink',
-      price: 10000,
-      image: '/images/drinks/drink1.jpg',
-      description: 'Nước khoáng thiên nhiên, giải khát nhanh chóng sau khi tập luyện',
-      available: true
-    },
-    {
-      id: 3,
-      name: 'Vợt Cầu Lông Lining N90IV',
-      category: 'racket',
-      price: 150000,
-      image: '/images/racket/vot10.webp',
-      description: 'Vợt cầu lông cao cấp, công nghệ mới nhất, phù hợp với người chơi chuyên nghiệp',
-      available: true
-    },
-    {
-      id: 4,
-      name: 'Nước tăng lực Redbull',
-      category: 'drink',
-      price: 25000,
-      image: '/images/drinks/drink2.jpg',
-      description: 'Nước tăng lực, giúp bổ sung năng lượng tức thì khi chơi thể thao',
-      available: true
-    },
-    {
-      id: 5,
-      name: 'Hộp Cầu Lông Victor Gold',
-      category: 'shuttlecock',
-      price: 380000,
-      image: '/images/shuttlecocks/shuttlecock2.jpeg',
-      description: 'Cầu lông Victor Gold Champion, 12 quả/hộp, chất lượng cao',
-      available: true
-    },
-    {
-      id: 6,
-      name: 'Vợt Cầu Lông Yonex Astrox 88D',
-      category: 'racket',
-      price: 420000,
-      image: '/images/racket/vot1.jpg',
-      description: 'Vợt cầu lông cao cấp, siêu nhẹ, phù hợp tấn công, lực đánh mạnh',
-      available: true
-    },
-    {
-      id: 7,
-      name: 'Giày Cầu Lông Yonex Power Cushion',
-      category: 'shoes',
-      price: 250000,
-      image: '/images/shoes/s1.jpeg',
-      description: 'Giày cầu lông chuyên nghiệp, độ bám tốt, giảm chấn hiệu quả',
-      available: true
-    },
-    {
-      id: 8,
-      name: 'Chanh muối',
-      category: 'drink',
-      price: 12000,
-      image: '/images/drinks/drink3.jpeg',
-      description: 'Chanh muối đóng chai, giải khát, bổ sung vitamin C',
-      available: true
-    },
-    {
-      id: 9,
-      name: 'Giày Cầu Lông Lining Cloud',
-      category: 'shoes',
-      price: 180000,
-      image: '/images/shoes/s2.webp',
-      description: 'Giày cầu lông nhẹ, thoáng khí, phù hợp với mọi kiểu di chuyển',
-      available: true
-    },
-    {
-      id: 10,
-      name: 'Hộp Cầu Lông Kawasaki S7',
-      category: 'shuttlecock',
-      price: 280000,
-      image: '/images/shuttlecocks/shuttlecock3.jpg',
-      description: 'Cầu lông Kawasaki S7, 12 quả/hộp, giá tốt cho người mới chơi',
-      available: true
-    },
-    {
-        id: 11,
-        name: 'Vợt Cầu Lông Victor Jetspeed S10',
-        category: 'racket',
-        price: 185000,
-        image: '/images/racket/vot2.webp',
-        description: 'Vợt cầu lông Victor Jetspeed, cân bằng hoàn hảo, phù hợp lối chơi tấn công linh hoạt',
-        available: true
-      },
-      {
-        id: 12,
-        name: 'Vợt Cầu Lông Yonex Nanoflare 700',
-        category: 'racket',
-        price: 380000,
-        image: '/images/racket/vot3.jpg',
-        description: 'Vợt siêu nhẹ với công nghệ Nanoflare, tăng tốc độ đập cầu, dễ điều khiển',
-        available: true
-      },
-      {
-        id: 13,
-        name: 'Vợt Cầu Lông Apacs Nano 900 Power',
-        category: 'racket',
-        price: 120000,
-        image: '/images/racket/vot4.jpg',
-        description: 'Vợt cầu lông khung carbon cao cấp, trọng lượng nhẹ, phù hợp cho người mới và trung cấp',
-        available: true
-      },
-      {
-        id: 14,
-        name: 'Vợt Cầu Lông Lining Windstorm 74',
-        category: 'racket',
-        price: 210000,
-        image: '/images/racket/vot5.webp',
-        description: 'Thiết kế khí động học, tăng tốc độ vung vợt, lực đánh mạnh mẽ',
-        available: true
-      },
-      {
-        id: 15,
-        name: 'Vợt Cầu Lông Mizuno JPX 900',
-        category: 'racket',
-        price: 195000,
-        image: '/images/racket/vot6.jpg',
-        description: 'Vợt cầu lông chuyên nghiệp, kết cấu chắc chắn, phù hợp lối chơi phòng thủ',
-        available: true
-      },
-      {
-        id: 16,
-        name: 'Vợt Cầu Lông Fleet Volitant Force',
-        category: 'racket',
-        price: 165000,
-        image: '/images/racket/vot7.jpg',
-        description: 'Vợt cầu lông chất lượng cao từ Fleet, khung vợt dẻo, tăng độ nảy và kiểm soát cầu',
-        available: true
-      },
-      {
-        id: 17,
-        name: 'Vợt Cầu Lông Yonex Duora 10',
-        category: 'racket',
-        price: 340000,
-        image: '/images/racket/vot8.jpg',
-        description: 'Công nghệ hai mặt đánh khác nhau, một mặt tấn công mạnh mẽ, một mặt kiểm soát tốt',
-        available: true
-      },
-      {
-        id: 18,
-        name: 'Vợt Cầu Lông Yonex 99D',
-        category: 'racket',
-        price: 380000,
-        image: '/images/racket/vot9.webp',
-        description: 'Vợt cầu lông chất lượng cao từ Fleet, khung vợt dẻo',
-        available: true
-      }
+    { id: 'badmintonGear', name: 'Dụng cụ cầu lông', icon: '/images/cau.png' },
+    { id: 'accessories', name: 'Phụ kiện cầu lông', icon: '👟' }
   ];
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
-  const [cart, setCart] = useState([
-    { 
-      id: 1, 
-      name: 'Hộp Cầu Lông Yonex AS-30', 
-      price: 450000, 
-      quantity: 1, 
-      image: '/images/products/shuttlecock-1.jpg' 
-    },
-    { 
-      id: 4, 
-      name: 'Nước tăng lực Redbull', 
-      price: 25000, 
-      quantity: 2, 
-      image: '/images/products/drink-2.jpg' 
-    }
-  ]);
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
     let results = products;
@@ -408,7 +308,7 @@ const Service = () => {
     }
     
     setFilteredProducts(results);
-  }, [selectedCategory, searchTerm]);
+  }, [selectedCategory, searchTerm, products]);
 
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -419,21 +319,33 @@ const Service = () => {
   };
 
   const addToCart = (product) => {
+    const productInStock = products.find(p => p.id === product.id);
     const existingItem = cart.find(item => item.id === product.id);
-    
+    let newQuantity = 1;
+
     if (existingItem) {
+      newQuantity = existingItem.quantity + 1;
+      if (newQuantity > productInStock.quantity) {
+        alert(`Số lượng trong kho không đủ! Chỉ còn ${productInStock.quantity} ${product.name}.`);
+        return;
+      }
       setCart(cart.map(item => 
         item.id === product.id 
-          ? { ...item, quantity: item.quantity + 1 } 
+          ? { ...item, quantity: newQuantity } 
           : item
       ));
     } else {
+      if (productInStock.quantity < 1) {
+        alert(`Sản phẩm ${product.name} đã hết hàng!`);
+        return;
+      }
       setCart([...cart, { 
         id: product.id, 
-        name: product.name, 
-        price: product.price, 
+        name: product.name,
+        price: product.price,
         quantity: 1,
-        image: product.image
+        image: product.image,
+        category: product.category
       }]);
     }
     
@@ -441,13 +353,24 @@ const Service = () => {
   };
 
   const updateQuantity = (id, amount) => {
-    setCart(cart.map(item => {
-      if (item.id === id) {
-        const newQuantity = item.quantity + amount;
-        return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
-      }
-      return item;
-    }));
+    const productInStock = products.find(p => p.id === id);
+    const item = cart.find(item => item.id === id);
+    const newQuantity = item.quantity + amount;
+
+    if (newQuantity <= 0) {
+      return;
+    }
+
+    if (newQuantity > productInStock.quantity) {
+      alert(`Số lượng trong kho không đủ! Chỉ còn ${productInStock.quantity} ${item.name}.`);
+      return;
+    }
+
+    setCart(cart.map(item => 
+      item.id === id 
+        ? { ...item, quantity: newQuantity } 
+        : item
+    ));
   };
 
   const removeFromCart = (id) => {
@@ -462,6 +385,82 @@ const Service = () => {
       .replace('₫', 'đ');
   };
 
+  const handleCheckout = () => {
+    if (!user) {
+      alert("Bạn cần đăng nhập để đặt hàng!");
+      return;
+    }
+    setShowConfirmModal(true);
+  };
+
+  const confirmCheckout = async () => {
+    if (!user || !user.name) {
+      alert("Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại!");
+      setShowConfirmModal(false);
+      return;
+    }
+
+    if (!centerId) {
+      alert("Không có thông tin trung tâm. Vui lòng thử lại!");
+      setShowConfirmModal(false);
+      return;
+    }
+
+    for (const item of cart) {
+      const productInStock = products.find(p => p.id === item.id);
+      if (item.quantity > productInStock.quantity) {
+        alert(`Số lượng trong kho không đủ! Chỉ còn ${productInStock.quantity} ${item.name}.`);
+        setShowConfirmModal(false);
+        return;
+      }
+    }
+
+    try {
+      const invoiceNumber = `INV-${Date.now()}`;
+      
+      const payload = {
+        invoiceNumber,
+        centerId,
+        items: cart.map(item => ({
+          inventoryId: item.id,
+          quantity: item.quantity,
+          unitPrice: item.price
+        })),
+        totalAmount: cartTotal,
+        paymentMethod: "Cash",
+        customer: user.name
+      };
+
+      const result = await createSellHistory(payload);
+      
+      alert("Đặt hàng thành công!");
+      console.log("Hóa đơn:", result);
+      
+      setCart([]);
+      setCartOpen(false);
+      setShowConfirmModal(false);
+
+      await fetchInventory(centerId);
+
+      // Xóa localStorage sau khi đặt hàng thành công
+      localStorage.removeItem("orderCenterId");
+      localStorage.removeItem("orderDate");
+
+      navigate('/');
+    } catch (error) {
+      alert("Lỗi khi tạo hóa đơn: " + error.message);
+      setShowConfirmModal(false);
+    }
+  };
+
+  if (loading || authLoading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <h3>Đang tải dữ liệu...</h3>
+      </div>
+    );
+  }
+
   return (
     <>
       <Header />
@@ -472,6 +471,9 @@ const Service = () => {
               <div className="promotion-info">
                 <h1>Dịch Vụ & Sản Phẩm</h1>
                 <p>Cung cấp các sản phẩm và dịch vụ thuê chất lượng cao cho người chơi cầu lông</p>
+                <p>
+                  Bạn đang đặt đồ cho trung tâm có ID: <strong>{centerId}</strong>, ngày chơi: <strong>{orderDate}</strong>
+                </p>
                 <div className="discount-badge">Giảm giá lên đến 50%</div>
               </div>
               
@@ -517,7 +519,6 @@ const Service = () => {
         </div>
 
         <div className="container service-container">
-          {/* Thanh tìm kiếm và biểu tượng giỏ hàng */}
           <div className="search-cart-container">
             <div className="search-box">
               <Search size={20} />
@@ -537,11 +538,9 @@ const Service = () => {
             </div>
           </div>
 
-          {/* Layout chính */}
           <div className="service-layout">
-            {/* Sidebar danh mục */}
             <div className="categories-sidebar">
-              <h3>Danh mục sản phẩm</h3>
+              <h3>Danh mục sản phẩm của {centerName}</h3>
               <ul className="category-list">
                 {categories.map(category => (
                   <li key={category.id}>
@@ -571,40 +570,37 @@ const Service = () => {
               </div>
             </div>
 
-            {/* Phần sản phẩm chính */}
             <div className="products-main">
-              {/* Hiển thị carousel khi chọn danh mục Vợt cầu lông */}
-              {selectedCategory === 'racket' && <RacketCarousel />}
+              {selectedCategory === 'badmintonGear' && <RacketCarousel />}
               
-              {selectedCategory === 'shoes' && (
-              <div 
-                style={{
-                  backgroundColor: '#f0fdf4',
-                  padding: '16px 20px',
-                  borderRadius: '10px',
-                  marginBottom: '20px',
-                  borderLeft: '5px solid #34a853',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px'
-                }}
-               >
-                <div style={{ fontSize: '1.5rem', color: '#34a853' }}></div>
-                <div>
-                  <p style={{ 
-                    margin: 0, 
-                    fontSize: '1rem', 
-                    color: '#1b1b1b', 
-                    lineHeight: '1.6' 
-                  }}>
-                    <strong style={{ color: '#2e7d32' }}>Lưu ý:</strong> Chúng tôi có đầy đủ các loại size giày từ <strong>36 đến 43</strong>. Bạn có thể đến chọn size phù hợp trược tiếp tại quày!
-                  </p>
+              {selectedCategory === 'accessories' && (
+                <div 
+                  style={{
+                    backgroundColor: '#f0fdf4',
+                    padding: '16px 20px',
+                    borderRadius: '10px',
+                    marginBottom: '20px',
+                    borderLeft: '5px solid #34a853',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px'
+                  }}
+                >
+                  <div style={{ fontSize: '1.5rem', color: '#34a853' }}></div>
+                  <div>
+                    <p style={{ 
+                      margin: 0, 
+                      fontSize: '1rem', 
+                      color: '#1b1b1b', 
+                      lineHeight: '1.6' 
+                    }}>
+                      <strong style={{ color: '#2e7d32' }}>Lưu ý:</strong> Chúng tôi có đầy đủ các loại size giày từ <strong>36 đến 43</strong>. Bạn có thể đến chọn size phù hợp trực tiếp tại quầy!
+                    </p>
+                  </div>
                 </div>
-              </div>
               )}
 
-              {/* Hiển thị sản phẩm */}
               <div className="products-grid">
                 {filteredProducts.length > 0 ? (
                   filteredProducts.map(product => (
@@ -612,8 +608,12 @@ const Service = () => {
                       <div className="product-image">
                         <img src={product.image || '/images/placeholder.jpg'} alt={product.name} />
                         <div className="product-overlay">
-                          <button className="add-to-cart-btn" onClick={() => addToCart(product)}>
-                            Thêm vào giỏ
+                          <button 
+                            className="add-to-cart-btn" 
+                            onClick={() => addToCart(product)}
+                            disabled={!product.available}
+                          >
+                            {product.available ? "Thêm vào giỏ" : "Hết hàng"}
                           </button>
                         </div>
                       </div>
@@ -622,6 +622,9 @@ const Service = () => {
                         <div className="product-category">{categories.find(c => c.id === product.category)?.name}</div>
                         <p className="product-description">{product.description}</p>
                         <div className="product-price">{formatCurrency(product.price)}</div>
+                        <div className="product-quantity" style={{ color: product.quantity > 0 ? '#2e7d32' : '#e50914', fontWeight: 'bold' }}>
+                          Số lượng còn lại: {product.quantity}
+                        </div>
                       </div>
                     </div>
                   ))
@@ -638,7 +641,6 @@ const Service = () => {
         </div>
       </div>
 
-      {/* Giỏ hàng */}
       <div className={`cart-sidebar ${cartOpen ? 'open' : ''}`}>
         <div className="cart-header">
           <h3>Giỏ hàng của bạn</h3>
@@ -685,19 +687,102 @@ const Service = () => {
         
         {cart.length > 0 && (
           <div className="cart-footer">
+            <div 
+              style={{
+                backgroundColor: '#fff3cd',
+                padding: '10px',
+                borderRadius: '5px',
+                marginBottom: '10px',
+                borderLeft: '4px solid #ffca28',
+                color: '#856404',
+                fontSize: '0.9rem'
+              }}
+            >
+              <strong>Lưu ý:</strong> Hiện tại chưa hỗ trợ thanh toán banking nên quý khách vui lòng đến sân thanh toán.
+            </div>
             <div className="cart-total">
               <span>Tổng cộng:</span>
               <span>{formatCurrency(cartTotal)}</span>
             </div>
-            <button className="checkout-button">Thanh toán ngay</button>
+            <button
+              className="checkout-button"
+              onClick={handleCheckout}
+            >
+              Thanh toán ngay
+            </button>
             <button className="continue-shopping" onClick={() => setCartOpen(false)}>
               Tiếp tục mua sắm
             </button>
           </div>
         )}
       </div>
+
+      {showConfirmModal && (
+        <>
+          <div 
+            className="modal-overlay" 
+            style={{
+              position: 'fixed',
+              top: '0',
+              left: '0',
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              zIndex: '900',
+              display: 'block'
+            }}
+            onClick={() => setShowConfirmModal(false)}
+          />
+          <div 
+            className="confirm-modal"
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'white',
+              padding: '20px',
+              borderRadius: '10px',
+              zIndex: '1000',
+              width: '300px',
+              textAlign: 'center'
+            }}
+          >
+            <h3 style={{ marginBottom: '20px' }}>Xác nhận đặt hàng</h3>
+            <p>Bạn có chắc chắn muốn đặt hàng không?</p>
+            <div style={{ marginTop: '20px' }}>
+              <button
+                onClick={confirmCheckout}
+                style={{
+                  backgroundColor: '#34a853',
+                  color: 'white',
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '5px',
+                  marginRight: '10px',
+                  cursor: 'pointer'
+                }}
+              >
+                Xác nhận
+              </button>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                style={{
+                  backgroundColor: '#e50914',
+                  color: 'white',
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer'
+                }}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </>
+      )}
       
-      {/* Lớp phủ khi giỏ hàng mở */}
       {cartOpen && <div className="cart-overlay" onClick={() => setCartOpen(false)}></div>}
       
       <Footer />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/header.css";
 import LoginModal from "../pages/Login";
@@ -124,25 +124,6 @@ const Header = () => {
                   >
                     Chính Sách
                   </Link>
-                </li>
-                <li>
-                  {user ? (
-                    <Link
-                      to="/service"
-                      onClick={closeMenu}
-                      className="hover:text-yellow-300 transition-colors"
-                    >
-                      Dịch vụ
-                    </Link>
-                  ) : (
-                    <a
-                      href="#login"
-                      onClick={(e) => openLoginModal(e, "/service")} // Truyền trang đích
-                      className="hover:text-yellow-300 transition-colors"
-                    >
-                      Dịch vụ
-                    </a>
-                  )}
                 </li>
                 <li>
                   {user ? (

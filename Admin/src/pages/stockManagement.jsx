@@ -234,7 +234,7 @@ export default function StockManagement() {
             <tbody>
               {importHistory.map((entry) => (
                 <tr key={entry._id}>
-                  <td className="border p-2">{entry.inventory?.name || "N/A"}</td>
+                  <td className="border p-2">{entry.inventoryId.name || "N/A"}</td>
                   <td className="border p-2">{entry.quantityImport}</td>
                   <td className="border p-2">{entry.importPrice.toLocaleString()} đ</td>
                   <td className="border p-2">{entry.supplier}</td>

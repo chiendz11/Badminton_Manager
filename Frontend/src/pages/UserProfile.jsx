@@ -146,6 +146,23 @@ const UserProfile = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Lắng nghe sự kiện "Quay lại" trên trình duyệt
+  useEffect(() => {
+    // Thêm một entry vào lịch sử để đảm bảo popstate hoạt động
+    window.history.pushState(null, null, window.location.href);
+
+    const handlePopState = (event) => {
+      event.preventDefault(); // Ngăn chặn hành vi điều hướng mặc định
+      navigate('/', { replace: true }); // Điều hướng về "/" và thay thế entry hiện tại
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [navigate]);
+
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       alert("Mật khẩu xác nhận không khớp!");
@@ -223,7 +240,7 @@ const UserProfile = () => {
       }
     } catch (error) {
       console.error("Error deleting booking:", error);
-      alert("Lỗi khi xóa booking: " + error.message);
+  alert("Lỗi khi xóa booking: " + error.message);
     }
   };
 

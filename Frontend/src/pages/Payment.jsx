@@ -191,10 +191,19 @@ const PaymentPage = () => {
     setIsConfirmModalOpen(false);
   };
 
-  // Đóng modal thành công và điều hướng
-  const handleSuccessModalClose = () => {
+  // Xử lý khi người dùng trả lời câu hỏi trong modal thành công
+  const handleSuccessModalAction = (action) => {
     setIsSuccessModalOpen(false);
-    navigate("/"); // Hoặc navigate("/profile") nếu bạn muốn
+    if (action === "yes") {
+      // Lưu centerId và date vào localStorage
+      localStorage.setItem("orderCenterId", centerId);
+      localStorage.setItem("orderDate", initialDate);
+      // Điều hướng đến trang đặt đồ
+      navigate("/service");
+    } else {
+      // Nếu không muốn đặt đồ, điều hướng về trang chính
+      navigate("/");
+    }
   };
 
   return (
@@ -491,22 +500,31 @@ const PaymentPage = () => {
         </div>
       )}
 
-      {/* Modal thông báo thành công */}
+      {/* Modal thông báo thành công với câu hỏi đặt đồ online */}
       {isSuccessModalOpen && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50 transition-opacity duration-300">
           <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full transform transition-all duration-300 scale-100 hover:scale-105">
             <h3 className="text-2xl font-bold text-green-900 mb-4 flex items-center gap-2">
               <i className="fas fa-check-circle text-green-500"></i> Thanh toán thành công
             </h3>
-            <p className="text-gray-700 mb-6 text-lg">
+            <p className="text-gray-700 mb-4 text-lg">
               Vui lòng vào phần lịch sử đặt sân để kiểm tra xem liệu admin đã duyệt đơn cho bạn chưa (admin thường mất một vài giây để duyệt).
             </p>
-            <div className="flex justify-end">
+            <p className="text-gray-700 mb-6 text-lg">
+              Bạn có muốn đặt đồ online (nước uống, vợt, cầu, v.v.) cho ngày chơi không?
+            </p>
+            <div className="flex justify-end gap-4">
               <button
-                onClick={handleSuccessModalClose}
+                onClick={() => handleSuccessModalAction("no")}
+                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Không
+              </button>
+              <button
+                onClick={() => handleSuccessModalAction("yes")}
                 className="px-6 py-2 bg-green-900 text-white rounded-md hover:bg-green-800 transition-colors"
               >
-                OK
+                Có
               </button>
             </div>
           </div>
