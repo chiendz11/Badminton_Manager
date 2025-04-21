@@ -12,6 +12,7 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
   const [selectedRating, setSelectedRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviews, setReviews] = useState([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false); // State cho modal xác nhận
   const { user } = useContext(AuthContext);
   const userId = user?._id;
 
@@ -26,12 +27,18 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
   // Close modal on Escape key press
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        if (showConfirmModal) {
+          setShowConfirmModal(false); // Đóng modal xác nhận nếu đang mở
+        } else {
+          onClose(); // Đóng modal chính nếu modal xác nhận không mở
+        }
+      }
     };
 
     if (isOpen) window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, showConfirmModal]);
 
   // Close modal when clicking outside the modal container
   const handleOutsideClick = (e) => {
@@ -74,14 +81,21 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
     }
   }, [center]);
 
-  const handleSubmitReview = async (e) => {
+  // Xử lý khi nhấn "Gửi đánh giá" - Hiển thị modal xác nhận
+  const handleSubmitReview = (e) => {
     e.preventDefault();
 
     if (reviewContent.trim() === "") {
+      alert("Vui lòng nhập nội dung đánh giá!");
       return;
     }
 
-    // Tạo dữ liệu đánh giá
+    // Hiển thị modal xác nhận
+    setShowConfirmModal(true);
+  };
+
+  // Xử lý khi người dùng xác nhận gửi đánh giá
+  const confirmSubmitReview = async () => {
     const ratingData = {
       centerId: center._id,
       userId, // Lấy từ context, đảm bảo user đã đăng nhập
@@ -96,13 +110,17 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
       if (data && data.rating) {
         // Thêm đánh giá mới vào đầu danh sách
         setReviews([data.rating, ...reviews]);
+        alert("Đánh giá của bạn đã được gửi thành công!");
       }
       // Reset form sau khi gửi thành công
       setReviewContent("");
       setSelectedRating(5);
     } catch (error) {
       console.error("Error submitting review:", error);
-      // Bạn có thể hiển thị thông báo lỗi cho người dùng ở đây
+      alert("Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại!");
+    } finally {
+      // Đóng modal xác nhận
+      setShowConfirmModal(false);
     }
   };
 
@@ -139,7 +157,6 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  // Sử dụng embed URL từ center.location nếu có, nếu không fallback sang URL mặc định.
   const googleMapUrl = center.location
     ? center.location
     : "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3723.9244038028873!2d105.78076375707085!3d21.03708178599531!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab32dd484c53%3A0x4b5c0c67d46f326b!2zMTcgRG_Do24gS-G6vyBUaGnhu4duLCBNYWkgROG7i2NoLCBD4bqndSBHaeG6pXksIEjDoCBO4buZaSwgVmnhu4d0IE5hbQ!5e0!3m2!1svi!2s!4v1680235904873!5m2!1svi!2s";
@@ -168,7 +185,6 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
         </div>
 
         <div className="modal-body">
-          {/* Các phần hiển thị thông tin center, ảnh, bản đồ, dịch vụ, v.v. */}
           <div className="modal-main-image">
             <img
               src={center.imgUrl[0] || "/images/default.png"}
@@ -300,8 +316,6 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
                 </button>
               </form>
             </div>
-
-
           </div>
         </div>
 
@@ -319,6 +333,79 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
           )}
         </div>
       </div>
+
+      {/* Modal xác nhận gửi đánh giá */}
+      {showConfirmModal && (
+        <>
+          <div 
+            className="modal-overlay confirm-overlay"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              zIndex: 2000,
+              display: 'block'
+            }}
+            onClick={() => setShowConfirmModal(false)}
+          />
+          <div 
+            className="confirm-modal"
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'white',
+              padding: '20px',
+              borderRadius: '10px',
+              zIndex: 2100,
+              width: '300px',
+              textAlign: 'center',
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
+            }}
+          >
+            <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', fontWeight: 'bold' }}>
+              Xác nhận đánh giá
+            </h3>
+            <p style={{ marginBottom: '20px', fontSize: '1rem' }}>
+              Bạn có chắc chắn về đánh giá này không?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+              <button
+                onClick={confirmSubmitReview}
+                style={{
+                  backgroundColor: '#34a853',
+                  color: 'white',
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Xác nhận
+              </button>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                style={{
+                  backgroundColor: '#e50914',
+                  color: 'white',
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

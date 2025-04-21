@@ -6,6 +6,7 @@ import { getRatingsByCenterController, deleteRatingController, getCommentsForCen
 
 const router = express.Router();
 
+router.get("/get-ratings-for-center", getCommentsForCenter);
 // GET /api/ratings/center/:centerId
 router.get('/center/:centerId', getRatingsByCenterController);
 
@@ -13,6 +14,6 @@ router.get('/center/:centerId', getRatingsByCenterController);
 router.delete('/:id', deleteRatingController);
 
 // GET /api/ratings?centerId=...
-router.get("/get-ratings-for-center", getCommentsForCenter);
+
 
 export default router;

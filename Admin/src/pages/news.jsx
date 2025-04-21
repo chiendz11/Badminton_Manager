@@ -1,4 +1,3 @@
-// src/pages/AdminNews.jsx
 import React, { useState, useEffect } from 'react';
 import { getAllNews, createNews, updateNews, deleteNews } from '../apis/newsAPI.js';
 import { Pencil, Trash2, Plus } from 'lucide-react';
@@ -25,9 +24,17 @@ const AdminNews = () => {
     setLoading(true);
     try {
       const data = await getAllNews();
-      setNewsList(data);
+      // Lấy mảng từ data.news
+      if (Array.isArray(data.news)) {
+        setNewsList(data.news);
+      } else {
+        console.error("Dữ liệu từ API không phải mảng:", data);
+        setNewsList([]);
+        setError("Dữ liệu từ API không đúng định dạng");
+      }
     } catch (err) {
       setError('Lỗi tải dữ liệu');
+      setNewsList([]);
     } finally {
       setLoading(false);
     }
@@ -114,31 +121,32 @@ const AdminNews = () => {
   };
 
   return (
-      <div className="p-6">
-        <h1 className="text-3xl font-bold mb-4">Quản lý News</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <button 
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors mb-4"
-          onClick={openForm}
-        >
-          <Plus size={16} /> Thêm mới
-        </button>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">Quản lý News</h1>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <button 
+        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors mb-4"
+        onClick={openForm}
+      >
+        <Plus size={16} /> Thêm mới
+      </button>
 
-        {loading ? (
-          <p>Đang tải...</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white border rounded-md">
-              <thead>
-                <tr>
-                  <th className="py-2 px-4 border-b">Tiêu đề</th>
-                  <th className="py-2 px-4 border-b">Nguồn tin</th>
-                  <th className="py-2 px-4 border-b">Ngày tạo</th>
-                  <th className="py-2 px-4 border-b">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {newsList.map((newsItem) => (
+      {loading ? (
+        <p>Đang tải...</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white border rounded-md">
+            <thead>
+              <tr>
+                <th className="py-2 px-4 border-b">Tiêu đề</th>
+                <th className="py-2 px-4 border-b">Nguồn tin</th>
+                <th className="py-2 px-4 border-b">Ngày tạo</th>
+                <th className="py-2 px-4 border-b">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.isArray(newsList) && newsList.length > 0 ? (
+                newsList.map((newsItem) => (
                   <tr key={newsItem._id} className="hover:bg-gray-100">
                     <td className="py-2 px-4 border-b">{newsItem.title}</td>
                     <td className="py-2 px-4 border-b">{newsItem.source}</td>
@@ -160,117 +168,123 @@ const AdminNews = () => {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="py-2 px-4 text-center">
+                    Không có tin tức nào
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-        {/* Form thêm mới/chỉnh sửa tin tức */}
-        {showForm && (
-          <div className="mt-6 p-6 bg-gray-50 border rounded-md shadow-md transition-all">
-            <h2 className="text-2xl font-semibold mb-4">
-              {formMode === 'create' ? 'Thêm News mới' : 'Chỉnh sửa News'}
-            </h2>
-            <form onSubmit={handleFormSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-1">Tiêu đề</label>
-                <input 
-                  type="text" 
-                  name="title" 
-                  value={currentNews.title} 
-                  onChange={handleInputChange} 
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                  required 
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-1">Tóm tắt</label>
-                <textarea 
-                  name="summary" 
-                  value={currentNews.summary} 
-                  onChange={handleInputChange} 
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                  rows="3" 
-                  required
-                ></textarea>
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-1">URL hình ảnh</label>
-                <input 
-                  type="url" 
-                  name="image" 
-                  value={currentNews.image} 
-                  onChange={handleInputChange} 
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                  required 
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-1">Danh mục</label>
-                <input 
-                  type="text" 
-                  name="category" 
-                  value={currentNews.category} 
-                  onChange={handleInputChange} 
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                  required 
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-1">Ngày</label>
-                <input 
-                  type="date" 
-                  name="date" 
-                  value={currentNews.date} 
-                  onChange={handleInputChange} 
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                  required 
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-1">Nguồn tin</label>
-                <input 
-                  type="text" 
-                  name="source" 
-                  value={currentNews.source} 
-                  onChange={handleInputChange} 
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                  required 
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-1">URL bài viết</label>
-                <input 
-                  type="url" 
-                  name="url" 
-                  value={currentNews.url} 
-                  onChange={handleInputChange} 
-                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                  required 
-                />
-              </div>
+      {/* Form thêm mới/chỉnh sửa tin tức */}
+      {showForm && (
+        <div className="mt-6 p-6 bg-gray-50 border rounded-md shadow-md transition-all">
+          <h2 className="text-2xl font-semibold mb-4">
+            {formMode === 'create' ? 'Thêm News mới' : 'Chỉnh sửa News'}
+          </h2>
+          <form onSubmit={handleFormSubmit}>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-1">Tiêu đề</label>
+              <input 
+                type="text" 
+                name="title" 
+                value={currentNews.title} 
+                onChange={handleInputChange} 
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                required 
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-1">Tóm tắt</label>
+              <textarea 
+                name="summary" 
+                value={currentNews.summary} 
+                onChange={handleInputChange} 
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                rows="3" 
+                required
+              ></textarea>
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-1">URL hình ảnh</label>
+              <input 
+                type="url" 
+                name="image" 
+                value={currentNews.image} 
+                onChange={handleInputChange} 
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                required 
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-1">Danh mục</label>
+              <input 
+                type="text" 
+                name="category" 
+                value={currentNews.category} 
+                onChange={handleInputChange} 
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                required 
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-1">Ngày</label>
+              <input 
+                type="date" 
+                name="date" 
+                value={currentNews.date} 
+                onChange={handleInputChange} 
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                required 
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-1">Nguồn tin</label>
+              <input 
+                type="text" 
+                name="source" 
+                value={currentNews.source} 
+                onChange={handleInputChange} 
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                required 
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-1">URL bài viết</label>
+              <input 
+                type="url" 
+                name="url" 
+                value={currentNews.url} 
+                onChange={handleInputChange} 
+                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                required 
+              />
+            </div>
 
-              <div className="flex justify-end gap-4">
-                <button 
-                  type="button" 
-                  onClick={() => setShowForm(false)} 
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition-colors"
-                >
-                  Hủy
-                </button>
-                <button 
-                  type="submit" 
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                >
-                  {formMode === 'create' ? 'Thêm mới' : 'Cập nhật'}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-      </div>
-
+            <div className="flex justify-end gap-4">
+              <button 
+                type="button" 
+                onClick={() => setShowForm(false)} 
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition-colors"
+              >
+                Hủy
+              </button>
+              <button 
+                type="submit" 
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+              >
+                {formMode === 'create' ? 'Thêm mới' : 'Cập nhật'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </div>
   );
 };
 
