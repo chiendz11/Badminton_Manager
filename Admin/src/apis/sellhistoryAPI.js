@@ -1,15 +1,27 @@
-import axios from "axios";
-const API_URL = import.meta.env.VITE_API_URL;
-const SELL_HISTORY_ENDPOINT = `${API_URL}/api/sell-histories`;
+import axiosInstance from '../config/axiosConfig';
+
+const SELL_HISTORY_ENDPOINT = '/api/sell-histories';
 
 /** Lấy danh sách hóa đơn */
-export function getSellHistories() {
-  return axios.get(SELL_HISTORY_ENDPOINT);
+export async function getSellHistories() {
+  try {
+    const response = await axiosInstance.get(SELL_HISTORY_ENDPOINT);
+    return response;
+  } catch (error) {
+    console.error('Error fetching sell histories:', error);
+    throw error;
+  }
 }
 
 /** Tạo hóa đơn mới
  * @param {Object} payload - { invoiceNumber, centerId, items, totalAmount, paymentMethod, customer }
  */
-export function createSellHistory(payload) {
-  return axios.post(SELL_HISTORY_ENDPOINT, payload);
+export async function createSellHistory(payload) {
+  try {
+    const response = await axiosInstance.post(SELL_HISTORY_ENDPOINT, payload);
+    return response;
+  } catch (error) {
+    console.error('Error creating sell history:', error);
+    throw error;
+  }
 }

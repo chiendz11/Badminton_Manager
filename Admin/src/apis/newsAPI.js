@@ -25,7 +25,7 @@ export const getAllNews = async () => {
 export const getNewsById = async (id) => {
   try {
     const response = await axios.get(`${API_URL}/api/news/${id}`);
-    return response.data;
+    return response;
   } catch (error) {
     throw new Error(`Lỗi khi lấy thông tin bài viết: ${error.message}`);
   }

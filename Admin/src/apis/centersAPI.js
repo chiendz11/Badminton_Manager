@@ -1,36 +1,56 @@
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import axiosInstance from './axiosInstance'; // Import axiosInstance
 
 // Lấy danh sách các nhà thi đấu
 export const getCentersAPI = async () => {
-  if (!API_URL) {
-    throw new Error("VITE_API_URL không được định nghĩa trong file .env");
+  try {
+    const response = await axiosInstance.get('/api/centers');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching centers:', error);
+    throw error; // Re-throw the error to be handled by the caller
   }
-  const response = await axios.get(`${API_URL}/api/centers`);
-  return response.data;
 };
 
 // Lấy thông tin 1 nhà thi đấu theo id
 export const getCenterByIdAPI = async (id) => {
-  const response = await axios.get(`${API_URL}api/centers/${id}`);
-  return response.data;
+  try {
+    const response = await axiosInstance.get(`/api/centers/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching center with id ${id}:`, error);
+    throw error;
+  }
 };
 
 // Tạo mới 1 nhà thi đấu
 export const createCenterAPI = async (centerData) => {
-  const response = await axios.post(`${API_URL}api/centers`, centerData);
-  return response.data;
+  try {
+    const response = await axiosInstance.post('/api/centers', centerData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating center:', error);
+    throw error;
+  }
 };
 
 // Cập nhật thông tin 1 nhà thi đấu theo id
 export const updateCenterAPI = async (id, centerData) => {
-  const response = await axios.put(`${API_URL}api/centers/${id}`, centerData);
-  return response.data;
+  try {
+    const response = await axiosInstance.put(`/api/centers/${id}`, centerData);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating center with id ${id}:`, error);
+    throw error;
+  }
 };
 
 // Xóa 1 nhà thi đấu theo id
 export const deleteCenterAPI = async (id) => {
-  const response = await axios.delete(`${API_URL}api/centers/${id}`);
-  return response.data;
+  try {
+    const response = await axiosInstance.delete(`/api/centers/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting center with id ${id}:`, error);
+    throw error;
+  }
 };

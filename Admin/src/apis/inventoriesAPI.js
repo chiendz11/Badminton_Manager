@@ -1,31 +1,53 @@
-// client/src/apis/inventoriesAPI.js
-import axios from 'axios';
-const API_URL = import.meta.env.VITE_API_URL;
+import axiosInstance from '../config/axiosConfig'; // Import the axiosInstance
 
 /**
  * Nhập hàng
  * @param {{ inventoryId: string, centerId: string, supplier: string, quantityImport: number, importPrice: number }} data
  */
-export function importStock(data) {
-  return axios.post(`${API_URL}/api/inventories/import`, data);
+export async function importStock(data) {
+  try {
+    const response = await axiosInstance.post('/api/inventories/import', data);
+    return response; // Return the full response
+  } catch (error) {
+    console.error('Error importing stock:', error);
+    throw error;
+  }
 }
 
 /**
  * Lấy lịch sử nhập hàng
  * @param {{ inventoryId?: string, centerId?: string }} params
  */
-export function getStockHistory(params = {}) {
-  return axios.get(`${API_URL}/api/inventories/import-history`, { params });
+export async function getStockHistory(params = {}) {
+  try {
+    const response = await axiosInstance.get('/api/inventories/import-history', { params });
+    return response; // Return the full response
+  } catch (error) {
+    console.error('Error fetching stock history:', error);
+    throw error;
+  }
 }
 
 /**
  * Bán hàng (trừ kho)
  * @param {{ inventoryId: string, centerId: string, quantityExport: number, exportPrice: number }} data
  */
-export function sellStock(data) {
-  return axios.post(`${API_URL}/api/inventories/export`, data);
+export async function sellStock(data) {
+  try {
+    const response = await axiosInstance.post('/api/inventories/export', data);
+    return response; // Return the full response
+  } catch (error) {
+    console.error('Error selling stock:', error);
+    throw error;
+  }
 }
 
-export function getInventoryList(params = {}) {
-  return axios.get(`${API_URL}/api/inventories/list`, { params });
+export async function getInventoryList(params = {}) {
+  try {
+    const response = await axiosInstance.get('/api/inventories/list', { params });
+    return response; // Return the full response
+  } catch (error) {
+    console.error('Error fetching inventory list:', error);
+    throw error;
+  }
 }

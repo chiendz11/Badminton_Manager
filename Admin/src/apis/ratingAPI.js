@@ -1,21 +1,29 @@
-// ======================
-// File: api/ratingAPI.js (frontend)
-// ======================
-import axios from 'axios';
-const API_URL = import.meta.env.VITE_API_URL;
+import axiosInstance from '../config/axiosConfig';
 
 /**
  * Fetch ratings for a center
  * @param {String} centerId
  */
-export function fetchRatings(centerId) {
-  return axios.get(`${API_URL}/api/ratings/center/${centerId}`);
+export async function fetchRatings(centerId) {
+  try {
+    const response = await axiosInstance.get(`/api/ratings/center/${centerId}`);
+    return response;
+  } catch (error) {
+    console.error(`Error fetching ratings for center ${centerId}:`, error);
+    throw error;
+  }
 }
 
 /**
  * Delete a rating by ID
  * @param {String} ratingId
  */
-export function deleteRating(ratingId) {
-  return axios.delete(`${API_URL}/api/ratings/${ratingId}`);
+export async function deleteRating(ratingId) {
+  try {
+    const response = await axiosInstance.delete(`/api/ratings/${ratingId}`);
+    return response;
+  } catch (error) {
+    console.error(`Error deleting rating ${ratingId}:`, error);
+    throw error;
+  }
 }

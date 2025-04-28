@@ -369,7 +369,7 @@ const CreateFixedBooking = () => {
     return (
         <div className="min-h-screen w-full font-sans bg-gradient-to-br from-gray-50 to-gray-200">
             <div className="bg-emerald-600 text-white flex items-center p-4 shadow-lg">
-                <button onClick={() => navigate("/admin/bill-list")} className="mr-4 hover:opacity-80 transition-opacity">
+                <button onClick={() => navigate("/admin-bill-list")} className="mr-4 hover:opacity-80 transition-opacity">
                     <ArrowLeftIcon className="h-7 w-7" />
                 </button>
                 <h1 className="text-2xl font-bold flex-1 text-center">Đặt Lịch Cố Định</h1>

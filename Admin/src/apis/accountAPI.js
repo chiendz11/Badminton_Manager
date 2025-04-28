@@ -1,12 +1,16 @@
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import axiosInstance from "../config/axiosConfig"; // Đảm bảo đường dẫn này đúng
 
 export const updateAdminProfileAPI = async (token, data) => {
-  const res = await axios.put(`${API_URL}/account/profile`, data, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.data;
+  try {
+    const res = await axiosInstance.put("api/account/profile", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return res.data;
+  } catch (error) {
+    // Xử lý lỗi tại đây, ví dụ:
+    console.error("Lỗi khi cập nhật profile:", error);
+    throw error; // Re-throw lỗi để component gọi API có thể xử lý
+  }
 };

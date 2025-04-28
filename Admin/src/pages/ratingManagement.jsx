@@ -1,6 +1,3 @@
-// =====================================
-// File: components/RatingManagement.jsx (frontend React)
-// =====================================
 import React, { useState, useEffect } from 'react';
 import { fetchRatings, deleteRating } from '../apis/ratingAPI.js';
 
@@ -26,9 +23,10 @@ export default function RatingManagement() {
     setError(null);
     try {
       const response = await fetchRatings(centerId);
-      setRatings(response.data);
+      setRatings(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       setError(err.message || 'Failed to load ratings');
+      setRatings([]);
     } finally {
       setLoading(false);
     }

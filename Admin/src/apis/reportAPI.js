@@ -1,10 +1,21 @@
-import axios from "axios";
-const API_URL = import.meta.env.VITE_API_URL;
+import axiosInstance from '../config/axiosConfig';
 
-export function getReportSummary(params = {}) {
-  return axios.get(`${API_URL}/api/report/summary`, { params });
+export async function getReportSummary(params = {}) {
+  try {
+    const response = await axiosInstance.get('/api/report/summary', { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching report summary:', error);
+    throw error;
+  }
 }
 
-export function getMonthlyReport(params = {}) {
-  return axios.get(`${API_URL}/api/report/monthly`, { params });
+export async function getMonthlyReport(params = {}) {
+  try {
+    const response = await axiosInstance.get('/api/report/monthly', { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching monthly report:', error);
+    throw error;
+  }
 }
