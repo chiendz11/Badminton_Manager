@@ -1,6 +1,4 @@
-// newsAPI.js
-import axios from 'axios';
-const API_URL = import.meta.env.VITE_API_URL;
+import axiosInstance from '../config/axiosConfig';
 
 /**
  * Lấy danh sách tất cả bài viết.
@@ -9,7 +7,7 @@ const API_URL = import.meta.env.VITE_API_URL;
  */
 export const getAllNews = async () => {
   try {
-    const response = await axios.get(`${API_URL}/api/news`);
+    const response = await axiosInstance.get('/api/admin/news');
     return response.data;
   } catch (error) {
     throw new Error(`Lỗi khi lấy danh sách bài viết: ${error.message}`);
@@ -24,8 +22,8 @@ export const getAllNews = async () => {
  */
 export const getNewsById = async (id) => {
   try {
-    const response = await axios.get(`${API_URL}/api/news/${id}`);
-    return response;
+    const response = await axiosInstance.get(`/api/admin/news/${id}`);
+    return response.data;
   } catch (error) {
     throw new Error(`Lỗi khi lấy thông tin bài viết: ${error.message}`);
   }
@@ -39,7 +37,7 @@ export const getNewsById = async (id) => {
  */
 export const createNews = async (newsData) => {
   try {
-    const response = await axios.post(`${API_URL}/api/news`, newsData);
+    const response = await axiosInstance.post('/api/admin/news', newsData);
     return response.data;
   } catch (error) {
     throw new Error(`Lỗi khi tạo bài viết: ${error.message}`);
@@ -55,7 +53,7 @@ export const createNews = async (newsData) => {
  */
 export const updateNews = async (id, newsData) => {
   try {
-    const response = await axios.put(`${API_URL}/api/news/${id}`, newsData);
+    const response = await axiosInstance.put(`/api/admin/news/${id}`, newsData);
     return response.data;
   } catch (error) {
     throw new Error(`Lỗi khi cập nhật bài viết: ${error.message}`);
@@ -70,7 +68,7 @@ export const updateNews = async (id, newsData) => {
  */
 export const deleteNews = async (id) => {
   try {
-    const response = await axios.delete(`${API_URL}/api/news/${id}`);
+    const response = await axiosInstance.delete(`/api/admin/news/${id}`);
     return response.data;
   } catch (error) {
     throw new Error(`Lỗi khi xóa bài viết: ${error.message}`);

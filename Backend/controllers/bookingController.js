@@ -4,7 +4,6 @@ import {
   bookedBookingInDB,
   clearAllPendingBookings,
   getFullPendingMapping,
-  getBookingImageService,
   cancelBookingService,
   getPopularTimeSlot,
   getBookingHistory,
@@ -100,19 +99,6 @@ export const checkPendingExistsController = async (req, res) => {
   }
 };
 
-export const getBookingImageController = async (req, res) => {
-  try {
-    const { bookingId } = req.params;
-    const booking = await getBookingImageService(bookingId);
-    if (!booking) {
-      return res.status(404).json({ success: false, message: "Booking not found" });
-    }
-    return res.status(200).json({ success: true, booking });
-  } catch (error) {
-    console.error("Error getting booking:", error);
-    return res.status(500).json({ success: false, message: "Error getting booking" });
-  }
-};
 
 export const cancelBookingController = async (req, res) => {
   try {

@@ -1,6 +1,6 @@
 import axiosInstance from '../config/axiosConfig';
 
-const SELL_HISTORY_ENDPOINT = '/api/sell-histories';
+const SELL_HISTORY_ENDPOINT = '/api/admin/sell-histories';
 
 /** Lấy danh sách hóa đơn */
 export async function getSellHistories() {

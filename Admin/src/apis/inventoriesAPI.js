@@ -6,7 +6,7 @@ import axiosInstance from '../config/axiosConfig'; // Import the axiosInstance
  */
 export async function importStock(data) {
   try {
-    const response = await axiosInstance.post('/api/inventories/import', data);
+    const response = await axiosInstance.post('/api/admin/inventories/import', data);
     return response; // Return the full response
   } catch (error) {
     console.error('Error importing stock:', error);
@@ -20,7 +20,7 @@ export async function importStock(data) {
  */
 export async function getStockHistory(params = {}) {
   try {
-    const response = await axiosInstance.get('/api/inventories/import-history', { params });
+    const response = await axiosInstance.get('/api/admin/inventories/import-history', { params });
     return response; // Return the full response
   } catch (error) {
     console.error('Error fetching stock history:', error);
@@ -34,7 +34,7 @@ export async function getStockHistory(params = {}) {
  */
 export async function sellStock(data) {
   try {
-    const response = await axiosInstance.post('/api/inventories/export', data);
+    const response = await axiosInstance.post('/api/admin/inventories/export', data);
     return response; // Return the full response
   } catch (error) {
     console.error('Error selling stock:', error);
@@ -44,7 +44,7 @@ export async function sellStock(data) {
 
 export async function getInventoryList(params = {}) {
   try {
-    const response = await axiosInstance.get('/api/inventories/list', { params });
+    const response = await axiosInstance.get('/api/admin/inventories/list', { params });
     return response; // Return the full response
   } catch (error) {
     console.error('Error fetching inventory list:', error);

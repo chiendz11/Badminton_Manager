@@ -7,22 +7,23 @@ import {
   deleteNews,
   getNewsController
 } from "../controllers/newsController.js";
+import { protect, restrictToAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getNewsController);
+router.get("/", protect, restrictToAdmin, getNewsController);
 
 // Tạo tin tức mới
-router.post("/", createNews);
+router.post("/", protect, restrictToAdmin, createNews);
 
 // Lấy chi tiết tin tức theo ID
-router.get("/:id", getNewsById);
+router.get("/:id", protect, restrictToAdmin, getNewsById);
 
 // Cập nhật tin tức theo ID
-router.put("/:id", updateNews);
+router.put("/:id", protect, restrictToAdmin, updateNews);
 
 // Xoá tin tức theo ID
-router.delete("/:id", deleteNews);
+router.delete("/:id", protect, restrictToAdmin, deleteNews);
 
 
 

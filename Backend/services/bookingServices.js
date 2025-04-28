@@ -303,17 +303,7 @@ export const getFullPendingMapping = async (centerId, date) => {
   return merged;
 };
 
-export const getBookingImageService = async (bookingId) => {
-  if (!mongoose.Types.ObjectId.isValid(bookingId)) {
-    throw new Error("Invalid bookingId format");
-  }
-  const b = new mongoose.Types.ObjectId(bookingId);
-  const booking = await Booking.findById(b).lean();
-  if (booking && booking.paymentImage) {
-    booking.paymentImage = booking.paymentImage.toString("base64");
-  }
-  return booking;
-};
+
 
 // ============== HÀM HỦY BOOKING ==============
 export const cancelBookingService = async (userId) => {
