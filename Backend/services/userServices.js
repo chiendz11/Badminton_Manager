@@ -13,7 +13,7 @@ import fs from "fs/promises";
 import { fileURLToPath } from "url";
 
 dotenv.config();
-const __filename = fileURLToPath(import.meta.url);
+const __filename = path.resolve("services/userServices.js");
 const __dirname = path.dirname(__filename);
 // Constants for level calculation
 const levels = ["Sắt", "Đồng", "Bạc", "Vàng", "Bạch kim"];

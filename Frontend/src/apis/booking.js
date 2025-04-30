@@ -22,6 +22,18 @@ export const getPendingMapping = async (centerId, date) => {
   }
 };
 
+export const getMyPendingTimeslots = async (centerId, date) => {
+  try {
+    const response = await axiosInstance.get("/api/booking/pending/my-timeslots", {
+      params: { centerId, date }
+    });
+    return response.data.mapping;
+  } catch (error) {
+    console.error("Error fetching my pending timeslots:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const confirmBookingToDB = async ({ userId, centerId, date, totalAmount, name }) => {
   try {
     const response = await axiosInstance.post("/api/booking/pending/pendingBookingToDB", {

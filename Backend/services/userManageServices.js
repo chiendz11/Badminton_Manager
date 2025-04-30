@@ -1,4 +1,3 @@
-// services/adminService.js
 import User from "../models/users.js";
 
 export const getAllUsersService = async () => {
@@ -20,7 +19,10 @@ export const deleteUser = async (id) => {
     if (!user) {
       throw { success: false, message: 'Người dùng không tồn tại' };
     }
-    await User.deleteOne({ _id: id });
+    const deleteResult = await User.deleteOne({ _id: id });
+    if (deleteResult.deletedCount === 0) {
+      throw { success: false, message: 'Không thể xóa người dùng vì không tìm thấy' };
+    }
     return { success: true, message: 'Xóa người dùng thành công' };
   } catch (error) {
     throw { success: false, message: error.message || 'Lỗi khi xóa người dùng', error };

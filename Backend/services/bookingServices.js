@@ -169,12 +169,13 @@ export const clearAllPendingBookings = async (userId, centerId) => {
   return { deletedCount };
 };
 
-// ============== HÀM GET PENDING TỪ CACHE ==============
-export const getPendingMappingMemory = async (centerId, date) => {
+// ============== HÀM GET PENDING TỪ CACHE (DÙNG CHO MY PENDING) ==============
+export const getMyPendingTimeslots = async (centerId, date, userId) => {
   const keys = inMemoryCache.keys();
   const mapping = {};
+
   keys.forEach(key => {
-    if (key.startsWith(`pending:${centerId}:${date}:`)) {
+    if (key.startsWith(`pending:${centerId}:${date}:${userId}:`)) {
       const booking = inMemoryCache.get(key);
       if (booking) {
         booking.courts.forEach(courtBooking => {
@@ -186,7 +187,7 @@ export const getPendingMappingMemory = async (centerId, date) => {
             const idx = slot - TIMES[0];
             if (idx >= 0 && idx < mapping[courtKey].length) {
               mapping[courtKey][idx] = {
-                status: "pending",
+                status: "myPending",
                 userId: booking.userId.toString(),
                 name: booking.name || "Không xác định"
               };
@@ -196,6 +197,8 @@ export const getPendingMappingMemory = async (centerId, date) => {
       }
     }
   });
+
+  console.log(`getMyPendingTimeslots - Mapping cho user ${userId}:`, mapping);
   return mapping;
 };
 
@@ -281,29 +284,9 @@ export const getPendingMappingDB = async (centerId, date) => {
 
 // ============== HÀM GET FULL PENDING MAPPING ==============
 export const getFullPendingMapping = async (centerId, date) => {
-  const mappingCache = await getPendingMappingMemory(centerId, date);
   const mappingDB = await getPendingMappingDB(centerId, date);
-  const merged = {};
-  const allCourts = new Set([...Object.keys(mappingCache), ...Object.keys(mappingDB)]);
-  allCourts.forEach(courtId => {
-    const cacheArray = mappingCache[courtId] || Array(TIMES.length - 1).fill("trống");
-    const dbArray = mappingDB[courtId] || Array(TIMES.length - 1).fill("trống");
-    const mergedArray = [];
-    for (let i = 0; i < cacheArray.length; i++) {
-      if (dbArray[i] !== "trống") {
-        mergedArray[i] = dbArray[i];
-      } else if (cacheArray[i] !== "trống") {
-        mergedArray[i] = cacheArray[i];
-      } else {
-        mergedArray[i] = "trống";
-      }
-    }
-    merged[courtId] = mergedArray;
-  });
-  return merged;
+  return mappingDB;
 };
-
-
 
 // ============== HÀM HỦY BOOKING ==============
 export const cancelBookingService = async (userId) => {

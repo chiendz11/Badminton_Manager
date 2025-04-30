@@ -1,4 +1,3 @@
-// src/routes/bookingPendingRoutes.js
 import express from "express";
 import {
   togglePendingTimeslotController,
@@ -6,6 +5,7 @@ import {
   bookedBookingInDBController,
   clearAllPendingBookingsController,
   getPendingMappingController,
+  getMyPendingTimeslotsController,
   checkPendingExistsController,
   cancelBookingController,
   getPopularTimeSlotController,
@@ -20,17 +20,23 @@ router.post("/pending/toggle", protect, restrictToClient, togglePendingTimeslotC
 
 router.post("/pending/pendingBookingToDB", protect, restrictToClient, pendingBookingToDBController);
 
-router.post("/pending/bookedBookingInDB",protect, restrictToClient, bookedBookingInDBController);
+router.post("/pending/bookedBookingInDB", protect, restrictToClient, bookedBookingInDBController);
 
 // Endpoint để clear toàn bộ pending booking của user tại trung tâm
 router.post("/pending/clear-all", protect, restrictToClient, clearAllPendingBookingsController);
 
-router.get("/pending/mapping",protect, restrictToClient, getPendingMappingController);
+router.get("/pending/mapping", protect, restrictToClient, getPendingMappingController);
 
-router.get("/pending/exists", protect,restrictToClient, checkPendingExistsController);
+router.get("/pending/my-timeslots", protect, restrictToClient, getMyPendingTimeslotsController);
+
+router.get("/pending/exists", protect, restrictToClient, checkPendingExistsController);
+
 router.post("/cancel-booking", protect, restrictToClient, cancelBookingController);
+
 router.get("/popular-times", protect, restrictToClient, getPopularTimeSlotController);
+
 router.get("/get-booking-history", protect, restrictToClient, getBookingHistoryController);
+
 router.post("/delete-booking", protect, restrictToClient, deleteBookingController);
 
 export default router;

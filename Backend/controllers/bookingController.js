@@ -4,6 +4,7 @@ import {
   bookedBookingInDB,
   clearAllPendingBookings,
   getFullPendingMapping,
+  getMyPendingTimeslots,
   cancelBookingService,
   getPopularTimeSlot,
   getBookingHistory,
@@ -13,8 +14,8 @@ import Booking from "../models/bookings.js";
 
 export const togglePendingTimeslotController = async (req, res) => {
   try {
-    const { userId, centerId, date, courtId, timeslot, ttl } = req.body;
-    const booking = await togglePendingTimeslotMemory(userId, centerId, date, courtId, timeslot, ttl || 60);
+    const { name, userId, centerId, date, courtId, timeslot, ttl } = req.body;
+    const booking = await togglePendingTimeslotMemory(name, userId, centerId, date, courtId, timeslot, ttl || 60);
     res.json({ success: true, booking });
   } catch (error) {
     console.error("Error toggling pending timeslot (Controller):", error);
@@ -80,6 +81,18 @@ export const getPendingMappingController = async (req, res) => {
   }
 };
 
+export const getMyPendingTimeslotsController = async (req, res) => {
+  try {
+    const { centerId, date } = req.query;
+    const userId = req.user._id; // Lấy userId từ middleware xác thực
+    const mapping = await getMyPendingTimeslots(centerId, date, userId.toString());
+    res.json({ success: true, mapping });
+  } catch (error) {
+    console.error("Error fetching my pending timeslots (Controller):", error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 export const checkPendingExistsController = async (req, res) => { 
   try {
     const { userId, centerId } = req.query;
@@ -98,7 +111,6 @@ export const checkPendingExistsController = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
 
 export const cancelBookingController = async (req, res) => {
   try {

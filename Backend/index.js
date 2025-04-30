@@ -19,7 +19,7 @@ import { fileURLToPath } from "url"; // Thêm để lấy đường dẫn file h
 import inventoriesRoute from "./routes/inventoryRoutes.js";
 import ratingClientRoute from "./routes/ratingsClientRoute.js";
 import newsClientRoute from "./routes/newsClientRoute.js"; // Import route tin tức
-
+import inventoryClientRoute from "./routes/inventoryClientRoutes.js"; // Import route tin tức
 import ratingRoute from "./routes/ratingRoutes.js";
 import AccountRoute from "./routes/accountRoutes.js";
 import sellHistoryRoutes from './routes/sellhistoryRoutes.js';
@@ -62,6 +62,7 @@ app.use("/api/admin/bill-manage", billManageRoute); // Đường dẫn cho admin
 app.use("/api/admin/center-status", centerStatusRoute);
 app.use("/api/admin", adminRoute);
 app.use("/api/admin/inventories", inventoriesRoute);
+app.use("/api/inventories", inventoryClientRoute); // Đường dẫn cho quản lý lịch sử bán hàng
 app.use("/api/admin/account", AccountRoute);
 app.use('/api/admin/sell-histories', sellHistoryRoutes);
 app.use('/api/admin/report/', Report);

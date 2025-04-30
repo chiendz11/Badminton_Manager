@@ -1,4 +1,4 @@
-import { togglePendingTimeslotMemory, getFullPendingMapping } from "../services/bookingServices.js";
+import { getFullPendingMapping } from "../services/bookingServices.js";
 import inMemoryCache from "./inMemoryCache.js";
 import { watchBookingChanges } from "./dbChangeStream.js";
 
@@ -29,19 +29,6 @@ export const initSocket = (io) => {
         joinedRooms.add(room);
         console.log(`Socket ${socket.id} joined room: ${room}`);
       });
-    });
-
-    socket.on("toggleBooking", async ({ centerId, date, courtId, colIndex, userId, name }) => {
-      const timeslot = TIMES[colIndex];
-      try {
-        await togglePendingTimeslotMemory(name, userId, centerId, date, courtId, timeslot, 60);
-        const mapping = await getFullPendingMapping(centerId, date);
-        const room = `${centerId}:${date}`;
-        io.to(room).emit("updateBookings", { [date]: mapping });
-        console.log(`Emitted updateBookings to room ${room}:`, { [date]: mapping });
-      } catch (error) {
-        console.error("Error in toggleBooking (Cache):", error);
-      }
     });
 
     socket.on("disconnect", () => {

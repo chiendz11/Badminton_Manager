@@ -139,40 +139,69 @@ const CourtStatusPage = () => {
     }
   }, [displayDates, centerId, courts]);
 
+  // WebSocket listener để xử lý updateBookings cho nhiều ngày
   useEffect(() => {
-    socket.on("updateBookings", (data) => {
+    const handleUpdateBookings = async (data) => {
       if (!data || typeof data !== "object") {
         console.error("Dữ liệu WebSocket không hợp lệ:", data);
         return;
       }
 
       console.log("Received WebSocket update:", data);
-      setBookingData((prevData) => {
-        const updatedData = { ...prevData };
-        Object.keys(data).forEach((date) => {
-          if (displayDates.some(d => getLocalDateString(d) === date)) {
-            const mapping = data[date];
-            if (!mapping || typeof mapping !== "object") {
-              console.error(`Dữ liệu không hợp lệ cho ngày ${date}:`, mapping);
-              return;
-            }
 
+      // Danh sách các ngày cần cập nhật
+      const dateStrings = displayDates.map(date => getLocalDateString(date));
+      const newBookingData = { ...bookingData };
+
+      // Cập nhật dữ liệu từ WebSocket cho các ngày có trong data
+      Object.keys(data).forEach((date) => {
+        if (dateStrings.includes(date)) {
+          const mapping = data[date];
+          if (!mapping || typeof mapping !== "object") {
+            console.error(`Dữ liệu không hợp lệ cho ngày ${date}:`, mapping);
+            return;
+          }
+
+          const completeMapping = {};
+          courts.forEach((court) => {
+            completeMapping[court._id] = mapping[court._id] || Array(slotCount).fill("trống");
+          });
+          const finalMapping = applyLockedLogic(completeMapping, date, courts);
+          newBookingData[date] = finalMapping;
+          console.log(`Updated booking data for ${date} from WebSocket:`, finalMapping);
+        }
+      });
+
+      // Kiểm tra xem có ngày nào trong displayDates bị thiếu dữ liệu không
+      const missingDates = dateStrings.filter(date => !data[date]);
+      if (missingDates.length > 0) {
+        console.log(`Missing data for dates: ${missingDates.join(", ")}. Fetching from API...`);
+        for (const date of missingDates) {
+          try {
+            const mapping = await fetchFullMapping(centerId, date);
             const completeMapping = {};
             courts.forEach((court) => {
               completeMapping[court._id] = mapping[court._id] || Array(slotCount).fill("trống");
             });
             const finalMapping = applyLockedLogic(completeMapping, date, courts);
-            updatedData[date] = finalMapping;
+            newBookingData[date] = finalMapping;
+            console.log(`Fetched and updated booking data for ${date} from API:`, finalMapping);
+          } catch (error) {
+            console.error(`Error fetching booking data for ${date} from API:`, error);
+            setError(`Không thể lấy dữ liệu cho ngày ${date}: ${error.message}`);
           }
-        });
-        return updatedData;
-      });
-    });
+        }
+      }
+
+      setBookingData(newBookingData);
+    };
+
+    socket.on("updateBookings", handleUpdateBookings);
 
     return () => {
-      socket.off("updateBookings");
+      socket.off("updateBookings", handleUpdateBookings);
     };
-  }, [displayDates, courts]);
+  }, [displayDates, courts, centerId, bookingData]);
 
   const handleDateChange = (dates) => {
     console.log("Selected dates from DatePicker:", dates);
@@ -240,9 +269,9 @@ const CourtStatusPage = () => {
       return (
         <div
           key={dateStr}
-          className="mb-4 bg-green-100 p-0 rounded-md border border-gray-300" // Giảm từ p-2 xuống p-1
+          className="mb-4 bg-green-100 p-0 rounded-md border border-gray-300"
         >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-0"> 
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-0">
             <div className="w-full sm:w-40 text-x font-medium text-black">
               {formatDisplayDate(date)}
             </div>
