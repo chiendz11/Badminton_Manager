@@ -2,6 +2,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/admin.js';
+console.log('Nhập bcrypt trong adminServices.js tại:', new Date().toISOString(), bcrypt);
 
 export async function authenticateAdmin(username, password) {
   try {

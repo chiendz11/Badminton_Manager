@@ -29,7 +29,7 @@ const AdminBillList = () => {
   const [selectedBill, setSelectedBill] = useState(null);
   const [selectedCenter, setSelectedCenter] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedStatus, setSelectedStatus] = useState(""); // Mặc định là "Tất cả"
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -47,9 +47,9 @@ const AdminBillList = () => {
 
         setBills(billsData);
 
-        const uniqueCenters = [...new Set(billsData.map((bill) => bill.centerName))].map((name) => ({
-          name,
-        }));
+        const uniqueCenters = [...new Set(billsData.map((bill) => bill.centerName))]
+          .filter(name => name) // Loại bỏ giá trị null/undefined
+          .map(name => ({ name }));
         setCenters(uniqueCenters);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách bill:", error.message);
@@ -86,11 +86,11 @@ const AdminBillList = () => {
     if (selectedDate) {
       result = result.filter((bill) => {
         const billDate = new Date(bill.createdAt);
-        return (
-          billDate.getFullYear() === selectedDate.getFullYear() &&
-          billDate.getMonth() === selectedDate.getMonth() &&
-          billDate.getDate() === selectedDate.getDate()
-        );
+        const selected = new Date(selectedDate);
+        // Chuẩn hóa múi giờ
+        billDate.setHours(0, 0, 0, 0);
+        selected.setHours(0, 0, 0, 0);
+        return billDate.getTime() === selected.getTime();
       });
     }
 
@@ -112,7 +112,10 @@ const AdminBillList = () => {
   const confirmActionHandler = async () => {
     if (!selectedBill || !confirmAction) return;
 
-    if (!selectedBill._id) {
+    // Với fixed bookings, _id là mảng, lấy _id đầu tiên
+    const billId = Array.isArray(selectedBill._id) ? selectedBill._id[0] : selectedBill._id;
+
+    if (!billId) {
       toast.error(
         confirmAction === "approve"
           ? "Duyệt đơn hàng thất bại: Không tìm thấy ID của đơn hàng!"
@@ -124,10 +127,13 @@ const AdminBillList = () => {
 
     try {
       const updatedBill = await updateBillStatus(
-        selectedBill._id,
+        billId,
         confirmAction === "approve" ? "paid" : "cancelled"
       );
-      setBills(bills.map((b) => (b._id === updatedBill._id ? updatedBill : b)));
+      setBills(bills.map((b) => {
+        const bId = Array.isArray(b._id) ? b._id[0] : b._id;
+        return bId === updatedBill._id ? updatedBill : b;
+      }));
       if (confirmAction === "approve") {
         setSelectedBill(updatedBill);
         toast.success("Đã duyệt đơn hàng thành công!");
@@ -184,7 +190,7 @@ const AdminBillList = () => {
       case "cancelled":
         return "Đã hủy";
       default:
-        return status;
+        return status || "Không xác định";
     }
   };
 
@@ -200,6 +206,17 @@ const AdminBillList = () => {
         return "bg-red-500 text-white";
       default:
         return "bg-gray-500 text-white";
+    }
+  };
+
+  const getBillTypeText = (type) => {
+    switch (type) {
+      case "daily":
+        return "Đơn ngày";
+      case "fixed":
+        return "Đơn cố định";
+      default:
+        return type || "Không xác định";
     }
   };
 
@@ -313,46 +330,51 @@ const AdminBillList = () => {
           ) : filteredBills.length === 0 ? (
             <div className="text-center py-4 text-gray-500 italic">Không tìm thấy đơn</div>
           ) : (
-            filteredBills.map((bill, index) => (
-              <div
-                key={bill._id}
-                className="border-b p-3 cursor-pointer hover:bg-gray-50 flex items-start space-x-3"
-                onClick={() => handleBillClick(bill)}
-              >
-                <div className="flex-1">
-                  <div className="flex space-x-2 mb-1">
-                    {bill.status && (
-                      <span
-                        className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusBadgeClass(bill.status)}`}
-                      >
-                        {getStatusText(bill.status)}
-                      </span>
-                    )}
-                    {bill.type && (
-                      <span
-                        className={`px-2 py-1 rounded-md text-xs font-semibold text-white bg-blue-500`}
-                      >
-                        {bill.type === "fixed"
-                          ? "Đơn cố định"
-                          : bill.type === "monthly"
-                          ? "Đơn tháng"
-                          : bill.type === "daily"
-                          ? "Đơn ngày"
-                          : bill.type}
-                      </span>
-                    )}
-                  </div>
-                  <div className="font-semibold text-gray-800">{bill.userName || "N/A"}</div>
-                  <div className="text-sm text-gray-600">Mã đơn: {bill.bookingCode}</div>
-                  <div className="text-sm text-gray-600">
-                    Chi tiết: ({new Date(bill.createdAt).toLocaleDateString("vi-VN")}); {bill.courtTime}
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Thời gian: Tháng {new Date(bill.date).toLocaleDateString("vi-VN")}
+            filteredBills.map((bill) => {
+              const billId = Array.isArray(bill._id) ? bill._id[0] : bill._id;
+              return (
+                <div
+                  key={billId}
+                  className="border-b p-3 cursor-pointer hover:bg-gray-50 flex items-start space-x-3"
+                  onClick={() => handleBillClick(bill)}
+                >
+                  <div className="flex-1">
+                    <div className="flex space-x-2 mb-1">
+                      {bill.status && (
+                        <span
+                          className={`px-2 py-1 rounded-md text-xs font-semibold ${getStatusBadgeClass(bill.status)}`}
+                        >
+                          {getStatusText(bill.status)}
+                        </span>
+                      )}
+                      {bill.type && (
+                        <span
+                          className={`px-2 py-1 rounded-md text-xs font-semibold text-white bg-blue-500`}
+                        >
+                          {getBillTypeText(bill.type)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="font-semibold text-gray-800">{bill.userName || "N/A"}</div>
+                    <div className="text-sm text-gray-600">Mã đơn: {bill.bookingCode || "N/A"}</div>
+                    <div className="text-sm text-gray-600">
+                      Chi tiết: ({new Date(bill.createdAt).toLocaleDateString("vi-VN")}); {bill.courtTime || "N/A"}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Thời gian đến chơi:{" "}
+                      {bill.type === "fixed" ? (
+                        <>
+                          Từ {new Date(bill.startDate).toLocaleDateString("vi-VN")} đến{" "}
+                          {new Date(bill.endDate).toLocaleDateString("vi-VN")}
+                        </>
+                      ) : (
+                        new Date(bill.date).toLocaleDateString("vi-VN")
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -379,10 +401,10 @@ const AdminBillList = () => {
                   <strong>Tên:</strong> {selectedBill.userName || "N/A"}
                 </div>
                 <div>
-                  <strong>Mã đơn:</strong> {selectedBill.bookingCode}
+                  <strong>Mã đơn:</strong> {selectedBill.bookingCode || "N/A"}
                 </div>
                 <div>
-                  <strong>Chi tiết sân:</strong> {selectedBill.courtTime}
+                  <strong>Chi tiết sân:</strong> {selectedBill.courtTime || "N/A"}
                 </div>
                 <div>
                   <strong>Trạng thái:</strong>{" "}
@@ -397,13 +419,7 @@ const AdminBillList = () => {
                   <span
                     className={`px-2 py-1 rounded-md text-xs text-white bg-blue-500`}
                   >
-                    {selectedBill.type === "fixed"
-                      ? "Đơn cố định"
-                      : selectedBill.type === "monthly"
-                      ? "Đơn tháng"
-                      : selectedBill.type === "daily"
-                      ? "Đơn ngày"
-                      : selectedBill.type}
+                    {getBillTypeText(selectedBill.type)}
                   </span>
                 </div>
                 <div>
@@ -411,7 +427,14 @@ const AdminBillList = () => {
                 </div>
                 <div>
                   <strong>Thời gian đến chơi:</strong>{" "}
-                  {new Date(selectedBill.date).toLocaleDateString("vi-VN")}
+                  {selectedBill.type === "fixed" ? (
+                    <>
+                      Từ {new Date(selectedBill.startDate).toLocaleDateString("vi-VN")} đến{" "}
+                      {new Date(selectedBill.endDate).toLocaleDateString("vi-VN")}
+                    </>
+                  ) : (
+                    new Date(selectedBill.date).toLocaleDateString("vi-VN")
+                  )}
                 </div>
                 <div>
                   <strong>Thời gian tạo:</strong>{" "}
@@ -421,7 +444,7 @@ const AdminBillList = () => {
                   <strong>Ghi chú:</strong> {selectedBill.note || "Không có ghi chú"}
                 </div>
                 <div>
-                  <strong>Tổng giá tiền:</strong> {selectedBill.totalAmount.toLocaleString("vi-VN")} VNĐ
+                  <strong>Tổng giá tiền:</strong> {(selectedBill.totalAmount || 0).toLocaleString("vi-VN")} VNĐ
                 </div>
                 <div>
                   <strong>Ảnh thanh toán:</strong>{" "}
@@ -553,7 +576,7 @@ const AdminBillList = () => {
         </Dialog>
       </Transition>
     </div>
-  );
+  );  
 };
 
 export default AdminBillList;

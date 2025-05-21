@@ -12,17 +12,38 @@ export const registerUser = async (userData) => {
   }
 };
 
+
+const getCsrfToken = async () => {
+  try {
+    const response = await axiosInstance.get('/api/csrf-token');
+    const csrfToken = response.data.csrfToken;
+    console.log('CSRF Token fetched:', csrfToken); // Log rõ ràng hơn
+    localStorage.setItem('csrfToken', csrfToken);
+    return csrfToken;
+  } catch (error) {
+    console.error("Error fetching CSRF token:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
 // Đăng nhập người dùng
 export const loginUser = async ({ username, password }) => {
   try {
-    const response = await axiosInstance.post("/api/users/login", { username, password });
+    // Gửi request đăng nhập trước
+    const response = await axiosInstance.post('/api/users/login', {
+      username,
+      password
+    });
+
+    console.log("Login successful, fetching new CSRF token...");
+    await getCsrfToken();
+
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error.response?.data || error.message);
     throw error;
   }
 };
-
 // Lấy thông tin người dùng
 export const fetchUserInfo = async () => {
   try {
@@ -49,26 +70,23 @@ export const updateUserInfo = async (payload) => {
   try {
     let config = {};
     if (payload instanceof FormData) {
-      // Nếu payload là FormData (dùng để gửi file avatar_image_path)
       config = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       };
     } else {
-      // Nếu payload là JSON (dùng để gửi các field khác như name, email, v.v.)
       config = {
         headers: {
           "Content-Type": "application/json",
         },
       };
     }
-
     const response = await axiosInstance.put("/api/users/update", payload, config);
     return response.data;
   } catch (error) {
     console.error("Error updating user info:", error.response?.data || error.message);
-    throw error;
+    throw error.response?.data || error; // Ensure error details are passed
   }
 };
 
@@ -113,6 +131,21 @@ export const forgotPasswordByEmailSimpleApi = async (email) => {
   }
 };
 
+// Đặt lại mật khẩu từ liên kết
+export const resetPasswordApi = async (token, userId, newPassword) => {
+  try {
+    const response = await axiosInstance.post(
+      `/api/users/reset-password/${token}/${userId}`,
+      { newPassword }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi đặt lại mật khẩu:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+
 // Gửi đánh giá
 export const submitRating = async (ratingData) => {
   try {
@@ -124,4 +157,3 @@ export const submitRating = async (ratingData) => {
       : error.message;
   }
 };
-

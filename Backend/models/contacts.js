@@ -20,7 +20,7 @@ const contactSchema = new Schema({
     default: Date.now 
   }
 });
-
+contactSchema.index({ userId: 1, timestamp: -1 }); // Để tìm các liên hệ của một người dùng và sắp xếp theo thời gian
 const Contact = model("Contact", contactSchema);
 export default Contact;
 

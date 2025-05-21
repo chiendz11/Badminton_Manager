@@ -17,7 +17,7 @@ const AdminNews = () => {
     url: ''
   });
   const [selectedNewsId, setSelectedNewsId] = useState(null);
-  const [showForm, setShowForm] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   // Hàm load danh sách tin tức
   const loadNews = async () => {
@@ -69,7 +69,7 @@ const AdminNews = () => {
         source: '',
         url: ''
       });
-      setShowForm(false);
+      setShowModal(false);
       loadNews();
     } catch (err) {
       setError('Lỗi lưu dữ liệu');
@@ -89,7 +89,7 @@ const AdminNews = () => {
       source: newsItem.source || '',
       url: newsItem.url || ''
     });
-    setShowForm(true);
+    setShowModal(true);
   };
 
   // Xử lý xóa tin tức với xác nhận từ người dùng
@@ -117,7 +117,7 @@ const AdminNews = () => {
       source: '',
       url: ''
     });
-    setShowForm(true);
+    setShowModal(true);
   };
 
   return (
@@ -181,107 +181,109 @@ const AdminNews = () => {
         </div>
       )}
 
-      {/* Form thêm mới/chỉnh sửa tin tức */}
-      {showForm && (
-        <div className="mt-6 p-6 bg-gray-50 border rounded-md shadow-md transition-all">
-          <h2 className="text-2xl font-semibold mb-4">
-            {formMode === 'create' ? 'Thêm News mới' : 'Chỉnh sửa News'}
-          </h2>
-          <form onSubmit={handleFormSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-1">Tiêu đề</label>
-              <input 
-                type="text" 
-                name="title" 
-                value={currentNews.title} 
-                onChange={handleInputChange} 
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                required 
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-1">Tóm tắt</label>
-              <textarea 
-                name="summary" 
-                value={currentNews.summary} 
-                onChange={handleInputChange} 
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                rows="3" 
-                required
-              ></textarea>
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-1">URL hình ảnh</label>
-              <input 
-                type="url" 
-                name="image" 
-                value={currentNews.image} 
-                onChange={handleInputChange} 
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                required 
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-1">Danh mục</label>
-              <input 
-                type="text" 
-                name="category" 
-                value={currentNews.category} 
-                onChange={handleInputChange} 
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                required 
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-1">Ngày</label>
-              <input 
-                type="date" 
-                name="date" 
-                value={currentNews.date} 
-                onChange={handleInputChange} 
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                required 
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-1">Nguồn tin</label>
-              <input 
-                type="text" 
-                name="source" 
-                value={currentNews.source} 
-                onChange={handleInputChange} 
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                required 
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-1">URL bài viết</label>
-              <input 
-                type="url" 
-                name="url" 
-                value={currentNews.url} 
-                onChange={handleInputChange} 
-                className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
-                required 
-              />
-            </div>
+      {/* Modal thêm mới/chỉnh sửa tin tức */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-md w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <h2 className="text-2xl font-semibold mb-4">
+              {formMode === 'create' ? 'Thêm News mới' : 'Chỉnh sửa News'}
+            </h2>
+            <form onSubmit={handleFormSubmit}>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Tiêu đề</label>
+                <input 
+                  type="text" 
+                  name="title" 
+                  value={currentNews.title} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Tóm tắt</label>
+                <textarea 
+                  name="summary" 
+                  value={currentNews.summary} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  rows="3" 
+                  required
+                ></textarea>
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">URL hình ảnh</label>
+                <input 
+                  type="url" 
+                  name="image" 
+                  value={currentNews.image} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Danh mục</label>
+                <input 
+                  type="text" 
+                  name="category" 
+                  value={currentNews.category} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Ngày</label>
+                <input 
+                  type="date" 
+                  name="date" 
+                  value={currentNews.date} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">Nguồn tin</label>
+                <input 
+                  type="text" 
+                  name="source" 
+                  value={currentNews.source} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 mb-1">URL bài viết</label>
+                <input 
+                  type="url" 
+                  name="url" 
+                  value={currentNews.url} 
+                  onChange={handleInputChange} 
+                  className="w-full border rounded px-3 py-2 focus:outline-none focus:border-green-500" 
+                  required 
+                />
+              </div>
 
-            <div className="flex justify-end gap-4">
-              <button 
-                type="button" 
-                onClick={() => setShowForm(false)} 
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition-colors"
-              >
-                Hủy
-              </button>
-              <button 
-                type="submit" 
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-              >
-                {formMode === 'create' ? 'Thêm mới' : 'Cập nhật'}
-              </button>
-            </div>
-          </form>
+              <div className="flex justify-end gap-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowModal(false)} 
+                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition-colors"
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                >
+                  {formMode === 'create' ? 'Thêm mới' : 'Cập nhật'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

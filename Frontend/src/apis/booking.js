@@ -112,16 +112,26 @@ export const getPopularTimeSlot = async () => {
   }
 };
 
-export const getBookingHistory = async () => {
+export const getBookingHistory = async (userId, page = 1, limit = 30) => {
   try {
-    const response = await axiosInstance.get('/api/booking/get-booking-history'); 
+    const response = await axiosInstance.get("/api/booking/get-booking-history", {
+      params: {
+        userId, // Truyền userId để BE biết lấy lịch sử của user nào
+        page,   // Trang hiện tại
+        limit,  // Số bản ghi mỗi trang
+      },
+    });
+
     console.log("API Response:", response);
-    if (response.data.success) {
-      return response.data;
+
+    // Kiểm tra phản hồi từ server
+    if (response.data && response.data.bookingHistory) {
+      return response.data; // Trả về dữ liệu phân trang: { history, total, page, limit, totalPages }
     }
-    throw new Error(response.data.message || 'API trả về nhưng không có message.');
+
+    throw new Error(response.data?.message || "API trả về nhưng không có dữ liệu lịch sử.");
   } catch (error) {
-    console.error("Error in getBookingHistory:", error?.response || error);
+    console.error("Error in getBookingHistory:", error?.response?.data || error.message);
     throw error;
   }
 };

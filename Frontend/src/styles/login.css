@@ -52,7 +52,7 @@
     text-align: center;
     padding: 40px;
     z-index: 1;
-    transition: .6s ease-in-out 1.2s, visibility 0s 1s;
+    transition: .6s ease-in-out 0.3s, visibility 0s 0.3s;
     font-family: "Poppins", sans-serif;
 }
 
@@ -65,10 +65,10 @@
 .modal-overlay .input-box {
     position: relative;
     margin: 30px 0;
-  }
-  
-  /* Input cơ bản */
-  .modal-overlay .input-box input {
+}
+
+/* Input cơ bản */
+.modal-overlay .input-box input {
     width: 100%;
     padding: 13px 50px 13px 20px;
     background: #eee;
@@ -80,48 +80,49 @@
     font-weight: 500;
     font-family: "Poppins", sans-serif;
     transition: border-color 0.3s ease;
-  }
-  
-  /* Placeholder */
-  .modal-overlay .input-box input::placeholder {
+}
+
+/* Placeholder */
+.modal-overlay .input-box input::placeholder {
     color: #888;
     font-weight: 400;
-  }
-  
-  /* Icon mặc định */
-  .modal-overlay .input-box i {
+}
+
+/* Icon mặc định */
+.modal-overlay .input-box i {
     position: absolute;
     right: 20px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 20px;
-  }
-  
-  /* Trường hợp invalid: viền đỏ */
-  .modal-overlay .input-box.invalid input {
+}
+
+/* Trường hợp invalid: viền đỏ */
+.modal-overlay .input-box.invalid input {
     border-color: red;
-  }
-  
-  /* Trường hợp valid: viền xanh */
-  .modal-overlay .input-box.valid input {
+}
+
+/* Trường hợp valid: viền xanh */
+.modal-overlay .input-box.valid input {
     border-color: green;
-  }
-  
-  /* Field error hiển thị dưới input-box */
-  .field-error {
+}
+
+/* Field error hiển thị dưới input-box */
+.field-error {
     color: red;
     font-size: 14px;
     margin-top: 5px;
     font-family: "Poppins", sans-serif;
-  }
-  
-  /* Tùy chọn: nếu input-box có lỗi, giảm margin-bottom, và thêm khoảng cách cho field-error */
-  .modal-overlay .input-box.invalid {
+}
+
+/* Tùy chọn: nếu input-box có lỗi, giảm margin-bottom, và thêm khoảng cách cho field-error */
+.modal-overlay .input-box.invalid {
     margin-bottom: 0;
-  }
-  .modal-overlay .input-box.invalid + .field-error {
+}
+.modal-overlay .input-box.invalid + .field-error {
     margin-bottom: 20px;
-  }
+}
+
 /* Forgot Link */
 .modal-overlay .forgot-link { margin: -15px 0 15px; }
 .modal-overlay .forgot-link a {
@@ -149,8 +150,10 @@
 .modal-overlay .social-icons {
     display: flex;
     justify-content: center;
+    margin: 0 8px;
 }
 
+/* Social Icons Links */
 .modal-overlay .social-icons a {
     display: inline-flex;
     padding: 10px;
@@ -199,20 +202,20 @@
 
 .modal-overlay .toggle-panel.toggle-left { 
     left: 0;
-    transition-delay: 1.2s; 
+    transition-delay: 0.3s;
 }
 .modal-overlay .container.active .toggle-panel.toggle-left {
     left: -50%;
-    transition-delay: .6s;
+    transition-delay: 0.3s;
 }
 
 .modal-overlay .toggle-panel.toggle-right { 
     right: -50%;
-    transition-delay: .6s;
+    transition-delay: 0.3s;
 }
 .modal-overlay .container.active .toggle-panel.toggle-right {
     right: 0;
-    transition-delay: 1.2s;
+    transition-delay: 0.3s;
 }
 
 .modal-overlay .toggle-panel p { margin-bottom: 20px; }
@@ -302,96 +305,117 @@
 }
 
 .modal-overlay .social-text {
-  position: relative;
-  margin: 20px 0;
-  font-size: 14px;
-  color: #777;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+    position: relative;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .modal-overlay .social-text::before,
 .modal-overlay .social-text::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 30%;
-  height: 1px;
-  background: #e0e0e0;
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background: #e0e0e0;
 }
 
 .modal-overlay .social-text::before {
-  left: 0;
+    left: 0;
 }
 
 .modal-overlay .social-text::after {
-  right: 0;
+    right: 0;
 }
 
 /* Cải thiện Social Icons */
 .modal-overlay .social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 15px;
 }
 
 .modal-overlay .social-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  font-size: 18px;
-  color: #fff;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    font-size: 18px;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .modal-overlay .social-icon:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Facebook icon */
 .modal-overlay .social-icon.facebook {
-  background: linear-gradient(45deg, #3b5998, #4c70ba);
+    background: linear-gradient(45deg, #3b5998, #4c70ba);
 }
 
 .modal-overlay .social-icon.facebook:hover {
-  background: linear-gradient(45deg, #4c70ba, #3b5998);
-  box-shadow: 0 6px 12px rgba(59, 89, 152, 0.3);
+    background: linear-gradient(45deg, #4c70ba, #3b5998);
+    box-shadow: 0 6px 12px rgba(59, 89, 152, 0.3);
 }
 
 /* Instagram icon */
 .modal-overlay .social-icon.instagram {
-  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
 }
 
 .modal-overlay .social-icon.instagram:hover {
-  background: linear-gradient(45deg, #bc1888, #cc2366, #dc2743, #e6683c, #f09433);
-  box-shadow: 0 6px 12px rgba(220, 39, 67, 0.3);
+    background: linear-gradient(45deg, #bc1888, #cc2366, #dc2743, #e6683c, #f09433);
+    box-shadow: 0 6px 12px rgba(220, 39, 67, 0.3);
 }
 
 /* Twitter icon */
 .modal-overlay .social-icon.twitter {
-  background: linear-gradient(45deg, #1da1f2, #0e71c8);
+    background: linear-gradient(45deg, #1da1f2, #0e71c8);
 }
 
 .modal-overlay .social-icon.twitter:hover {
-  background: linear-gradient(45deg, #0e71c8, #1da1f2);
-  box-shadow: 0 6px 12px rgba(29, 161, 242, 0.3);
+    background: linear-gradient(45deg, #0e71c8, #1da1f2);
+    box-shadow: 0 6px 12px rgba(29, 161, 242, 0.3);
+}
+
+/* Google icon */
+.modal-overlay .social-icon.google {
+    background: linear-gradient(45deg, #4285f4, #0e71c8);
+}
+
+.modal-overlay .social-icon.google:hover {
+    background: linear-gradient(45deg, #0e71c8, #4285f4);
+    box-shadow: 0 6px 12px rgba(29, 161, 242, 0.3);
 }
 
 .loading-spinner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 .loading-spinner i {
-  font-size: 2rem;
-  color: #333;
+    font-size: 2rem;
+    color: #333;
+}
+
+/* Ensure form-content is properly displayed when not hidden */
+.modal-overlay .form-content {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay .form-content.hidden {
+    opacity: 0;
+    pointer-events: none;
 }

@@ -1,3 +1,4 @@
+// bookingServices.js
 import inMemoryCache from "../config/inMemoryCache.js";
 import Booking from "../models/bookings.js";
 import mongoose from "mongoose";
@@ -9,15 +10,21 @@ import { updateFavouriteCenter, updateCompletedBookingsForUser, markBookingAsCan
 const TIMES = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24];
 
 export const getPendingKey = (centerId, date, userId, name) => {
+  // Ensure consistency: use userId (string) for cache key
+  // The name part is important for the key if frontend uses it for display/grouping
   return `pending:${centerId}:${date}:${userId}:${name}`;
 };
 
 // ============== HÀM CHUYỂN ĐỔI TIMESLOT TRONG CACHE ==============
 export const togglePendingTimeslotMemory = async (name, userId, centerId, date, courtId, timeslot, ttl = 60) => {
+  // IMPORTANT: For a robust system, this function should also check DB for conflicts
+  // before allowing a toggle, or at least return a flag if a conflict is detected.
+  // For now, we rely on the final check in pendingBookingToDB.
+
   const key = getPendingKey(centerId, date, userId, name);
   let booking = inMemoryCache.get(key) || {
     name: name,
-    userId,
+    userId: userId, // Ensure userId is stored as string here for cache consistency
     centerId,
     date,
     status: "pending",
@@ -53,38 +60,131 @@ export const togglePendingTimeslotMemory = async (name, userId, centerId, date, 
   }
 };
 
-// ============== HÀM LƯU BOOKING PENDING VÀO DB ==============
+// ============== HÀM LƯU BOOKING PENDING VÀO DB (VỚI TRANSACTION) ==============
 export const pendingBookingToDB = async (userId, centerId, date, totalAmount, name) => {
-  const exists = await Booking.findOne({
-    userId: new mongoose.Types.ObjectId(userId),
-    centerId: new mongoose.Types.ObjectId(centerId),
-    status: "pending"
-  });
-  if (exists) {
-    throw new Error("Bạn đã có booking pending trên trung tâm này. Vui lòng chờ hết 5 phút trước khi đặt thêm.");
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const objectUserId = new mongoose.Types.ObjectId(userId);
+    const objectCenterId = new mongoose.Types.ObjectId(centerId);
+    const bookingDate = new Date(date); // Ensure date is a Date object
+
+    // 1. Kiểm tra booking pending hiện có của user này (ngoài cache)
+    const existingPendingBooking = await Booking.findOne({
+      userId: objectUserId,
+      centerId: objectCenterId,
+      date: bookingDate, // Thêm điều kiện date để kiểm tra pending booking cho ngày cụ thể
+      status: "pending"
+    }).session(session);
+
+    if (existingPendingBooking) {
+      await session.abortTransaction();
+      session.endSession();
+      throw new Error("Bạn đã có booking pending trên trung tâm này. Vui lòng chờ hết 5 phút trước khi đặt thêm.");
+    }
+
+    // 2. Lấy booking từ cache
+    const key = getPendingKey(centerId, date, userId, name);
+    const cachedBooking = inMemoryCache.get(key);
+    if (!cachedBooking) {
+      await session.abortTransaction();
+      session.endSession();
+      throw new Error("Không tìm thấy booking pending trong cache");
+    }
+
+    // 3. Kiểm tra tính khả dụng của timeslot trong DB (Atomic Check)
+    // Lấy tất cả các timeslot mà user đang cố gắng đặt
+    const requestedCourtTimeslots = cachedBooking.courts.reduce((acc, court) => {
+        court.timeslots.forEach(slot => {
+            acc.push({ courtId: new mongoose.Types.ObjectId(court.courtId), timeslot: slot });
+        });
+        return acc;
+    }, []);
+
+    // Tìm kiếm các booking khác (pending của người khác, processing, paid)
+    // cho cùng center, ngày và các timeslot/court đang được yêu cầu
+    const conflictingBookings = await Booking.find({
+      centerId: objectCenterId,
+      date: bookingDate,
+      status: { $in: ["pending", "processing", "paid"] }, // Bao gồm cả pending của người khác
+      deleted: false,
+      // $or condition to check for any overlap in courts and timeslots
+      $or: requestedCourtTimeslots.map(reqSlot => ({
+        "courts": {
+          $elemMatch: {
+            courtId: reqSlot.courtId,
+            timeslots: reqSlot.timeslot
+          }
+        }
+      }))
+    }).session(session); // Đảm bảo truy vấn này nằm trong transaction session
+
+    if (conflictingBookings.length > 0) {
+      // Logic chi tiết hơn để kiểm tra trùng lặp từng timeslot
+      for (const conflictBooking of conflictingBookings) {
+        // Bỏ qua booking pending của chính user hiện tại nếu có (đã kiểm tra ở trên)
+        if (conflictBooking.userId.toString() === userId && conflictBooking.status === "pending") {
+            continue;
+        }
+        for (const requestedCourt of cachedBooking.courts) {
+          for (const requestedTimeslot of requestedCourt.timeslots) {
+            for (const existingCourt of conflictBooking.courts) {
+              if (existingCourt.courtId.toString() === requestedCourt.courtId.toString()) { // Ensure comparison is string to string
+                if (existingCourt.timeslots.includes(requestedTimeslot)) {
+                  // Timeslot đã bị đặt bởi booking khác
+                  await session.abortTransaction(); // Hủy bỏ toàn bộ transaction
+                  session.endSession();
+                  throw new Error(`Timeslot ${requestedTimeslot} trên sân ${existingCourt.courtId} đã được đặt bởi người khác.`);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 4. Tạo và lưu booking mới vào DB
+    const dbBooking = new Booking({
+      userId: objectUserId, // Đảm bảo userId là ObjectId
+      centerId: objectCenterId, // Đảm bảo centerId là ObjectId
+      date: bookingDate, // Đảm bảo date là Date object
+      status: "pending",
+      totalAmount: totalAmount,
+      courts: cachedBooking.courts.map(court => ({
+          courtId: new mongoose.Types.ObjectId(court.courtId), // Chuyển courtId thành ObjectId
+          timeslots: court.timeslots
+      })),
+      // bookingCode sẽ được sinh ra bởi pre('save') middleware
+    });
+    await dbBooking.save({ session }); // Lưu trong session của transaction
+
+    // 5. Xóa khỏi cache
+    inMemoryCache.del(key);
+    console.log(`Booking pending lưu vào DB cho ngày ${date} (TTL 5 phút), _id=${dbBooking._id}`);
+    const updatedTotal = await incrementTotalBookings(userId);
+    console.log(`Updated totalBookings for user ${name}: ${updatedTotal}`);
+
+    await session.commitTransaction();
+    session.endSession();
+    return dbBooking;
+
+  } catch (error) {
+    // Đảm bảo session chưa bị hủy trước khi gọi abortTransaction()
+    // Mongoose 6+ có thể tự động abort transaction khi lỗi xảy ra,
+    // nhưng việc gọi lại abortTransaction() sẽ gây ra lỗi "Cannot call abortTransaction twice".
+    // Cách an toàn nhất là bọc nó trong một try-catch riêng.
+    try {
+      if (session.inTransaction()) { // Kiểm tra xem session còn trong transaction không
+        await session.abortTransaction();
+      }
+    } catch (abortError) {
+      console.error("Error during transaction abort:", abortError);
+    } finally {
+      session.endSession();
+    }
+    console.error("Error confirming booking to DB (Service - Transaction aborted):", error);
+    throw error; // Re-throw the original error to be caught by the controller
   }
-
-  const key = getPendingKey(centerId, date, userId, name);
-  const cachedBooking = inMemoryCache.get(key);
-  if (!cachedBooking) {
-    throw new Error("Không tìm thấy booking pending trong cache");
-  }
-
-  const dbBooking = new Booking({
-    userId: cachedBooking.userId,
-    centerId: cachedBooking.centerId,
-    date: cachedBooking.date,
-    status: "pending",
-    totalAmount: totalAmount,
-    courts: cachedBooking.courts,
-  });
-  await dbBooking.save();
-  inMemoryCache.del(key);
-  console.log(`Booking pending lưu vào DB cho ngày ${date} (TTL 5 phút), _id=${dbBooking._id}`);
-  const updatedTotal = await incrementTotalBookings(userId);
-  console.log(`Updated totalBookings for user ${name}: ${updatedTotal}`);
-
-  return dbBooking;
 };
 
 export const bookedBookingInDB = async ({
@@ -95,27 +195,74 @@ export const bookedBookingInDB = async ({
   paymentImage,
   note = ""
 }) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
+    const objectUserId = new mongoose.Types.ObjectId(userId);
+    const objectCenterId = new mongoose.Types.ObjectId(centerId);
+    const bookingDate = new Date(date); // Ensure date is a Date object
+
     const query = {
-      userId: new mongoose.Types.ObjectId(userId),
-      centerId: new mongoose.Types.ObjectId(centerId),
-      date: date,
+      userId: objectUserId,
+      centerId: objectCenterId,
+      date: bookingDate,
       status: "pending"
     };
-    let booking = await Booking.findOne(query);
+    let booking = await Booking.findOne(query).session(session);
+
     if (!booking) {
+      // Check if it's already processing/paid (in case of retry or race condition)
       booking = await Booking.findOne({
-        userId: new mongoose.Types.ObjectId(userId),
-        centerId: new mongoose.Types.ObjectId(centerId),
-        date: date,
-        status: "processing"
-      });
+        userId: objectUserId,
+        centerId: objectCenterId,
+        date: bookingDate,
+        status: { $in: ["processing", "paid"] }
+      }).session(session);
       if (booking) {
-        console.log("Booking đã được thanh toán trước đó.");
-        return booking;
+        await session.commitTransaction(); // Commit transaction if already processed
+        session.endSession();
+        console.log("Booking đã được thanh toán hoặc đang chờ xử lý trước đó.");
+        return { booking }; // Return existing booking if already processed
       }
+      await session.abortTransaction();
+      session.endSession();
       throw new Error("Không tìm thấy booking pending trong DB");
     }
+
+    // Double check timeslot availability for the booking being finalized
+    // This is crucial to prevent double-booking if the pending booking expired or was cancelled
+    // but the user still tries to finalize it, or if another user somehow managed to book the same slot.
+    // We only need to check against 'paid' or 'processing' bookings here, excluding the current pending booking.
+    const requestedCourtTimeslots = booking.courts.reduce((acc, court) => {
+        court.timeslots.forEach(slot => {
+            acc.push({ courtId: new mongoose.Types.ObjectId(court.courtId), timeslot: slot });
+        });
+        return acc;
+    }, []);
+
+    const conflictingBookings = await Booking.find({
+      centerId: objectCenterId,
+      date: bookingDate,
+      status: { $in: ["processing", "paid"] }, // Only check against finalized bookings
+      deleted: false,
+      _id: { $ne: booking._id }, // Exclude the current booking being processed
+      $or: requestedCourtTimeslots.map(reqSlot => ({
+        "courts": {
+          $elemMatch: {
+            courtId: reqSlot.courtId,
+            timeslots: reqSlot.timeslot
+          }
+        }
+      }))
+    }).session(session);
+
+    if (conflictingBookings.length > 0) {
+      // If there's a conflict, abort and inform
+      await session.abortTransaction();
+      session.endSession();
+      throw new Error("Timeslot đã bị đặt bởi người khác trong lúc bạn thanh toán. Vui lòng kiểm tra lại.");
+    }
+
 
     let imageBuffer = null;
     let imageType = "image/jpeg";
@@ -132,11 +279,16 @@ export const bookedBookingInDB = async ({
     booking.paymentMethod = "banking";
     booking.note = note;
     booking.paymentImage = imageBuffer;
-    booking.type = "daily";
+    booking.type = "daily"; // Assuming it's daily booking
     booking.imageType = imageType;
-    await booking.save();
+    // bookingCode should be generated by pre('save') middleware if not already there
+    // For existing pending bookings, bookingCode might be null if not generated before.
+    // The pre('save') middleware should handle generating it when status changes from 'pending' to 'processing'.
+    await booking.save({ session }); // Save in session of transaction
     console.log(`Booking đã chuyển sang trạng thái processing. _id=${booking._id}, bookingCode=${booking.bookingCode}`);
 
+    // Update user stats (these can be outside the core transaction if less critical for atomicity)
+    // For simplicity, keeping them inside for now.
     const completedCount = await updateCompletedBookingsForUser(userId);
     console.log(`User ${userId} có ${completedCount} booking đã thanh toán, hãy chờ để Admin duyệt.`);
 
@@ -146,11 +298,21 @@ export const bookedBookingInDB = async ({
     await updateFavouriteCenter(userId, centerId);
     console.log(`Danh sách yêu thích của user ${userId} đã được cập nhật`);
 
-    return {
-      booking
-    };
+    await session.commitTransaction();
+    session.endSession();
+    return { booking };
   } catch (error) {
-    console.error("Lỗi khi xác nhận và thanh toán booking:", error);
+    // Đảm bảo session chưa bị hủy trước khi gọi abortTransaction()
+    try {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+    } catch (abortError) {
+      console.error("Error during transaction abort:", abortError);
+    } finally {
+      session.endSession();
+    }
+    console.error("Lỗi khi xác nhận và thanh toán booking (Service - Transaction aborted):", error);
     throw error;
   }
 };
@@ -160,6 +322,7 @@ export const clearAllPendingBookings = async (userId, centerId) => {
   const keys = inMemoryCache.keys();
   let deletedCount = 0;
   keys.forEach((key) => {
+    // Ensure key format matches getPendingKey
     if (key.startsWith(`pending:${centerId}:`) && key.includes(`:${userId}:`)) {
       inMemoryCache.del(key);
       deletedCount++;
@@ -175,6 +338,7 @@ export const getMyPendingTimeslots = async (centerId, date, userId) => {
   const mapping = {};
 
   keys.forEach(key => {
+    // Ensure key format matches getPendingKey
     if (key.startsWith(`pending:${centerId}:${date}:${userId}:`)) {
       const booking = inMemoryCache.get(key);
       if (booking) {
@@ -188,7 +352,7 @@ export const getMyPendingTimeslots = async (centerId, date, userId) => {
             if (idx >= 0 && idx < mapping[courtKey].length) {
               mapping[courtKey][idx] = {
                 status: "myPending",
-                userId: booking.userId.toString(),
+                userId: booking.userId.toString(), // Ensure userId is string for consistency
                 name: booking.name || "Không xác định"
               };
             }
@@ -356,7 +520,7 @@ export const getPopularTimeSlot = async (userId) => {
     console.log(`Processing booking ${bookingIndex + 1}/${bookings.length}`);
     if (booking.courts && Array.isArray(booking.courts)) {
       booking.courts.forEach((court, courtIndex) => {
-        console.log(`  Processing court ${courtIndex + 1}/${booking.courts.length}`);
+        console.log(`   Processing court ${courtIndex + 1}/${booking.courts.length}`);
         if (Array.isArray(court.timeslots)) {
           court.timeslots.forEach((slot) => {
             totalSlots++;
@@ -365,7 +529,7 @@ export const getPopularTimeSlot = async (userId) => {
             if (category in categoryCounts) {
               categoryCounts[category] += 1;
             }
-            console.log(`    Slot ${slot}: totalSlots=${totalSlots}, timeslotCounts[${slot}]=${timeslotCounts[slot]}, category=${category}`);
+            console.log(`     Slot ${slot}: totalSlots=${totalSlots}, timeslotCounts[${slot}]=${timeslotCounts[slot]}, category=${category}`);
           });
         }
       });
@@ -417,17 +581,29 @@ export const getPopularTimeSlot = async (userId) => {
   };
 };
 
-export const getBookingHistory = async (userId) => {
+export const getBookingHistory = async (userId, page = 1, limit = 10) => {
   try {
-    const bookings = await Booking.find({ userId, deleted: { $ne: true } });
+    // Chuyển page và limit thành số nguyên
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Lấy tổng số bản ghi để tính tổng số trang
+    const totalBookings = await Booking.countDocuments({ userId, deleted: { $ne: true } });
+
+    // Lấy dữ liệu với phân trang
+    const bookings = await Booking.find({ userId, deleted: { $ne: true } })
+      .skip(skip)
+      .limit(limitNum)
+      .sort({ date: -1 }); // Sắp xếp theo ngày mới nhất
 
     // Tách daily và fixed bookings
-    const dailyBookings = bookings.filter(booking => booking.type === "daily");
-    const fixedBookings = bookings.filter(booking => booking.type === "fixed");
+    const dailyBookings = bookings.filter((booking) => booking.type === "daily");
+    const fixedBookings = bookings.filter((booking) => booking.type === "fixed");
 
     let history = [];
 
-    // Xử lý daily bookings (giữ nguyên logic)
+    // Xử lý daily bookings
     for (const booking of dailyBookings) {
       const center = await Center.findById(booking.centerId).select("name");
 
@@ -440,7 +616,7 @@ export const getBookingHistory = async (userId) => {
       const courtTime = courtTimeArray.join("; ");
 
       history.push({
-        bookingId: booking._id, // Thêm bookingId là _id
+        bookingId: booking._id,
         orderId: booking.status === "pending" ? booking._id : booking.bookingCode,
         status: booking.status,
         orderType: booking.type,
@@ -448,7 +624,7 @@ export const getBookingHistory = async (userId) => {
         court_time: courtTime,
         date: booking.date,
         price: booking.totalAmount,
-        paymentMethod: booking.status === "paid" ? booking.paymentMethod : ""
+        paymentMethod: booking.status === "paid" ? booking.paymentMethod : "",
       });
     }
 
@@ -456,11 +632,12 @@ export const getBookingHistory = async (userId) => {
     const fixedGroups = {};
 
     for (const booking of fixedBookings) {
-      // Tạo key để gộp dựa trên centerId và courts
-      const courtsKey = JSON.stringify(booking.courts.map(court => ({
-        courtId: court.courtId.toString(),
-        timeslots: court.timeslots.sort()
-      })));
+      const courtsKey = JSON.stringify(
+        booking.courts.map((court) => ({
+          courtId: court.courtId.toString(),
+          timeslots: court.timeslots.sort(),
+        }))
+      );
       const groupKey = `${booking.centerId}-${courtsKey}`;
 
       if (!fixedGroups[groupKey]) {
@@ -470,24 +647,19 @@ export const getBookingHistory = async (userId) => {
           centerId: booking.centerId,
           courts: booking.courts,
           status: booking.status,
-          totalAmount: 0, // Khởi tạo totalAmount là 0
+          totalAmount: 0,
           paymentMethod: booking.paymentMethod,
-          bookingCode: booking.bookingCode.split("-").slice(0, 2).join("-") // Lấy phần cố định của bookingCode
+          bookingCode: booking.bookingCode.split("-").slice(0, 2).join("-"),
         };
       }
 
-      // Thêm bookingId và date vào group
       fixedGroups[groupKey].bookingIds.push(booking._id);
       fixedGroups[groupKey].dates.push(new Date(booking.date));
-
-      // Cộng dồn totalAmount của booking lẻ vào tổng của group
       fixedGroups[groupKey].totalAmount += booking.totalAmount || 0;
     }
 
-    // Chuyển các fixed groups thành history entries
     for (const groupKey in fixedGroups) {
       const group = fixedGroups[groupKey];
-      
       const center = await Center.findById(group.centerId).select("name");
 
       const courtTimeArray = await Promise.all(
@@ -498,30 +670,35 @@ export const getBookingHistory = async (userId) => {
       );
       const courtTime = courtTimeArray.join("; ");
 
-      // Tìm startDate và endDate
       const dates = group.dates.sort((a, b) => a - b);
       const startDate = dates[0];
       const endDate = dates[dates.length - 1];
 
       history.push({
-        bookingId: group.bookingIds, // Mảng các bookingId
+        bookingId: group.bookingIds,
         orderId: group.status === "pending" ? group.bookingIds[0] : group.bookingCode,
         status: group.status,
         orderType: "fixed",
         center: center ? center.name : "Không xác định",
         court_time: courtTime,
-        date: startDate, // Sử dụng startDate để sắp xếp
+        date: startDate,
         startDate: startDate,
         endDate: endDate,
-        price: group.totalAmount, // Tổng giá của tất cả booking lẻ trong nhóm
-        paymentMethod: group.status === "paid" ? group.paymentMethod : ""
+        price: group.totalAmount,
+        paymentMethod: group.status === "paid" ? group.paymentMethod : "",
       });
     }
 
-    // Sắp xếp history theo ngày (dùng date cho daily và startDate cho fixed)
+    // Sắp xếp history theo ngày
     history.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    return history;
+    return {
+      history,
+      total: totalBookings,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(totalBookings / limitNum),
+    };
   } catch (error) {
     console.error("Lỗi khi lấy booking history:", error);
     throw new Error("Không thể lấy lịch sử đặt sân");

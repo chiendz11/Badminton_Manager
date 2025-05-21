@@ -87,11 +87,14 @@ function UserManage() {
   }
 
   if (sortName && sortName !== "none") {
-    if (sortName === "asc") {
-      filteredCustomers.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortName === "desc") {
-      filteredCustomers.sort((a, b) => b.name.localeCompare(b.name));
-    }
+    filteredCustomers = [...filteredCustomers].sort((a, b) => {
+      if (sortName === "asc") {
+        return a.name.localeCompare(b.name);
+      } else if (sortName === "desc") {
+        return b.name.localeCompare(a.name); // Sửa lại để sắp xếp giảm dần
+      }
+      return 0;
+    });
   }
 
   const handleRankFilter = (e) => {

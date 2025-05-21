@@ -235,11 +235,13 @@
 .section-title i {
   color: var(--primary-color);
   font-size: 24px;
+  
 }
 
 .section-title h2 {
   font-size: 20px;
   font-weight: 600;
+  color: var(--text-color);
 }
 
 .upcoming-grid {
@@ -1335,11 +1337,13 @@ overflow-x: auto;
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   margin-bottom: 20px;
-  
+  max-width: 100%; /* Đảm bảo container không bị kéo dãn quá mức */
+  overflow-x: auto; /* Thêm cuộn ngang nếu bảng quá rộng */
 }
 
 .history-table {
   border-collapse: collapse;
+  table-layout: fixed; /* Sử dụng layout cố định để kiểm soát độ rộng cột */
   
 }
 
@@ -1359,6 +1363,7 @@ overflow-x: auto;
   border-bottom: 1px solid var(--border-color);
   font-size: 14px;
   white-space: nowrap;
+  
 }
 
 .history-table tbody tr {

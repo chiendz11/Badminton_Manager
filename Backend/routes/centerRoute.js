@@ -1,16 +1,17 @@
 import express from "express";
 import { getCourtStatusController, getTimeslotPriceController, getCourtsByCenterController, getCenterPricingByIdController, getCenterInfoByIdController, getAllCentersController} from "../controllers/centerController.js";
-import { protect, restrictToClient } from "../middleware/authMiddleware.js";
+import csrfConfig from '../middleware/csrfConfig.js';
 
 const router = express.Router();
+const csrfProtection = csrfConfig;
 
 // Định tuyến API lấy danh sách sân
-router.get("/status", protect, restrictToClient, getCourtStatusController);
-router.post("/slotPrice", protect, restrictToClient, getTimeslotPriceController);
-router.get("/getCourts", protect, restrictToClient, getCourtsByCenterController);
-router.get("/pricing", protect, restrictToClient, getCenterPricingByIdController);
-router.get("/getAllCenters", protect, restrictToClient, getAllCentersController);
-router.get("/infoing", protect, restrictToClient, getCenterInfoByIdController);
+router.get("/status", getCourtStatusController);
+router.post("/slotPrice", csrfProtection, getTimeslotPriceController);
+router.get("/getCourts", getCourtsByCenterController);
+router.get("/pricing", getCenterPricingByIdController);
+router.get("/getAllCenters", getAllCentersController);
+router.get("/infoing", getCenterInfoByIdController);
 
 
 

@@ -90,6 +90,11 @@ const CenterSchema = new Schema(
   },
   { timestamps: true }
 );
+CenterSchema.index({ name: 1 }); // Để tìm kiếm/lọc theo tên trung tâm
+CenterSchema.index({ avgRating: -1 }); // Để sắp xếp theo đánh giá trung bình (giảm dần)
+CenterSchema.index({ bookingCount: -1 }); // Để sắp xếp theo số lượt đặt (giảm dần)
+// Nếu bạn sử dụng truy vấn địa lý phức tạp hơn, hãy dùng '2dsphere'
+CenterSchema.index({ "location.latitude": 1, "location.longitude": 1 }); // Cho các truy vấn dựa trên tọa độ
 
 const Center = model("Center", CenterSchema);
 export default Center;

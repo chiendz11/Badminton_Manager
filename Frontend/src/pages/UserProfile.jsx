@@ -60,6 +60,7 @@ const UserProfile = () => {
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
   const [filterSearch, setFilterSearch] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false); // Loading state for updates
   const navigate = useNavigate();
 
   const centerName = localStorage.getItem("centerName") || "Tên Trung Tâm Mặc Định";
@@ -67,11 +68,11 @@ const UserProfile = () => {
   const totalAmountLS = Number(localStorage.getItem("totalAmount")) || 0;
 
   // Định nghĩa base URL của backend
-  const BACKEND_URL = "http://localhost:3000"; // Backend chạy trên port 3000
+  const BACKEND_URL = "http://localhost:3000";
 
   // Xử lý đường dẫn ảnh: thêm domain của backend nếu cần
   const getAvatarImagePath = (path) => {
-    if (!path) return "/default-avatar.png"; // Sử dụng hình ảnh mặc định từ public
+    if (!path) return "/default-avatar.png";
     if (path.startsWith("http")) return path;
     return `${BACKEND_URL}${path}`;
   };
@@ -148,12 +149,11 @@ const UserProfile = () => {
 
   // Lắng nghe sự kiện "Quay lại" trên trình duyệt
   useEffect(() => {
-    // Thêm một entry vào lịch sử để đảm bảo popstate hoạt động
     window.history.pushState(null, null, window.location.href);
 
     const handlePopState = (event) => {
-      event.preventDefault(); // Ngăn chặn hành vi điều hướng mặc định
-      navigate('/', { replace: true }); // Điều hướng về "/" và thay thế entry hiện tại
+      event.preventDefault();
+      navigate('/', { replace: true });
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -184,28 +184,35 @@ const UserProfile = () => {
   };
 
   const handleUpdateField = async (field, newValue) => {
+    // Validate non-empty input
+    if (!newValue || (typeof newValue === 'string' && newValue.trim() === '')) {
+      alert(`Vui lòng nhập ${field === 'avatar_image_path' ? 'hình ảnh' : field} trước khi cập nhật!`);
+      return;
+    }
+
+    setIsUpdating(true); // Start loading
     try {
       let payload;
       if (field === "avatar_image_path" && newValue instanceof File) {
-        // Nếu cập nhật avatar_image_path, gửi file qua FormData
         payload = new FormData();
         payload.append(field, newValue);
       } else {
-        // Các field khác (name, phone_number, email) gửi dạng JSON
         payload = { [field]: newValue };
       }
 
       const data = await updateUserInfo(payload);
       if (data.success) {
-        // Cập nhật user trong AuthContext
         setUser((prevUser) => ({ ...prevUser, [field]: data.user[field] }));
         alert("Cập nhật thông tin thành công!");
       } else {
         alert("Cập nhật thất bại: " + data.message);
       }
     } catch (error) {
-      alert("Lỗi cập nhật: " + error.message);
-      throw error; // Ném lỗi để ProfileInfoTab xử lý
+      const errorMessage = error.message || "Lỗi không xác định khi cập nhật!";
+      alert("Lỗi cập nhật: " + errorMessage);
+      throw error; // Throw error for ProfileInfoTab to handle
+    } finally {
+      setIsUpdating(false); // Stop loading
     }
   };
 
@@ -240,7 +247,7 @@ const UserProfile = () => {
       }
     } catch (error) {
       console.error("Error deleting booking:", error);
-  alert("Lỗi khi xóa booking: " + error.message);
+      alert("Lỗi khi xóa booking: " + error.message);
     }
   };
 
@@ -334,7 +341,13 @@ const UserProfile = () => {
   return (
     <>
       <Header />
-      <div className="profile-container">
+      <div className="relative profile-container">
+        {isUpdating && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="w-12 h-12 border-4 border-t-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-white text-lg">Đang cập nhật thông tin...</p>
+          </div>
+        )}
         <div className="profile-header">
           <div className="header-content">
             <div className="avatar-container">
@@ -345,7 +358,7 @@ const UserProfile = () => {
                 onError={(e) => {
                   console.log("Lỗi tải ảnh trong UserProfile:", user?.avatar_image_path);
                   e.target.onerror = null;
-                  e.target.src = "/default-avatar.png"; // Sử dụng hình ảnh mặc định từ public
+                  e.target.src = "/default-avatar.png";
                 }}
               />
               <div className="level-badge">{user?.level}</div>

@@ -26,6 +26,7 @@ const sellHistorySchema = new mongoose.Schema({
 }, { 
   timestamps: true // Tự động thêm createdAt và updatedAt
 });
-
+sellHistorySchema.index({ centerId: 1, createdAt: -1 }); // Để tìm lịch sử bán hàng của một trung tâm và sắp xếp theo thời gian
+sellHistorySchema.index({ "items.inventoryId": 1 }); // Để truy vấn các hóa đơn có chứa một sản phẩm cụ thể (multi-key index)
 const SellHistory = mongoose.model("sellhistories", sellHistorySchema);
 export default SellHistory;

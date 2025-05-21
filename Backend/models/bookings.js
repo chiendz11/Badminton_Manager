@@ -1,3 +1,4 @@
+// booking.model.js
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
@@ -14,15 +15,14 @@ const bookingSchema = new Schema({
   // Status: pending, processing, paid, cancelled
   status: {
     type: String,
-    enum: ["pending", "processing", "paid", "cancelled"], // Thêm "processing"
+    enum: ["pending", "processing", "paid", "cancelled"],
     default: "pending",
     index: true,
   },
   expiresAt: { type: Date, default: null },
   totalAmount: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now, index: true },
-  paymentMethod: { type: String, default: "" },
-  bookingCode: { type: String, unique: true, sparse: true, default: null, index: true },
+  bookingCode: { type: String, unique: true, sparse: true, index: true },
   deleted: {
     type: Boolean,
     default: false,
@@ -37,43 +37,52 @@ const bookingSchema = new Schema({
 
 // Middleware pre("save")
 bookingSchema.pre("save", async function (next) {
-  // Nếu đơn đang pending, thiết lập expiresAt (5 phút kể từ createdAt)
-  if (this.status === "pending") {
-    if (this.date) {
-      let maxSlot = -Infinity;
-      this.courts.forEach(court => {
-        court.timeslots.forEach(slot => {
-          if (slot > maxSlot) maxSlot = slot;
-        });
-      });
-      if (maxSlot !== -Infinity) {
-        this.expiresAt = new Date(this.createdAt.getTime() + 5 * 60 * 1000);
+  // Generate bookingCode only if it's a new document AND bookingCode is not set
+  if (this.isNew && !this.bookingCode) {
+    let isUnique = false;
+    while (!isUnique) {
+      const now = new Date();
+      const formattedDate = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 12);
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+      const newBookingCode = `#Bill${formattedDate}${randomSuffix}`;
+      const existingBooking = await mongoose.models.Booking.findOne({ bookingCode: newBookingCode });
+      if (!existingBooking) {
+        this.bookingCode = newBookingCode;
+        isUnique = true;
       }
     }
-  } else {
-    // Với các đơn không pending (processing, paid, cancelled), không thiết lập expiresAt
+  }
+
+  if (this.status === "pending" && this.isNew) {
+    if (!this.createdAt) {
+      this.createdAt = new Date();
+    }
+    this.expiresAt = new Date(this.createdAt.getTime() + 5 * 60 * 1000);
+  } else if (this.status !== "pending") {
     this.expiresAt = null;
-    // Nếu đơn không pending và chưa có bookingCode, tự tạo bookingCode
-    if (!this.bookingCode) {
-      let isUnique = false;
-      while (!isUnique) {
-        const now = new Date();
-        const formattedDate = now.toISOString().replace(/[-:T.Z]/g, "").slice(0, 12);
-        const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-        const newBookingCode = `#Bill${formattedDate}${randomSuffix}`;
-        const existingBooking = await mongoose.models.Booking.findOne({ bookingCode: newBookingCode });
-        if (!existingBooking) {
-          this.bookingCode = newBookingCode;
-          isUnique = true;
-        }
-      }
-    }
   }
   next();
 });
 
-// TTL index chỉ áp dụng cho các đơn pending (expiresAt khác null)
+// TTL index only applies to documents where expiresAt is not null
 bookingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// --- CÁC CHỈ MỤC ĐƯỢC GIỮ LẠI (KHÔNG TRÙNG LẶP) ---
+// Chỉ mục cho truy vấn existingPendingBooking:
+bookingSchema.index({ userId: 1, centerId: 1, date: 1, status: 1 });
+
+// Chỉ mục cho truy vấn conflictingBookings (và getCourtStatus):
+bookingSchema.index({ centerId: 1, date: 1, status: 1, deleted: 1 });
+
+// Chỉ mục cho truy vấn lịch sử booking (getBookingHistory)
+bookingSchema.index({ userId: 1, deleted: 1, date: -1 });
+
+// Chỉ mục cho truy vấn getPopularTimeSlot
+bookingSchema.index({ status: 1, userId: 1 });
+
+// NEW: Chỉ mục để tối ưu hóa truy vấn trên mảng courts và timeslots (cho $elemMatch)
+bookingSchema.index({ "courts.courtId": 1, "courts.timeslots": 1 });
+
 
 const Booking = mongoose.models.Booking || model("Booking", bookingSchema);
 export default Booking;

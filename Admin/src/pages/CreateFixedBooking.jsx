@@ -600,10 +600,6 @@ const CreateFixedBooking = () => {
                                         <span className="font-medium">Khung giờ:</span>{" "}
                                         {booking.timeslots.join(", ")}
                                     </p>
-                                    <p className="text-sm text-gray-700">
-                                        <span className="font-medium">Giá tiền:</span>{" "}
-                                        {booking.totalAmount ? booking.totalAmount.toLocaleString('vi-VN') : '0'} VNĐ
-                                    </p>
                                 </div>
                             ))}
                             <div className="p-3 bg-emerald-50 rounded-lg">

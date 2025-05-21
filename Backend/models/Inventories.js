@@ -22,6 +22,8 @@ const inventorySchema = new mongoose.Schema({
   price: { type: Number, required: true }, // Giá bán lẻ (mỗi đơn vị bán)
   bulkPrice: { type: Number, required: true }, // Giá bán theo thùng
 });
-
+inventorySchema.index({ centerId: 1, category: 1, name: 1 }); // Để tìm kiếm/lọc theo trung tâm, danh mục và tên
+inventorySchema.index({ price: 1 }); // Để tìm kiếm/lọc theo khoảng giá
+inventorySchema.index({ name: 1 }); // Để sắp xếp theo tên
 const Inventory = mongoose.model("Inventory", inventorySchema);
 export default Inventory;

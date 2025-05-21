@@ -15,6 +15,8 @@ const stockHistorySchema = new mongoose.Schema({
 
   createdAt: { type: Date, default: Date.now }
 });
-
+stockHistorySchema.index({ inventoryId: 1, centerId: 1, createdAt: -1 }); // Để tìm lịch sử nhập kho của một sản phẩm tại một trung tâm và sắp xếp theo thời gian
+stockHistorySchema.index({ centerId: 1, createdAt: -1 }); // Để tìm lịch sử nhập kho theo trung tâm và sắp xếp theo thời gian
+stockHistorySchema.index({ supplier: 1, createdAt: -1 }); // Để tìm lịch sử nhập kho theo nhà cung cấp và sắp xếp theo thời gian
 const StockHistory = mongoose.model("stockhistories", stockHistorySchema);
 export default StockHistory;

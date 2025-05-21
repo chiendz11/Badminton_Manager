@@ -23,7 +23,8 @@ for (let i = 1; i <= 12; i++) {
 
 const ChartDataSchema = new Schema(
   {
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    // Thêm unique: true để đảm bảo mỗi user chỉ có một tài liệu ChartData duy nhất
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
     months: { type: [MonthSchema], default: defaultMonths }
   },
   { timestamps: true }

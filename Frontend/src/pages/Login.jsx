@@ -1,3 +1,5 @@
+// D:\newBTL\Badminton-manager-project\Frontend\src\components\LoginModal.jsx
+
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
@@ -14,7 +16,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   // State cho form đăng nhập
   const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
+  const [loginError, setLoginError] = useState(''); // Sẽ chứa thông báo lỗi chi tiết
   const [isLoginLoading, setIsLoginLoading] = useState(false);
 
   // State cho form đăng ký
@@ -28,6 +30,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   });
   const [signupError, setSignupError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState('');
+  const [isFormReady, setIsFormReady] = useState(false);
 
   // State cho form quên mật khẩu
   const [forgotEmail, setForgotEmail] = useState('');
@@ -60,6 +63,7 @@ const LoginModal = ({ isOpen, onClose }) => {
     setSignupError('');
     setSignupSuccess('');
     setFieldErrors({});
+    setIsFormReady(false); // Reset form readiness
   };
 
   const handleLoginClick = () => {
@@ -75,7 +79,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   // Xử lý đăng nhập
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    setLoginError('');
+    setLoginError(''); // Clear error before new attempt
     setIsLoginLoading(true);
     try {
       const result = await loginUser({ username: loginUsername, password: loginPassword });
@@ -85,7 +89,9 @@ const LoginModal = ({ isOpen, onClose }) => {
       onClose();
     } catch (error) {
       console.error("Lỗi đăng nhập:", error);
-      setLoginError(error.response?.data?.message || error.message);
+      // Lấy thông báo lỗi từ backend
+      const errorMessage = error.response?.data?.message || error.message || "Đã có lỗi xảy ra.";
+      setLoginError(errorMessage);
     } finally {
       setIsLoginLoading(false);
     }
@@ -162,12 +168,22 @@ const LoginModal = ({ isOpen, onClose }) => {
     };
   }, [isOpen, onClose]);
 
+  // Ensure signup form is ready after rendering
+  useEffect(() => {
+    if (activeMode === "register" || activeMode === "registerSuccess") {
+      const timer = setTimeout(() => {
+        setIsFormReady(true);
+      }, 500); // Small delay to ensure form is fully rendered
+      return () => clearTimeout(timer);
+    }
+  }, [activeMode]);
+
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
       <div ref={modalRef} className={`container ${activeMode !== "login" ? 'active' : ''}`}>
-        <button className="close-modal-btn" onClick={onClose}>
+        <button id="close-modal-btn" className="close-modal-btn" onClick={onClose}>
           <i className="fas fa-times"></i>
         </button>
 
@@ -178,6 +194,7 @@ const LoginModal = ({ isOpen, onClose }) => {
               <h1>Đăng nhập</h1>
               <div className="input-box">
                 <input
+                  id="login-username"
                   type="text"
                   placeholder="Username"
                   value={loginUsername}
@@ -187,6 +204,7 @@ const LoginModal = ({ isOpen, onClose }) => {
               </div>
               <div className="input-box">
                 <input
+                  id="login-password"
                   type="password"
                   placeholder="Password"
                   value={loginPassword}
@@ -194,19 +212,20 @@ const LoginModal = ({ isOpen, onClose }) => {
                 />
                 <i className="bx bxs-lock-alt"></i>
               </div>
+              {/* HIỂN THỊ THÔNG BÁO LỖI ĐĂNG NHẬP */}
               {loginError && <p className="error-message">{loginError}</p>}
               <div className="forgot-link">
-                <a href="#" onClick={handleForgotClick}>Quên mật khẩu?</a>
+                <a id="forgot-password-link" href="#" onClick={handleForgotClick}>Quên mật khẩu?</a>
               </div>
-              <button type="submit" className="btn" disabled={isLoginLoading}>
+              <button id="login-submit" type="submit" className="btn" disabled={isLoginLoading}>
                 {isLoginLoading ? <i className="fas fa-spinner fa-spin"></i> : 'Đăng nhập'}
               </button>
               <p className="social-text">Đăng nhập khác</p>
               <div className="social-icons">
-                <a href="/auth/facebook" className="social-icon facebook">
+                <a id="facebook-login-btn" href="/auth/facebook" className="social-icon facebook">
                   <i className="fab fa-facebook-f"></i>
                 </a>
-                <a href="/auth/google" className="social-icon google">
+                <a id="google-login-btn" href="/auth/google" className="social-icon google">
                   <i className="fab fa-google"></i>
                 </a>
               </div>
@@ -222,14 +241,16 @@ const LoginModal = ({ isOpen, onClose }) => {
               {forgotMessage && <p className="info-message">{forgotMessage}</p>}
               <div className="input-box">
                 <input
+                  id="forgot-email"
                   type="email"
-                  placeholder="Nhập Email của bạn"
+                  placeholder="Nhập Email bạn dùng cho đăng nhập"
+                  className="placeholder:text-sm"
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
                 />
                 <i className="bx bxs-envelope"></i>
               </div>
-              <button type="submit" className="btn" disabled={isForgotLoading}>
+              <button id="forgot-submit" type="submit" className="btn" disabled={isForgotLoading}>
                 {isForgotLoading ? <i className="fas fa-spinner fa-spin"></i> : 'Gửi yêu cầu'}
               </button>
             </form>
@@ -238,7 +259,7 @@ const LoginModal = ({ isOpen, onClose }) => {
 
         {/* FORM ĐĂNG KÝ */}
         {(activeMode === "register" || activeMode === "registerSuccess") && (
-          <div className="form-box register">
+          <div className="form-box register" style={{ overflow: 'auto' }}>
             <form onSubmit={handleSignupSubmit} noValidate>
               <h1>Đăng ký</h1>
               {signupError && <p className="error-message">{signupError}</p>}
@@ -248,9 +269,10 @@ const LoginModal = ({ isOpen, onClose }) => {
                   <i className="fas fa-spinner fa-spin"></i>
                 </div>
               )}
-              <div className={`form-content ${isLoading ? 'hidden' : ''}`}>
+              <div className={`form-content ${isLoading || !isFormReady ? 'hidden' : ''}`}>
                 <div className={`input-box ${fieldErrors.name ? 'invalid' : signupData.name.trim() ? 'valid' : ''}`}>
                   <input
+                    id="signup-name"
                     type="text"
                     name="name"
                     placeholder="Họ và tên"
@@ -263,6 +285,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 {fieldErrors.name && <p className="field-error">{fieldErrors.name}</p>}
                 <div className={`input-box ${fieldErrors.email ? 'invalid' : signupData.email.trim() ? 'valid' : ''}`}>
                   <input
+                    id="signup-email"
                     type="email"
                     name="email"
                     placeholder="Email"
@@ -275,6 +298,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 {fieldErrors.email && <p className="field-error">{fieldErrors.email}</p>}
                 <div className={`input-box ${fieldErrors.phone_number ? 'invalid' : signupData.phone_number.trim() ? 'valid' : ''}`}>
                   <input
+                    id="signup-phone"
                     type="text"
                     name="phone_number"
                     placeholder="Số điện thoại"
@@ -287,6 +311,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 {fieldErrors.phone_number && <p className="field-error">{fieldErrors.phone_number}</p>}
                 <div className={`input-box ${fieldErrors.username ? 'invalid' : signupData.username.trim() ? 'valid' : ''}`}>
                   <input
+                    id="signup-username"
                     type="text"
                     name="username"
                     placeholder="Tên đăng nhập"
@@ -299,6 +324,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 {fieldErrors.username && <p className="field-error">{fieldErrors.username}</p>}
                 <div className={`input-box ${fieldErrors.password ? 'invalid' : signupData.password ? 'valid' : ''}`}>
                   <input
+                    id="signup-password"
                     type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="Mật khẩu"
@@ -308,6 +334,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   />
                   <i className="bx bxs-lock-alt"></i>
                   <span
+                    id="toggle-password-btn"
                     className="toggle-pw"
                     onClick={() => setShowPassword(!showPassword)}
                     style={{ cursor: "pointer" }}
@@ -318,6 +345,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 {fieldErrors.password && <p className="field-error">{fieldErrors.password}</p>}
                 <div className={`input-box ${fieldErrors.confirmPassword ? 'invalid' : signupData.confirmPassword ? 'valid' : ''}`}>
                   <input
+                    id="signup-confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     placeholder="Xác nhận mật khẩu"
@@ -327,6 +355,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   />
                   <i className="bx bxs-lock-alt"></i>
                   <span
+                    id="toggle-confirm-password-btn"
                     className="toggle-pw"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     style={{ cursor: "pointer" }}
@@ -335,15 +364,20 @@ const LoginModal = ({ isOpen, onClose }) => {
                   </span>
                 </div>
                 {fieldErrors.confirmPassword && <p className="field-error">{fieldErrors.confirmPassword}</p>}
-                <button type="submit" className="btn" disabled={isLoading}>
+                <button
+                  id="signup-submit"
+                  type="submit"
+                  className="btn"
+                  disabled={isLoading || !isFormReady}
+                >
                   {isLoading ? <i className="fas fa-spinner fa-spin"></i> : 'Đăng ký'}
                 </button>
                 <p className="social-text">Đăng ký khác</p>
                 <div className="social-icons">
-                  <a href="/auth/facebook" className="social-icon facebook">
+                  <a id="facebook-signup-btn" href="/auth/facebook" className="social-icon facebook">
                     <i className="fab fa-facebook-f"></i>
                   </a>
-                  <a href="/auth/google" className="social-icon google">
+                  <a id="google-signup-btn" href="/auth/google" className="social-icon google">
                     <i className="fab fa-google"></i>
                   </a>
                 </div>
@@ -359,7 +393,7 @@ const LoginModal = ({ isOpen, onClose }) => {
               <>
                 <h1>Xin chào bạn!</h1>
                 <p>Không có tài khoản?</p>
-                <button className="btn register-btn" onClick={handleRegisterClick}>Đăng ký</button>
+                <button id="register-toggle-btn" className="btn register-btn" onClick={handleRegisterClick}>Đăng ký</button>
               </>
             )}
           </div>
@@ -368,35 +402,39 @@ const LoginModal = ({ isOpen, onClose }) => {
               <>
                 <h1>Quên mật khẩu</h1>
                 <p>Bạn đã nhớ mật khẩu?</p>
-                <button className="btn register-btn" onClick={handleLoginClick}>Đăng nhập</button>
+                <button id="login-from-forgot-btn" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
               </>
             )}
             {activeMode === "register" && (
               <>
                 <h1>Chào mừng bạn</h1>
                 <p>Nếu đã có tài khoản, hãy đăng nhập!</p>
-                <button className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
+                <button id="login-from-register-btn" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
               </>
             )}
             {activeMode === "registerSuccess" && (
               <>
                 <h1 className='pb-10 whitespace-nowrap'>Đăng ký thành công🥳</h1>
                 <div className="toggle-buttons">
-                  <button className="btn register-btn" onClick={() => {
-                    setSignupSuccess('');
-                    setSignupData({
-                      name: '',
-                      email: '',
-                      phone_number: '',
-                      username: '',
-                      password: '',
-                      confirmPassword: '',
-                    });
-                    setActiveMode("register");
-                  }}>
+                  <button
+                    id="continue-register-btn"
+                    className="btn register-btn"
+                    onClick={() => {
+                      setSignupSuccess('');
+                      setSignupData({
+                        name: '',
+                        email: '',
+                        phone_number: '',
+                        username: '',
+                        password: '',
+                        confirmPassword: '',
+                      });
+                      setActiveMode("register");
+                    }}
+                  >
                     Đăng ký tiếp
                   </button>
-                  <button className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
+                  <button id="login-after-success-btn" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
                 </div>
               </>
             )}
