@@ -1,5 +1,3 @@
-// D:\newBTL\Badminton-manager-project\Frontend\src\components\LoginModal.jsx
-
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css';
@@ -47,7 +45,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   // Trạng thái loading cho form đăng ký
   const [isLoading, setIsLoading] = useState(false);
 
-  // Tạo ref cho từng trường
+  // Tạo ref cho từng trường (đã có sẵn, giữ nguyên)
   const refs = {
     name: useRef(null),
     email: useRef(null),
@@ -213,7 +211,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 <i className="bx bxs-lock-alt"></i>
               </div>
               {/* HIỂN THỊ THÔNG BÁO LỖI ĐĂNG NHẬP */}
-              {loginError && <p className="error-message">{loginError}</p>}
+              {loginError && <p id="login-error-message" className="error-message">{loginError}</p>}
               <div className="forgot-link">
                 <a id="forgot-password-link" href="#" onClick={handleForgotClick}>Quên mật khẩu?</a>
               </div>
@@ -238,7 +236,11 @@ const LoginModal = ({ isOpen, onClose }) => {
           <div className="form-box forgot">
             <form onSubmit={handleForgotSubmit} noValidate>
               <h1>Quên mật khẩu</h1>
-              {forgotMessage && <p className="info-message">{forgotMessage}</p>}
+              {forgotMessage && (
+                forgotMessage.includes('thành công') ? // Simple check for success/error message
+                  <p id="forgot-success-message" className="info-message">{forgotMessage}</p> :
+                  <p id="forgot-error-message" className="error-message">{forgotMessage}</p>
+              )}
               <div className="input-box">
                 <input
                   id="forgot-email"
@@ -262,10 +264,10 @@ const LoginModal = ({ isOpen, onClose }) => {
           <div className="form-box register" style={{ overflow: 'auto' }}>
             <form onSubmit={handleSignupSubmit} noValidate>
               <h1>Đăng ký</h1>
-              {signupError && <p className="error-message">{signupError}</p>}
-              {signupSuccess && <p className="success-message">{signupSuccess}</p>}
+              {signupError && <p id="signup-error-message" className="error-message">{signupError}</p>}
+              {signupSuccess && <p id="signup-success-message" className="success-message">{signupSuccess}</p>}
               {isLoading && (
-                <div className="loading-spinner">
+                <div id="signup-loading-spinner" className="loading-spinner">
                   <i className="fas fa-spinner fa-spin"></i>
                 </div>
               )}
@@ -282,7 +284,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   />
                   <i className="bx bxs-user"></i>
                 </div>
-                {fieldErrors.name && <p className="field-error">{fieldErrors.name}</p>}
+                {fieldErrors.name && <p id="field-error-name" className="field-error">{fieldErrors.name}</p>}
                 <div className={`input-box ${fieldErrors.email ? 'invalid' : signupData.email.trim() ? 'valid' : ''}`}>
                   <input
                     id="signup-email"
@@ -295,7 +297,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   />
                   <i className="bx bxs-envelope"></i>
                 </div>
-                {fieldErrors.email && <p className="field-error">{fieldErrors.email}</p>}
+                {fieldErrors.email && <p id="field-error-email" className="field-error">{fieldErrors.email}</p>}
                 <div className={`input-box ${fieldErrors.phone_number ? 'invalid' : signupData.phone_number.trim() ? 'valid' : ''}`}>
                   <input
                     id="signup-phone"
@@ -308,7 +310,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   />
                   <i className="bx bxs-phone"></i>
                 </div>
-                {fieldErrors.phone_number && <p className="field-error">{fieldErrors.phone_number}</p>}
+                {fieldErrors.phone_number && <p id="field-error-phone_number" className="field-error">{fieldErrors.phone_number}</p>}
                 <div className={`input-box ${fieldErrors.username ? 'invalid' : signupData.username.trim() ? 'valid' : ''}`}>
                   <input
                     id="signup-username"
@@ -321,7 +323,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   />
                   <i className="bx bxs-user"></i>
                 </div>
-                {fieldErrors.username && <p className="field-error">{fieldErrors.username}</p>}
+                {fieldErrors.username && <p id="field-error-username" className="field-error">{fieldErrors.username}</p>}
                 <div className={`input-box ${fieldErrors.password ? 'invalid' : signupData.password ? 'valid' : ''}`}>
                   <input
                     id="signup-password"
@@ -342,7 +344,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                     <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`} style={{ fontSize: '1.1rem' }}></i>
                   </span>
                 </div>
-                {fieldErrors.password && <p className="field-error">{fieldErrors.password}</p>}
+                {fieldErrors.password && <p id="field-error-password" className="field-error">{fieldErrors.password}</p>}
                 <div className={`input-box ${fieldErrors.confirmPassword ? 'invalid' : signupData.confirmPassword ? 'valid' : ''}`}>
                   <input
                     id="signup-confirm-password"
@@ -363,7 +365,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                     <i className={`fas ${showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'}`} style={{ fontSize: '1.1rem' }}></i>
                   </span>
                 </div>
-                {fieldErrors.confirmPassword && <p className="field-error">{fieldErrors.confirmPassword}</p>}
+                {fieldErrors.confirmPassword && <p id="field-error-confirmPassword" className="field-error">{fieldErrors.confirmPassword}</p>}
                 <button
                   id="signup-submit"
                   type="submit"
@@ -393,23 +395,23 @@ const LoginModal = ({ isOpen, onClose }) => {
               <>
                 <h1>Xin chào bạn!</h1>
                 <p>Không có tài khoản?</p>
-                <button id="register-toggle-btn" className="btn register-btn" onClick={handleRegisterClick}>Đăng ký</button>
+                <button id="toggle-register-panel-btn" className="btn register-btn" onClick={handleRegisterClick}>Đăng ký</button>
               </>
             )}
           </div>
           <div className="toggle-panel toggle-right">
             {activeMode === "forgot" && (
               <>
-                <h1>Quên mật khẩu</h1>
+                <h1>OH!!</h1>
                 <p>Bạn đã nhớ mật khẩu?</p>
-                <button id="login-from-forgot-btn" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
+                <button id="toggle-login-panel-btn-from-forgot" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
               </>
             )}
             {activeMode === "register" && (
               <>
                 <h1>Chào mừng bạn</h1>
                 <p>Nếu đã có tài khoản, hãy đăng nhập!</p>
-                <button id="login-from-register-btn" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
+                <button id="toggle-login-panel-btn-from-register" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
               </>
             )}
             {activeMode === "registerSuccess" && (
@@ -417,7 +419,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                 <h1 className='pb-10 whitespace-nowrap'>Đăng ký thành công🥳</h1>
                 <div className="toggle-buttons">
                   <button
-                    id="continue-register-btn"
+                    id="register-success-continue-register-btn"
                     className="btn register-btn"
                     onClick={() => {
                       setSignupSuccess('');
@@ -434,7 +436,7 @@ const LoginModal = ({ isOpen, onClose }) => {
                   >
                     Đăng ký tiếp
                   </button>
-                  <button id="login-after-success-btn" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
+                  <button id="register-success-login-btn" className="btn login-btn" onClick={handleLoginClick}>Đăng nhập</button>
                 </div>
               </>
             )}

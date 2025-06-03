@@ -110,6 +110,22 @@ const PaymentPage = () => {
   const handlePaymentImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Define allowed file extensions
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+
+      // Check if the file extension is allowed
+      if (!allowedExtensions.includes(fileExtension)) {
+        alert('Định dạng ảnh không hợp lệ! Vui lòng chọn file có định dạng JPG, PNG hoặc GIF.');
+        // Reset the file input to allow selecting another file
+        if (paymentFileInputRef.current) {
+          paymentFileInputRef.current.value = '';
+        }
+        setPaymentImageBase64(''); // Clear any previous image
+        return;
+      }
+
+      // Process the valid file
       const reader = new FileReader();
       reader.onload = () => {
         setPaymentImageBase64(reader.result);
@@ -209,7 +225,7 @@ const PaymentPage = () => {
   return (
     <div className="min-h-screen w-full flex flex-col bg-green-800 text-white">
       {/* Header */}
-      <BookingHeader title="Payment" onBack={() => navigate("/")} />
+      <BookingHeader title="Thanh toán" onBack={() => navigate("/")} />
 
       {/* Main content */}
       <div className="flex flex-1 p-4 lg:p-6 gap-6 max-w-7xl mx-auto w-full">
@@ -219,17 +235,17 @@ const PaymentPage = () => {
           <div className="bg-green-700 rounded-lg shadow-lg overflow-hidden">
             <div className="bg-green-600 px-4 py-3 border-b border-green-500">
               <h2 className="text-lg font-bold flex items-center gap-2 text-yellow-300">
-                <DollarSign size={20} /> Bank Account Information
+                <DollarSign size={20} /> Thông tin ngân hàng
               </h2>
             </div>
             <div className="p-5 flex gap-6 items-center">
               <div className="flex-1">
                 <div className="mb-4">
-                  <p className="text-gray-300 text-sm mb-1">Account name</p>
+                  <p className="text-gray-300 text-sm mb-1">Tên tài khoản</p>
                   <p className="font-semibold text-white">BUI ANH CHIEN</p>
                 </div>
                 <div className="mb-4">
-                  <p className="text-gray-300 text-sm mb-1">Account number</p>
+                  <p className="text-gray-300 text-sm mb-1">Số tài khoản</p>
                   <div className="flex items-center gap-2">
                     <p className="font-semibold text-white bg-green-900 py-1 px-3 rounded">
                       0982451906
@@ -250,7 +266,7 @@ const PaymentPage = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="text-gray-300 text-sm mb-1">Bank name</p>
+                  <p className="text-gray-300 text-sm mb-1">Tên ngân hàng</p>
                   <p className="font-semibold text-white">MBBank</p>
                 </div>
               </div>
@@ -270,13 +286,13 @@ const PaymentPage = () => {
           <div className="bg-yellow-500 bg-opacity-20 border-l-4 border-yellow-500 text-white rounded-md p-4 flex items-start gap-3">
             <AlertTriangle size={24} className="text-yellow-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-yellow-300 mb-1">Payment Required</p>
+              <p className="font-semibold text-yellow-300 mb-1">Yêu cầu thanh toán</p>
               <p className="leading-snug">
-                Please transfer{" "}
+                Vui lòng chuyển khoản{" "}
                 <span className="text-yellow-300 font-bold text-lg">
                   {totalPrice.toLocaleString("vi-VN")} đ
                 </span>{" "}
-                and upload the payment confirmation image below to complete your booking.
+                và tải ảnh xác nhận thanh toán dưới đây để hoàn tất đặt sân.
               </p>
             </div>
           </div>
@@ -284,7 +300,7 @@ const PaymentPage = () => {
           {/* Note */}
           <div className="bg-green-700 bg-opacity-50 p-4 rounded-md border border-green-600">
             <p className="text-sm text-yellow-200 italic">
-              After transferring, please check your booking status in the "Account" tab until the owner confirms your booking.
+              Sau khi chuyển khoản, vui lòng kiểm tra trạng thái đặt sân của bạn trong tab "Thông tin cá nhân" cho đến khi chủ sân xác nhận đặt sân của bạn.
             </p>
           </div>
 
@@ -292,7 +308,7 @@ const PaymentPage = () => {
           <div className="flex flex-col items-center justify-center bg-green-900 rounded-lg p-4 mt-2">
             <div className="flex items-center gap-2 text-gray-300 mb-2">
               <Clock size={18} />
-              <p>Your booking will expire in:</p>
+              <p>Thời gian đặt sân còn lại:</p>
             </div>
             <h3 className={`text-3xl font-bold ${timeLeft < 60 ? "text-red-400" : "text-yellow-300"}`}>
               {formatTime(timeLeft)}
@@ -302,13 +318,15 @@ const PaymentPage = () => {
           {/* Image upload section */}
           <div className="mt-4">
             <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-              <Upload size={18} /> Upload Payment Image
+              <Upload size={18} /> Tải ảnh xác nhận thanh toán
             </h3>
             <div className="flex gap-4 flex-wrap">
               <div className="flex-1 min-w-[200px]">
-                <p className="text-sm text-yellow-300 mb-2">Payment Confirmation Image *</p>
+                <p className="text-sm text-yellow-300 mb-2">Ảnh xác nhận thanh toán *</p>
                 <label
-                  className={`border-2 ${paymentImageBase64 ? "border-green-500" : "border-yellow-500 border-dashed"} rounded-lg h-48 flex flex-col items-center justify-center text-center p-2 cursor-pointer transition-colors hover:bg-green-700`}
+                  className={`border-2 ${
+                    paymentImageBase64 ? "border-green-500" : "border-yellow-500 border-dashed"
+                  } rounded-lg h-48 flex flex-col items-center justify-center text-center p-2 cursor-pointer transition-colors hover:bg-green-700`}
                 >
                   {paymentImageBase64 ? (
                     <img
@@ -319,15 +337,16 @@ const PaymentPage = () => {
                   ) : (
                     <>
                       <Upload size={24} className="mb-2 text-yellow-300" />
-                      <p className="text-sm">Click to upload payment image</p>
-                      <p className="text-xs text-gray-300 mt-1">(Required)</p>
+                      <p className="text-sm">Click để tải ảnh</p>
+                      <p className="text-xs text-gray-300 mt-1">(Chỉ chấp nhận jpg, png, gif)</p>
                     </>
                   )}
                   <input
                     type="file"
                     className="hidden"
                     onChange={handlePaymentImageUpload}
-                    accept="image/png, image/jpeg"
+                    accept="image/png, image/jpeg, image/gif"
+                    ref={paymentFileInputRef}
                   />
                 </label>
               </div>
@@ -354,7 +373,7 @@ const PaymentPage = () => {
               onClick={handleConfirmOrder}
               className="bg-yellow-500 hover:bg-yellow-600 active:bg-yellow-700 text-green-900 font-bold w-full py-4 rounded-md text-lg transition-colors shadow-lg flex items-center justify-center gap-2"
             >
-              <span>CONFIRM BOOKING</span>
+              <span>THANH TOÁN</span>
               <span className="animate-ping text-2xl">→</span>
             </button>
           </div>
@@ -364,14 +383,14 @@ const PaymentPage = () => {
         <div className="w-80 hidden md:block">
           <div className="bg-green-900 rounded-lg shadow-lg overflow-hidden sticky top-20">
             <div className="bg-green-700 px-4 py-3 border-b border-green-600">
-              <h2 className="font-bold flex items-center gap-2">Booking Summary</h2>
+              <h2 className="font-bold flex items-center gap-2">Tóm tắt đặt sân</h2>
             </div>
             <div className="p-5 flex flex-col gap-4">
               {/* Hiển thị tên khách hàng */}
               <div className="flex items-center gap-3">
                 <User size={18} className="text-green-400" />
                 <div>
-                  <p className="text-gray-300 text-xs">Customer Name</p>
+                  <p className="text-gray-300 text-xs">Tên khách hàng</p>
                   <p className="font-medium">{user?.name || "Loading..."}</p>
                 </div>
               </div>
@@ -379,7 +398,7 @@ const PaymentPage = () => {
               <div className="flex items-center gap-3">
                 <Phone size={18} className="text-green-400" />
                 <div>
-                  <p className="text-gray-300 text-xs">Phone Number</p>
+                  <p className="text-gray-300 text-xs">Số điện thoại</p>
                   <p className="font-medium">{user?.phone_number || "Loading..."}</p>
                 </div>
               </div>
@@ -387,7 +406,7 @@ const PaymentPage = () => {
               <div className="flex items-center gap-3">
                 <Hash size={18} className="text-green-400" />
                 <div>
-                  <p className="text-gray-300 text-xs">Booking Code</p>
+                  <p className="text-gray-300 text-xs">Mã booking</p>
                   <p className="font-medium">{bookingCode}</p>
                 </div>
               </div>
@@ -395,7 +414,7 @@ const PaymentPage = () => {
               <div className="flex items-center gap-3">
                 <i className="fas fa-building text-green-400"></i>
                 <div>
-                  <p className="text-gray-300 text-xs">Center Name</p>
+                  <p className="text-gray-300 text-xs">Tên trung tâm</p>
                   <p className="font-medium">{centerName}</p>
                 </div>
               </div>
@@ -403,7 +422,7 @@ const PaymentPage = () => {
               <div className="flex items-start gap-3">
                 <Calendar size={18} className="text-green-400" />
                 <div>
-                  <p className="text-gray-300 text-xs">Booking Details</p>
+                  <p className="text-gray-300 text-xs">Chi tiết đặt sân</p>
                   {slotGroups.length > 0 ? (
                     <>
                       <p className="font-medium">Sân và Thời Gian:</p>
@@ -423,18 +442,8 @@ const PaymentPage = () => {
               <div className="flex items-center gap-3">
                 <DollarSign size={18} className="text-yellow-400" />
                 <div>
-                  <p className="text-gray-300 text-xs">Total Amount</p>
+                  <p className="text-gray-300 text-xs">Tổng tiền</p>
                   <p className="font-bold text-yellow-300 text-lg">
-                    {totalPrice.toLocaleString("vi-VN")} đ
-                  </p>
-                </div>
-              </div>
-              {/* Hiển thị payment required */}
-              <div className="flex items-start gap-3">
-                <AlertTriangle size={18} className="text-yellow-400" />
-                <div>
-                  <p className="text-gray-300 text-xs">Payment Required</p>
-                  <p className="font-bold text-yellow-300">
                     {totalPrice.toLocaleString("vi-VN")} đ
                   </p>
                 </div>
@@ -447,7 +456,7 @@ const PaymentPage = () => {
       {/* Input file ẩn cho payment image */}
       <input
         type="file"
-        accept="image/png, image/jpeg"
+        accept="image/png, image/jpeg, image/gif"
         ref={paymentFileInputRef}
         style={{ display: "none" }}
         onChange={handlePaymentImageUpload}

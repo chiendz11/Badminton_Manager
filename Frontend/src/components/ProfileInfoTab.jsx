@@ -112,7 +112,7 @@ const ProfileInfoTab = ({
   const upcomingBookings = bookingHistory.filter(booking => booking.status === "pending");
 
   return (
-    <div className="tab-content info-content">
+    <div id="profile-info-tab" className="tab-content info-content">
       <div className="section-title">
         <i className="fas fa-user-edit"></i>
         <h2>Thông tin cá nhân</h2>
@@ -122,6 +122,7 @@ const ProfileInfoTab = ({
           <div className="profile-overview">
             <div className="profile-image-container">
               <img
+                id="profile-avatar-image"
                 src={previewImage}
                 alt="Avatar"
                 className="profile-image"
@@ -131,6 +132,7 @@ const ProfileInfoTab = ({
                 }}
               />
               <button
+                id="change-avatar-button"
                 className="change-avatar-btn"
                 onClick={handleChangeAvatarClick}
                 title="Thay đổi ảnh đại diện"
@@ -139,6 +141,7 @@ const ProfileInfoTab = ({
               </button>
               {/* Input file ẩn */}
               <input
+                id="avatar-file-input"
                 type="file"
                 accept="image/jpeg,image/png,image/gif"
                 ref={fileInputRef}
@@ -146,20 +149,20 @@ const ProfileInfoTab = ({
                 style={{ display: "none" }}
               />
             </div>
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-            <h3 className="profile-name">{user?.name}</h3>
-            <p className="profile-email">{user?.email}</p>
-            <div className="membership-badge">
+            {error && <p id="avatar-error-message" className="text-red-500 text-sm mt-2">{error}</p>}
+            <h3 id="profile-name" className="profile-name">{user?.name}</h3>
+            <p id="profile-email" className="profile-email">{user?.email}</p>
+            <div id="membership-badge" className="membership-badge">
               <i className="fas fa-gem"></i>
               <span>Thành viên {currentLevelName}</span>
             </div>
-            <div className="progress-container">
+            <div id="progress-container" className="progress-container">
               <div className="progress-info">
                 <span>Điểm thành viên ({currentLevelName})</span>
                 <span>{pointsInCurrentLevel}/{pointsPerLevel}</span>
               </div>
               <div className="progress-bar">
-                <div className="progress" style={{ width: `${progressPercentage}%` }}></div>
+                <div id="level-progress-bar" className="progress" style={{ width: `${progressPercentage}%` }}></div>
               </div>
               <p className="progress-note">
                 {nextLevelIndex !== null
@@ -170,6 +173,7 @@ const ProfileInfoTab = ({
           </div>
           <div className="info-actions">
             <button
+              id="edit-profile-button"
               className={`action-btn ${editMode === 'profile' ? 'primary' : 'secondary'}`}
               onClick={() => setEditMode('profile')}
             >
@@ -177,6 +181,7 @@ const ProfileInfoTab = ({
               <span>Chỉnh sửa hồ sơ</span>
             </button>
             <button
+              id="change-password-button"
               className={`action-btn ${editMode === 'password' ? 'primary' : 'secondary'}`}
               onClick={() => setEditMode('password')}
             >
@@ -185,13 +190,14 @@ const ProfileInfoTab = ({
             </button>
           </div>
         </div>
-        <div className="info-details-container">
+        <div id="profile-details-container" className="info-details-container">
           {editMode === 'password' ? (
-            <div className="space-y-4 fade-in">
+            <div id="password-change-form" className="space-y-4 fade-in">
               <div className="info-card">
-                <label className="block text-sm font-medium text-gray-700">Mật khẩu cũ</label>
+                <label htmlFor="old-password-input" className="block text-sm font-medium text-gray-700">Mật khẩu cũ</label>
                 <div className="relative">
                   <input
+                    id="old-password-input"
                     type={showOldPassword ? "text" : "password"}
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
@@ -199,6 +205,7 @@ const ProfileInfoTab = ({
                     style={{ overflowX: "auto", whiteSpace: "nowrap" }}
                   />
                   <button
+                    id="toggle-old-password-visibility"
                     type="button"
                     onClick={() => setShowOldPassword(!showOldPassword)}
                     className="absolute inset-y-0 right-3 flex items-center text-gray-600"
@@ -209,9 +216,10 @@ const ProfileInfoTab = ({
                 </div>
               </div>
               <div className="info-card">
-                <label className="block text-sm font-medium text-gray-700">Mật khẩu mới</label>
+                <label htmlFor="new-password-input" className="block text-sm font-medium text-gray-700">Mật khẩu mới</label>
                 <div className="relative">
                   <input
+                    id="new-password-input"
                     type={showNewPassword ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -219,6 +227,7 @@ const ProfileInfoTab = ({
                     style={{ overflowX: "auto", whiteSpace: "nowrap" }}
                   />
                   <button
+                    id="toggle-new-password-visibility"
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                     className="absolute inset-y-0 right-3 flex items-center text-gray-600"
@@ -229,9 +238,10 @@ const ProfileInfoTab = ({
                 </div>
               </div>
               <div className="info-card">
-                <label className="block text-sm font-medium text-gray-700">Xác nhận mật khẩu mới</label>
+                <label htmlFor="confirm-password-input" className="block text-sm font-medium text-gray-700">Xác nhận mật khẩu mới</label>
                 <div className="relative">
                   <input
+                    id="confirm-password-input"
                     type={showConfirmPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -239,6 +249,7 @@ const ProfileInfoTab = ({
                     style={{ overflowX: "auto", whiteSpace: "nowrap" }}
                   />
                   <button
+                    id="toggle-confirm-password-visibility"
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute inset-y-0 right-3 flex items-center text-gray-600"
@@ -249,6 +260,7 @@ const ProfileInfoTab = ({
                 </div>
               </div>
               <button
+                id="confirm-password-change-button"
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md"
                 onClick={handleChangePassword}
               >
@@ -257,52 +269,55 @@ const ProfileInfoTab = ({
             </div>
           ) : (
             <>
-              <div className="info-section">
+              <div id="basic-info-section" className="info-section">
                 <h3 className="info-section-title">
                   <i className="fas fa-user"></i>
                   <span>Thông tin cơ bản</span>
                 </h3>
                 <div className="info-grid">
                   <EditableInfoCard
+                    idPrefix="name"
                     label="Họ và tên"
                     value={user?.name}
                     onConfirm={(newValue) => handleUpdateField("name", newValue)}
                   />
                   <EditableInfoCard
+                    idPrefix="phone-number"
                     label="Số điện thoại"
                     value={user?.phone_number}
                     onConfirm={(newValue) => handleUpdateField("phone_number", newValue)}
                   />
                   <EditableInfoCard
+                    idPrefix="email"
                     label="Email"
                     value={user?.email}
                     onConfirm={(newValue) => handleUpdateField("email", newValue)}
                   />
                 </div>
               </div>
-              <div className="upcoming-bookings">
+              <div id="upcoming-bookings-section" className="upcoming-bookings">
                 <div className="section-title">
                   <i className="fas fa-calendar-alt"></i>
                   <h2>Lịch đặt sắp tới</h2>
                 </div>
                 {upcomingBookings.length > 0 ? (
-                  <div className="upcoming-grid">
+                  <div id="upcoming-bookings-grid" className="upcoming-grid">
                     {upcomingBookings.map((booking) => (
-                      <div key={booking._id} className="upcoming-card">
+                      <div key={booking._id} id={`booking-card-${booking.orderId}`} className="upcoming-card">
                         <div className="upcoming-header">
-                          <span className="upcoming-id">#{booking.orderId}</span>
-                          <span className={`upcoming-status ${getStatusClass(booking.status)}`}>
+                          <span id={`booking-id-${booking.orderId}`} className="upcoming-id">#{booking.orderId}</span>
+                          <span id={`booking-status-${booking.orderId}`} className={`upcoming-status ${getStatusClass(booking.status)}`}>
                             {getStatusText(booking.status)}
                           </span>
                         </div>
                         <div className="upcoming-details">
                           <div className="upcoming-detail">
                             <i className="fas fa-map-marker-alt"></i>
-                            <span>{centerName}</span>
+                            <span id={`booking-center-${booking.orderId}`}>{centerName}</span>
                           </div>
                           <div className="upcoming-detail">
                             <i className="fas fa-table-tennis"></i>
-                            <span>
+                            <span id={`booking-court-details-${booking.orderId}`}>
                               {slotGroupsFromLS.length > 0 ? (
                                 slotGroupsFromLS.map((group, idx) => (
                                   <React.Fragment key={idx}>
@@ -317,17 +332,18 @@ const ProfileInfoTab = ({
                           </div>
                           <div className="upcoming-detail">
                             <i className="fas fa-calendar-day"></i>
-                            <span>{booking.date}</span>
+                            <span id={`booking-date-${booking.orderId}`}>{booking.date}</span>
                           </div>
                         </div>
                         <div className="upcoming-price">
-                          <span>{totalAmountLS.toLocaleString("vi-VN")} đ</span>
+                          <span id={`booking-total-amount-${booking.orderId}`}>{totalAmountLS.toLocaleString("vi-VN")} đ</span>
                         </div>
                         <div className="upcoming-actions">
-                          <button className="pay-now-btn" onClick={() => navigate("/payment")}>
+                          <button id={`pay-now-button-${booking.orderId}`} className="pay-now-btn" onClick={() => navigate("/payment")}>
                             Thanh Toán Ngay
                           </button>
                           <button
+                            id={`cancel-booking-button-${booking.orderId}`}
                             className="cancel-btn"
                             onClick={() => promptCancelBooking(booking.orderId)}
                           >
@@ -338,7 +354,7 @@ const ProfileInfoTab = ({
                     ))}
                   </div>
                 ) : (
-                  <p>Không có lịch đặt sắp tới.</p>
+                  <p id="no-upcoming-bookings-message">Không có lịch đặt sắp tới.</p>
                 )}
               </div>
             </>

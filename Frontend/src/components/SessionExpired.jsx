@@ -1,4 +1,3 @@
-// src/components/SessionExpired.jsx
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import BookingHeader from "./BookingHeader";
@@ -8,13 +7,24 @@ const SessionExpired = () => {
   // Đường dẫn ảnh phiên hết hạn (bạn có thể điều chỉnh theo cấu trúc dự án)
   const expiredImagePath = "/images/TimeExpired.gif";
 
-  // Khi nhấn back trên trình duyệt, điều hướng về trang chủ
+  // Xử lý tự động navigate về trang chủ sau 3 giây và xử lý sự kiện back
   useEffect(() => {
+    // Tự động navigate về trang chủ sau 3 giây
+    const timer = setTimeout(() => {
+      navigate("/");
+    }, 3000);
+
+    // Xử lý khi nhấn back trên trình duyệt
     const handlePopState = () => {
       navigate("/");
     };
     window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+
+    // Cleanup: Xóa timeout và sự kiện popstate khi component unmount
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, [navigate]);
 
   return (

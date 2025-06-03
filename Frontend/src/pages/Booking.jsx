@@ -5,7 +5,7 @@ import Legend from "../components/legend";
 import BookingTable from "../components/bookingTable";
 import PricingTable from "../components/PricingTable";
 import ModalConfirmation from "../components/ModalConfirmation";
-import socket from "../socket"; // Thêm lại import socket
+import socket from "../socket";
 import { AuthContext } from "../contexts/AuthContext";
 
 import { getCourtsByCenter, getPriceForTimeslot, getCenterInfoById } from "../apis/centers";
@@ -100,7 +100,7 @@ const BookingSchedule = () => {
   const navigate = useNavigate();
   const { user, setUser } = useContext(AuthContext);
   const userId = user?._id;
-  const userPoints = user?.points || 0; // Lấy user.points, mặc định là 0 nếu không có
+  const userPoints = user?.points || 0;
   const name = user?.name || "Người dùng";
 
   const openHours = "05:00 - 24:00";
@@ -119,7 +119,7 @@ const BookingSchedule = () => {
   const [selectedDate, setSelectedDate] = useState(initialDate);
   const [courts, setCourts] = useState([]);
   const [baseMapping, setBaseMapping] = useState({});
-  const [myPendingMapping, setMyPendingMapping] = useState({}); // Thêm state để lưu mapping từ inMemoryCache
+  const [myPendingMapping, setMyPendingMapping] = useState({});
   const [displayMapping, setDisplayMapping] = useState({});
   const [centerInfo, setCenterInfo] = useState(null);
   const [selectedSlots, setSelectedSlots] = useState([]);
@@ -129,7 +129,6 @@ const BookingSchedule = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [initialMappingLoaded, setInitialMappingLoaded] = useState(false);
 
-  // Ref để truy cập DatePicker
   const datePickerRef = useRef(null);
 
   useEffect(() => {
@@ -177,15 +176,12 @@ const BookingSchedule = () => {
       const courtsData = Array.isArray(data) ? data : data.data;
       setCourts(courtsData);
       if (courtsData.length > 0) {
-        // Lấy mapping từ DB (pending, paid, processing)
         const mappingDB = await getPendingMapping(centerId, selectedDate);
         console.log("Fetched mapping from DB:", mappingDB);
 
-        // Lấy mapping từ inMemoryCache (myPending)
         const mappingCache = await getMyPendingTimeslots(centerId, selectedDate);
         console.log("Fetched myPending mapping from cache:", mappingCache);
 
-        // Gộp mapping từ DB và cache
         const completeMapping = {};
         courtsData.forEach((court) => {
           const courtId = court._id;
@@ -193,7 +189,7 @@ const BookingSchedule = () => {
           const cacheSlots = mappingCache[courtId] || Array(slotCount).fill("trống");
           const mergedSlots = dbSlots.map((slot, idx) => {
             if (cacheSlots[idx] !== "trống") {
-              return cacheSlots[idx]; // Ưu tiên trạng thái "myPending" từ cache
+              return cacheSlots[idx];
             }
             return slot;
           });
@@ -204,7 +200,6 @@ const BookingSchedule = () => {
         const finalMapping = applyLockedLogic(completeMapping, selectedDate, userId);
         console.log("Final mapping:", finalMapping);
 
-        // Cập nhật selectedSlots dựa trên trạng thái "myPending"
         const newSelectedSlots = [];
         Object.keys(finalMapping).forEach((courtId) => {
           finalMapping[courtId].forEach((slot, idx) => {
@@ -218,7 +213,6 @@ const BookingSchedule = () => {
         setInitialMappingLoaded(true);
         setDisplayMapping(finalMapping);
 
-        // Cập nhật giá cho các slot đã chọn
         for (const slot of newSelectedSlots) {
           try {
             const response = await getPriceForTimeslot({ centerId, date: selectedDate, timeslot: slot.slotVal });
@@ -276,7 +270,6 @@ const BookingSchedule = () => {
     setBookingDataState({ centerId, date: newDate });
   };
 
-  // Thêm WebSocket listener cho sự kiện updateBookings
   useEffect(() => {
     if (!centerId || !selectedDate || !userId || courts.length === 0) return;
 
@@ -287,7 +280,6 @@ const BookingSchedule = () => {
         const mappingFromSocket = data[selectedDate];
         console.log("Mapping from WebSocket:", mappingFromSocket);
 
-        // Lấy mapping từ inMemoryCache để giữ trạng thái "myPending"
         let mappingCache = {};
         try {
           mappingCache = await getMyPendingTimeslots(centerId, selectedDate);
@@ -296,7 +288,6 @@ const BookingSchedule = () => {
           console.error("Error fetching myPending mapping after WebSocket update:", error);
         }
 
-        // Gộp mapping từ WebSocket và cache
         const completeMapping = {};
         courts.forEach((court) => {
           const courtId = court._id;
@@ -304,7 +295,7 @@ const BookingSchedule = () => {
           const cacheSlots = mappingCache[courtId] || Array(slotCount).fill("trống");
           const mergedSlots = socketSlots.map((slot, idx) => {
             if (cacheSlots[idx] !== "trống") {
-              return cacheSlots[idx]; // Ưu tiên trạng thái "myPending" từ cache
+              return cacheSlots[idx];
             }
             return slot;
           });
@@ -317,7 +308,6 @@ const BookingSchedule = () => {
 
         setDisplayMapping(finalMapping);
 
-        // Cập nhật selectedSlots dựa trên trạng thái "myPending"
         const newSelectedSlots = [];
         Object.keys(finalMapping).forEach((courtId) => {
           finalMapping[courtId].forEach((slot, idx) => {
@@ -339,13 +329,12 @@ const BookingSchedule = () => {
         });
       } else {
         console.log(`No mapping found for date ${selectedDate} in WebSocket data, fetching from API...`);
-        await fetchMappings(); // Làm mới mapping từ API nếu không có dữ liệu từ WebSocket
+        await fetchMappings();
       }
     };
 
     socket.on("updateBookings", handleUpdateBookings);
 
-    // Emit sự kiện để tham gia room khi component mount hoặc khi centerId/selectedDate thay đổi
     socket.emit("adminSelectedDates", { centerId, dates: [selectedDate] });
 
     return () => {
@@ -376,14 +365,12 @@ const BookingSchedule = () => {
 
     const currentStatus = displayMapping[courtId][colIndex];
     if (currentStatus !== "trống" && currentStatus.status !== "myPending") {
-      return; // Không cho phép toggle nếu slot không phải "trống" hoặc "myPending"
+      return;
     }
 
     try {
-      // Gọi API để toggle timeslot trong inMemoryCache
       await togglePendingTimeslot({ name, userId, centerId, date: selectedDate, courtId, timeslot: slotVal, ttl: 60 });
 
-      // Lấy lại mapping từ DB và cache để cập nhật giao diện
       const mappingDB = await getPendingMapping(centerId, selectedDate);
       const mappingCache = await getMyPendingTimeslots(centerId, selectedDate);
 
@@ -405,7 +392,6 @@ const BookingSchedule = () => {
       const finalMapping = applyLockedLogic(completeMapping, selectedDate, userId);
       setDisplayMapping(finalMapping);
 
-      // Cập nhật selectedSlots dựa trên trạng thái "myPending"
       const newSelectedSlots = [];
       Object.keys(finalMapping).forEach((courtId) => {
         finalMapping[courtId].forEach((slot, idx) => {
@@ -425,7 +411,6 @@ const BookingSchedule = () => {
         return updatedSlots;
       });
 
-      // Cập nhật giá cho slot vừa toggle (nếu có)
       if (newSelectedSlots.some((s) => s.courtId === courtId && s.slotVal === slotVal)) {
         try {
           const response = await getPriceForTimeslot({ centerId, date: selectedDate, timeslot: slotVal });
@@ -516,8 +501,8 @@ const BookingSchedule = () => {
           navigate("/payment");
         }
       } catch (error) {
-        console.error("Lỗi khi xác nhận booking:", error);
-        alert("Lỗi khi xác nhận booking: " + error.message);
+          console.error("Lỗi khi xác nhận booking:", error);
+          alert("Lỗi khi xác nhận booking: " + error.message);
       }
     } else if (action === "cancel") {
       setShowModal(false);
@@ -548,7 +533,7 @@ const BookingSchedule = () => {
 
   if (!user) {
     return (
-      <div className="loading-container">
+      <div className="loading-container" data-testid="loading-user-data">
         <div className="loading-spinner"></div>
         <p>Loading user data...</p>
       </div>
@@ -556,9 +541,9 @@ const BookingSchedule = () => {
   }
 
   return (
-    <div className="booking-page">
+    <div className="booking-page" data-testid="booking-page">
       <div className="booking-header">
-        <button onClick={handleGoBack} className="back-button">
+        <button onClick={handleGoBack} className="back-button" data-testid="back-to-centers-button">
           <i className="fas fa-arrow-left"></i> Quay lại
         </button>
         <h1>Đặt sân</h1>
@@ -566,21 +551,21 @@ const BookingSchedule = () => {
       </div>
 
       {centerInfo && (
-        <div className="center-info-bar">
-          <div className="center-name">
+        <div className="center-info-bar" data-testid="center-info-bar">
+          <div className="center-name" data-testid="center-name">
             <i className="fas fa-building"></i> {centerInfo.name}
           </div>
           <div className="center-details">
-            <span>
+            <span data-testid="center-address">
               <i className="fas fa-map-marker-alt"></i> {centerInfo.address}
             </span>
-            <span>
+            <span data-testid="center-phone">
               <i className="fas fa-phone-alt"></i> {centerInfo.phone}
             </span>
-            <span>
+            <span data-testid="center-open-hours">
               <i className="fas fa-clock"></i> {openHours}
             </span>
-            <span>
+            <span data-testid="center-total-courts">
               <i className="fas fa-table-tennis"></i> {centerInfo.totalCourts} sân
             </span>
           </div>
@@ -588,7 +573,7 @@ const BookingSchedule = () => {
       )}
 
       <div className="date-legend-container">
-        <div className="current-date">
+        <div className="current-date" data-testid="selected-date-display">
           <i className="fas fa-calendar-alt"></i>
           <span>{formatDisplayDate(selectedDate)}</span>
         </div>
@@ -596,9 +581,11 @@ const BookingSchedule = () => {
         <div className="control-panel">
           <Legend />
           <div className="date-price-controls">
+            {/* Added data-testid to the wrapper */}
             <div
               className="date-picker-wrapper"
               onClick={() => datePickerRef.current?.openDatePicker()}
+              data-testid="date-picker-wrapper"
             >
               <DatePicker
                 ref={datePickerRef}
@@ -609,30 +596,31 @@ const BookingSchedule = () => {
             <button
               onClick={() => setShowPricingModal(true)}
               className="price-list-button"
+              data-testid="view-pricing-button"
             >
               <i className="fas fa-tags"></i> Xem bảng giá
             </button>
           </div>
         </div>
 
-        <div className="booking-reminder">
+        <div className="booking-reminder" data-testid="booking-reminder">
           <i className="fas fa-info-circle"></i>
           <p>
             Nếu bạn cần đặt lịch cố định, vui lòng liên hệ:{" "}
-            <a href="tel:0918773883">0972.628.815</a> để được hỗ trợ.
+            <a href="tel:0918773883" data-testid="contact-phone-link">0972.628.815</a> để được hỗ trợ.
           </p>
         </div>
       </div>
 
       {!initialMappingLoaded && (
-        <div className="loading-container">
+        <div className="loading-container" data-testid="loading-booking-data">
           <div className="loading-spinner"></div>
           <p>Đang tải dữ liệu...</p>
         </div>
       )}
 
       {initialMappingLoaded && courts.length > 0 ? (
-        <div className="booking-table-container">
+        <div className="booking-table-container" data-testid="booking-table-container">
           <BookingTable
             key={selectedDate}
             courts={courts}
@@ -646,26 +634,27 @@ const BookingSchedule = () => {
         </div>
       ) : (
         initialMappingLoaded && (
-          <div className="no-data-message">Không tìm thấy dữ liệu sân</div>
+          <div className="no-data-message" data-testid="no-data-message">Không tìm thấy dữ liệu sân</div>
         )
       )}
 
       {selectedSlots.length > 0 && (
-        <div className="booking-footer">
+        <div className="booking-footer" data-testid="booking-footer">
           <div className="expand-button-container">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="expand-button"
               aria-label={isExpanded ? "Thu gọn" : "Mở rộng"}
+              data-testid="expand-details-button"
             >
               <i className={`fas fa-chevron-${isExpanded ? "down" : "up"}`}></i>
             </button>
           </div>
 
           {isExpanded && (
-            <div className="booking-details">
+            <div className="booking-details" data-testid="booking-details-expanded">
               <h3>Chi tiết đặt sân:</h3>
-              <div className="selected-slots">
+              <div className="selected-slots" data-testid="selected-slots-list">
                 {groupSelectedSlots(selectedSlots, courts).map((item, idx) => (
                   <div key={idx} className="slot-item">
                     <span className="court-name">{item.courtName}:</span>
@@ -676,7 +665,7 @@ const BookingSchedule = () => {
               <div className="divider"></div>
               <div className="discount-info">
                 {totalHours >= 2 && (
-                  <p>
+                  <p data-testid="discount-2-hours">
                     Đã giảm 5% (đặt từ 2 giờ trở lên):{" "}
                     <span className="text-green-600">
                       -{formatMoney(originalAmount * 0.05)}
@@ -684,7 +673,7 @@ const BookingSchedule = () => {
                   </p>
                 )}
                 {userPoints > 4000 && (
-                  <p>
+                  <p data-testid="discount-points">
                     Đã giảm 10% (điểm thành viên trên 4000):{" "}
                     <span className="text-green-600">
                       -{formatMoney(originalAmount * 0.10)}
@@ -692,25 +681,25 @@ const BookingSchedule = () => {
                   </p>
                 )}
               </div>
-              <div className="reminder-note">
+              <div className="reminder-note" data-testid="booking-reminder-note">
                 <i className="fas fa-info-circle"></i>
                 <p>Vui lòng đến sớm 10 phút trước giờ đặt sân.</p>
               </div>
             </div>
           )}
 
-          <div className="booking-summary">
-            <div className="summary-item">
+          <div className="booking-summary" data-testid="booking-summary">
+            <div className="summary-item" data-testid="total-hours-summary">
               <span>Tổng thời gian:</span>
               <span className="hours-value">{totalHours} giờ</span>
             </div>
-            <div className="summary-item">
+            <div className="summary-item" data-testid="total-amount-summary">
               <span>Tổng tiền:</span>
               <span className="amount-value">{formatMoney(totalAmount)}</span>
             </div>
           </div>
 
-          <button onClick={handleConfirm} className="continue-button">
+          <button onClick={handleConfirm} className="continue-button" data-testid="continue-to-payment-button">
             <span>Tiếp tục</span>
             <i className="fas fa-arrow-right"></i>
           </button>
@@ -731,11 +720,12 @@ const BookingSchedule = () => {
               <span role="img" aria-label="thinking">🧐</span>
             </>
           }
+          data-testid="modal-confirmation"
         />
       )}
 
       {showPricingModal && (
-        <PricingTable centerId={centerId} onClose={() => setShowPricingModal(false)} />
+        <PricingTable centerId={centerId} onClose={() => setShowPricingModal(false)} data-testid="pricing-table-modal" />
       )}
     </div>
   );

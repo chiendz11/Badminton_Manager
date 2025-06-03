@@ -1,0 +1,654 @@
+Nhập bcrypt trong adminServices.js tại: 2025-05-28T08:54:32.320Z {
+  setRandomFallback: [Function: setRandomFallback],
+  genSaltSync: [Function: genSaltSync],
+  genSalt: [Function: genSalt],
+  hashSync: [Function: hashSync],
+  hash: [Function: hash],
+  compareSync: [Function: compareSync],
+  compare: [Function: compare],
+  getRounds: [Function: getRounds],
+  getSalt: [Function: getSalt],
+  truncates: [Function: truncates],
+  encodeBase64: [Function: encodeBase64],
+  decodeBase64: [Function: decodeBase64]
+}
+Socket.IO không được khởi tạo trong môi trường TEST.
+Server Express đã được khởi tạo nhưng không lắng nghe cổng trong môi trường TEST.
+--- Global Setup ---
+Đây là path D:\newBTL\Badminton-manager-project\Backend\.env.test
+MongoDB: Đang cố gắng kết nối mặc định tới: mongodb://localhost:27017/BadmintonManager
+✅ MongoDB local kết nối mặc định thành công!
+MongoDB: Trạng thái kết nối mặc định: 1
+DEBUG: URI của kết nối mặc định: mongodb://localhost:27017/BadmintonManager
+DEBUG: SocketTimeoutMS của kết nối mặc định: 0
+DEBUG: BufferTimeoutMS của kết nối mặc định: undefined
+Test: Server chạy trên cổng 5000
+loginUserController: 107.285ms
+📩 Dữ liệu từ frontend: {
+  name: 'Nguyễn Văn A',
+  email: 'nguyenvana@example.com',
+  phone_number: '0901234567',
+  username: 'nguyenvana',
+  password: 'Password123!'
+}
+❌ Lỗi server khi đăng ký: { status: 400, errors: { email: 'Email đã được sử dụng!' } }
+loginUserController: 66.987ms
+📩 Dữ liệu từ frontend: {
+  name: 'Nguyễn Văn B',
+  email: 'thuha25121976@gmail.com',
+  phone_number: '0902345678',
+  username: 'nguyenb',
+  password: 'Password123!'
+}
+❌ Lỗi server khi đăng ký: {
+  status: 400,
+  errors: { phone_number: 'Số điện thoại phải bắt đầu bằng 0 hoặc +84!' }
+}
+loginUserController: 65.19ms
+📩 Dữ liệu từ frontend: {
+  name: 'Nguyễn Văn C',
+  email: 'nguyenvanc@example.com',
+  phone_number: '123456',
+  username: 'nguyenc',
+  password: 'Password123!'
+}
+❌ Lỗi server khi đăng ký: {
+  status: 400,
+  errors: { username: 'Tên đăng nhập không được chứa khoảng trắng!' }
+}
+loginUserController: 64.592ms
+📩 Dữ liệu từ frontend: {
+  name: 'Nguyễn Văn D',
+  email: 'nguyenvand@example.com',
+  phone_number: '0903456789',
+  username: 'nguyen van d',
+  password: 'Password123!'
+}
+❌ Lỗi server khi đăng ký: {
+  status: 400,
+  errors: {
+    password: 'Mật khẩu cần có độ dài tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.'
+  }
+}
+loginUserController: 67.999ms
+📩 Dữ liệu từ frontend: {
+  name: 'Nguyễn Văn E',
+  email: 'nguyenvane@example.com',
+  phone_number: '0904567890',
+  username: 'nguyene',
+  password: 'weak'
+}
+❌ Lỗi server khi đăng ký: {
+  status: 400,
+  errors: {
+    phone_number: 'Vui lòng nhập Số điện thoại',
+    username: 'Vui lòng nhập Tên đăng nhập',
+    password: 'Vui lòng nhập Mật khẩu'
+  }
+}
+loginUserController: 63.669ms
+📩 Dữ liệu từ frontend: { name: 'Nguyễn Văn F', email: 'nguyenvanf@example.com' }
+loginUserController: 64.987ms
+loginUserController: 64.859ms
+Lỗi server khi đăng nhập: Error: Sai mật khẩu! Bạn còn 4 lần thử trước khi tài khoản bị khóa.
+    at loginUserService (D:\newBTL\Badminton-manager-project\Backend\src\services\userServices.js:188:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at loginUserController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\userController.js:73:9)
+loginUserController: 65.421ms
+loginUserController: 66.202ms
+Lỗi server khi đăng nhập: Error: Tài khoản của bạn đã bị khóa. Vui lòng thử lại sau 10 phút 0 giây.
+    at loginUserService (D:\newBTL\Badminton-manager-project\Backend\src\services\userServices.js:172:11)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at loginUserController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\userController.js:73:9)
+loginUserController: 65.597ms
+loginUserController: 4.027ms
+loginUserController: 71.511ms
+loginUserController: 0.017ms
+loginUserController: 62.236ms
+loginUserController: 62.855ms
+Lỗi middleware xác thực: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (D:\newBTL\Badminton-manager-project\Backend\node_modules\jsonwebtoken\verify.js:70:17)
+    at protect (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:40:43)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:175:3)
+    at router (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at session (D:\newBTL\Badminton-manager-project\Backend\node_modules\express-session\index.js:487:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at cookieParser (D:\newBTL\Badminton-manager-project\Backend\node_modules\cookie-parser\index.js:71:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at cors (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:188:7)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:224:17
+    at originCallback (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:214:15)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at jsonParser (D:\newBTL\Badminton-manager-project\Backend\node_modules\body-parser\lib\types\json.js:113:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:531:6)
+    at xXssProtectionMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:311:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xPoweredByMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:304:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xPermittedCrossDomainPoliciesMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:297:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xFrameOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:281:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xDownloadOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:261:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xDnsPrefetchControlMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:254:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xContentTypeOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:246:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at strictTransportSecurityMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:239:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at referrerPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:207:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at originAgentClusterMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:182:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at crossOriginResourcePolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:175:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at crossOriginOpenerPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:159:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at contentSecurityPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:124:4)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at helmetMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:533:6)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at expressInit (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\middleware\init.js:40:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at query (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\middleware\query.js:45:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:175:3)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\application.js:181:10)
+    at Server.app (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\express.js:39:9)
+    at Server.emit (node:events:518:28)
+    at parserOnIncoming (node:_http_server:1153:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:117:17)
+loginUserController: 62.256ms
+loginUserController: 62.933ms
+Thư mục uploads đã tồn tại và có quyền ghi: D:\newBTL\Badminton-manager-project\Backend\uploads
+loginUserController: 62.616ms
+Thư mục uploads đã tồn tại và có quyền ghi: D:\newBTL\Badminton-manager-project\Backend\uploads
+Lỗi trong updateUserController: Email này đã được sử dụng bởi người dùng khác!
+loginUserController: 63.197ms
+Thư mục uploads đã tồn tại và có quyền ghi: D:\newBTL\Badminton-manager-project\Backend\uploads
+Error in uploadMiddleware: Error: Input buffer contains unsupported image format
+    at Sharp.toFile (D:\newBTL\Badminton-manager-project\Backend\node_modules\sharp\lib\output.js:90:19)
+    at D:\newBTL\Badminton-manager-project\Backend\src\middleware\uploadMiddleware.js:116:12
+loginUserController: 64.048ms
+Thư mục uploads đã tồn tại và có quyền ghi: D:\newBTL\Badminton-manager-project\Backend\uploads
+Đang lưu file tại: D:\newBTL\Badminton-manager-project\Backend\uploads\1748422477598-fake-image.jpg
+loginUserController: 62.89ms
+Error in updateUserPasswordController: Error: Mật khẩu cũ không chính xác.
+    at updateUserPasswordService (D:\newBTL\Badminton-manager-project\Backend\src\services\userServices.js:283:11)
+    at updateUserPasswordController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\userController.js:193:5)
+loginUserController: 63.427ms
+Error in updateUserPasswordController: Error: Mật khẩu mới cần có độ dài tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
+    at updateUserPasswordService (D:\newBTL\Badminton-manager-project\Backend\src\services\userServices.js:293:11)
+    at updateUserPasswordController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\userController.js:193:5)
+loginUserController: 65.588ms
+Error in updateUserPasswordController: Error: Vui lòng nhập đủ thông tin
+    at updateUserPasswordService (D:\newBTL\Badminton-manager-project\Backend\src\services\userServices.js:277:11)
+    at updateUserPasswordController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\userController.js:193:55)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at csrf (D:\newBTL\Badminton-manager-project\Backend\node_modules\csurf\index.js:117:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at restrictToClient (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:98:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at protect (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:75:5)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+loginUserController: 64.643ms
+loginUserController: 70.251ms
+loginUserController: 70.964ms
+Lỗi middleware xác thực: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (D:\newBTL\Badminton-manager-project\Backend\node_modules\jsonwebtoken\verify.js:70:17)
+    at protect (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:40:43)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:175:3)
+    at router (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at session (D:\newBTL\Badminton-manager-project\Backend\node_modules\express-session\index.js:487:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at cookieParser (D:\newBTL\Badminton-manager-project\Backend\node_modules\cookie-parser\index.js:71:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at cors (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:188:7)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:224:17
+    at originCallback (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:214:15)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at jsonParser (D:\newBTL\Badminton-manager-project\Backend\node_modules\body-parser\lib\types\json.js:122:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:531:6)
+    at xXssProtectionMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:311:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xPoweredByMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:304:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xPermittedCrossDomainPoliciesMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:297:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xFrameOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:281:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xDownloadOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:261:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xDnsPrefetchControlMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:254:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xContentTypeOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:246:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at strictTransportSecurityMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:239:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at referrerPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:207:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at originAgentClusterMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:182:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at crossOriginResourcePolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:175:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at crossOriginOpenerPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:159:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at contentSecurityPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:124:4)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at helmetMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:533:6)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at expressInit (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\middleware\init.js:40:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at query (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\middleware\query.js:45:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:175:3)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\application.js:181:10)
+    at Server.app (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\express.js:39:9)
+    at Server.emit (node:events:518:28)
+    at parserOnIncoming (node:_http_server:1153:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:117:17)
+loginUserController: 65.109ms
+loginUserController: 67.145ms
+✅ Đã thêm rating thành công!
+🔍 Kết quả từ aggregate: [ { _id: new ObjectId('67ca6e3cfc964efa218ab7d8'), avgRating: 4 } ]
+🔍 newAvg: 4
+✅ Đã cập nhật avgRating cho Center 67ca6e3cfc964efa218ab7d8: 4
+❌ Lỗi khi thêm đánh giá: {
+  status: 400,
+  message: 'Hệ thống phát hiện bạn sử dụng các từ không cho phép, bạn đã bị trừ 500 điểm. Điểm hiện tại: 4100.',
+  pointsDeducted: 500,
+  newPoints: 4100
+}
+loginUserController: 65.66ms
+❌ Lỗi khi thêm đánh giá: { status: 400, message: 'Số sao phải từ 1 đến 5!' }
+loginUserController: 64.253ms
+❌ Lỗi khi thêm đánh giá: { status: 400, message: 'Vui lòng điền đầy đủ thông tin!' }
+loginUserController: 73.66ms
+loginUserController: 69.517ms
+loginUserController: 70.335ms
+Lỗi middleware xác thực: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (D:\newBTL\Badminton-manager-project\Backend\node_modules\jsonwebtoken\verify.js:70:17)
+    at protect (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:40:43)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:175:3)
+    at router (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at session (D:\newBTL\Badminton-manager-project\Backend\node_modules\express-session\index.js:487:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at cookieParser (D:\newBTL\Badminton-manager-project\Backend\node_modules\cookie-parser\index.js:71:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at cors (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:188:7)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:224:17
+    at originCallback (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:214:15)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at jsonParser (D:\newBTL\Badminton-manager-project\Backend\node_modules\body-parser\lib\types\json.js:113:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:531:6)
+    at xXssProtectionMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:311:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xPoweredByMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:304:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xPermittedCrossDomainPoliciesMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:297:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xFrameOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:281:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xDownloadOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:261:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xDnsPrefetchControlMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:254:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xContentTypeOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:246:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at strictTransportSecurityMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:239:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at referrerPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:207:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at originAgentClusterMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:182:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at crossOriginResourcePolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:175:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at crossOriginOpenerPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:159:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at contentSecurityPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:124:4)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at helmetMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:533:6)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at expressInit (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\middleware\init.js:40:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at query (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\middleware\query.js:45:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:175:3)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\application.js:181:10)
+    at Server.app (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\express.js:39:9)
+    at Server.emit (node:events:518:28)
+    at parserOnIncoming (node:_http_server:1153:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:117:17)
+loginUserController: 67.049ms
+loginUserController: 65.733ms
+Lỗi trong getDetailedBookingStatsController: Error: Invalid period parameter. Use 'week', 'month' or 'year'.
+    at getUserBookingStats (D:\newBTL\Badminton-manager-project\Backend\src\services\userServices.js:619:11)
+    at getDetailedBookingStatsController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\userController.js:312:63)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at restrictToClient (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:98:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at protect (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:75:5)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+loginUserController: 69.025ms
+Lỗi middleware xác thực: JsonWebTokenError: jwt malformed
+    at Object.module.exports [as verify] (D:\newBTL\Badminton-manager-project\Backend\node_modules\jsonwebtoken\verify.js:70:17)
+    at protect (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:40:43)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at Route.dispatch (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:119:3)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:284:15
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:175:3)
+    at router (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:47:12)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at session (D:\newBTL\Badminton-manager-project\Backend\node_modules\express-session\index.js:487:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at cookieParser (D:\newBTL\Badminton-manager-project\Backend\node_modules\cookie-parser\index.js:71:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at cors (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:188:7)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:224:17
+    at originCallback (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:214:15)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\cors\lib\index.js:204:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at jsonParser (D:\newBTL\Badminton-manager-project\Backend\node_modules\body-parser\lib\types\json.js:113:7)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:531:6)
+    at xXssProtectionMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:311:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xPoweredByMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:304:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xPermittedCrossDomainPoliciesMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:297:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xFrameOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:281:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xDownloadOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:261:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xDnsPrefetchControlMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:254:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at xContentTypeOptionsMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:246:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at strictTransportSecurityMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:239:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at referrerPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:207:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at originAgentClusterMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:182:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at crossOriginResourcePolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:175:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at crossOriginOpenerPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:159:3)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at contentSecurityPolicyMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:124:4)
+    at internalNext (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:529:6)
+    at helmetMiddleware (D:\newBTL\Badminton-manager-project\Backend\node_modules\helmet\index.cjs:533:6)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at expressInit (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\middleware\init.js:40:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at query (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\middleware\query.js:45:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:328:13)
+    at D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:346:12)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:280:10)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\index.js:175:3)
+    at Function.handle (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\application.js:181:10)
+    at Server.app (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\express.js:39:9)
+    at Server.emit (node:events:518:28)
+    at parserOnIncoming (node:_http_server:1153:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:117:17)
+loginUserController: 69.556ms
+loginUserController: 67.553ms
+[2025-05-28 08:54:41] DEBUG Creating transport: nodemailer (6.10.1; +https://nodemailer.com/; SMTP/6.10.1[client:6.10.1])
+[2025-05-28 08:54:41] DEBUG Sending mail using SMTP/6.10.1[client:6.10.1]
+[2025-05-28 08:54:41] DEBUG [kQC0eqLNdBk] Resolved smtp.gmail.com as 64.233.189.109 [cache miss]
+[2025-05-28 08:54:41] INFO  [kQC0eqLNdBk] Secure connection established to 64.233.189.109:465
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 220 smtp.gmail.com ESMTP d9443c01a7336-234d358ee2dsm7213565ad.141 - gsmtp
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] C: EHLO [127.0.0.1]
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 250-smtp.gmail.com at your service, [42.117.88.14]
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 250-SIZE 35882577
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 250-8BITMIME
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 250-ENHANCEDSTATUSCODES
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 250-PIPELINING
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 250-CHUNKING
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] S: 250 SMTPUTF8
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] SMTP handshake finished
+[2025-05-28 08:54:43] DEBUG [kQC0eqLNdBk] C: AUTH PLAIN ADIzMDIxNDkwQHZudS5lZHUudm4ALyogc2VjcmV0ICov
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] S: 235 2.7.0 Accepted
+[2025-05-28 08:54:44] INFO  [kQC0eqLNdBk] User "23021490@vnu.edu.vn" authenticated
+[2025-05-28 08:54:44] INFO  Sending message <94a3ddd0-07ee-78a8-db4f-76f3abb1ea32@vnu.edu.vn> to <thuha25121976@gmail.com>
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] C: MAIL FROM:<23021490@vnu.edu.vn>
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] S: 250 2.1.0 OK d9443c01a7336-234d358ee2dsm7213565ad.141 - gsmtp
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] C: RCPT TO:<thuha25121976@gmail.com>
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] S: 250 2.1.5 OK d9443c01a7336-234d358ee2dsm7213565ad.141 - gsmtp
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] C: DATA
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] S: 354 Go ahead d9443c01a7336-234d358ee2dsm7213565ad.141 - gsmtp
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] From: 23021490@vnu.edu.vn
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] To: thuha25121976@gmail.com
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] Subject: =?UTF-8?Q?=C4=90=E1=BA=B7t_L=E1=BA=A1i_M=E1=BA=ADt?=
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk]  =?UTF-8?Q?_Kh=E1=BA=A9u?=
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] Message-ID: <94a3ddd0-07ee-78a8-db4f-76f3abb1ea32@vnu.edu.vn>
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] Content-Transfer-Encoding: quoted-printable
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] Date: Wed, 28 May 2025 08:54:41 +0000
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] MIME-Version: 1.0
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] Content-Type: text/html; charset=utf-8
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] 
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] 
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk]         <p>B=E1=BA=A1n =C4=91=C3=A3 y=C3=AAu c=E1=BA=A7u =C4=91=E1=BA=B7t =
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] l=E1=BA=A1i m=E1=BA=ADt kh=E1=BA=A9u cho t=C3=A0i kho=E1=BA=A3n c=E1=BB=A7a=
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk]  m=C3=ACnh.</p>
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk]         <p>Vui l=C3=B2ng nh=E1=BA=A5p v=C3=A0o li=C3=AAn =
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] k=E1=BA=BFt sau =C4=91=E1=BB=83 =C4=91=E1=BA=B7t l=E1=BA=A1i m=E1=BA=ADt =
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] kh=E1=BA=A9u:</p>
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk]         <a href=3D"http://localhost:5173/reset-password/5=
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] 8da8e648c94e976f904e42d5cbba2a8e5287eafa5841fb2b227688e6cff9e0b/67bd323489a=
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] cfa439c4d7947">http://localhost:5173/reset-password/58da8e648c94e976f904e42=
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] d5cbba2a8e5287eafa5841fb2b227688e6cff9e0b/67bd323489acfa439c4d7947</a>
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk]         <p>Li=C3=AAn k=E1=BA=BFt n=C3=A0y s=E1=BA=BD h=E1=BA=BFt =
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] h=E1=BA=A1n sau 1 gi=E1=BB=9D.</p>
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk]    =20
+[2025-05-28 08:54:44] DEBUG [kQC0eqLNdBk] .
+[2025-05-28 08:54:44] INFO  [kQC0eqLNdBk] <1087 bytes encoded mime message (source size 1079 bytes)>
+[2025-05-28 08:54:45] DEBUG [kQC0eqLNdBk] S: 250 2.0.0 OK  1748422484 d9443c01a7336-234d358ee2dsm7213565ad.141 - gsmtp
+[2025-05-28 08:54:45] DEBUG [kQC0eqLNdBk] Closing connection to the server using "end"
+Email đã được gửi: <94a3ddd0-07ee-78a8-db4f-76f3abb1ea32@vnu.edu.vn>
+loginUserController: 66.604ms
+[2025-05-28 08:54:46] INFO  [kQC0eqLNdBk] Connection closed
+Lỗi quên mật khẩu bằng email: { status: 400, message: 'Email không hợp lệ' }
+loginUserController: 64.954ms
+loginUserController: 64.963ms
+🚀 ~ resetPasswordController ~ userId: 67bd323489acfa439c4d7947
+🚀 ~ resetPasswordController ~ token: 9cca68ed7cb593f53ce5b81b8a021da0db72e3e6fd32db428210a52aa7d722b8
+loginUserController: 64.111ms
+🚀 ~ resetPasswordController ~ userId: 67bd323489acfa439c4d7947
+🚀 ~ resetPasswordController ~ token: invalid-token
+loginUserController: 68.012ms
+🚀 ~ resetPasswordController ~ userId: 67bd323489acfa439c4d7947
+🚀 ~ resetPasswordController ~ token: expired-token
+loginUserController: 67.448ms
+🚀 ~ resetPasswordController ~ userId: 67bd323489acfa439c4d7947
+🚀 ~ resetPasswordController ~ token: 9cca68ed7cb593f53ce5b81b8a021da0db72e3e6fd32db428210a52aa7d722b8
+PASS __tests__/integration_test/user.integration.test.js (14.471 s)
+----------|---------|----------|---------|---------|-------------------
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------|---------|----------|---------|---------|-------------------
+All files |       0 |        0 |       0 |       0 |                   
+----------|---------|----------|---------|---------|-------------------
+
+Test Suites: 1 passed, 1 total
+Tests:       41 passed, 41 total
+Snapshots:   0 total
+Time:        14.533 s, estimated 15 s
+--- Global Teardown ---
+MongoDB: Đã xóa database.
+MongoDB: Đã ngắt kết nối Mongoose.
+--- Teardown hoàn tất ---

@@ -117,7 +117,7 @@ export const getDetailedBookingStats = async (period = "month") => {
     return response.data;
   } catch (error) {
     throw error;
-  }
+  }F
 };
 
 // Quên mật khẩu qua email

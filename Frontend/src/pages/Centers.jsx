@@ -77,7 +77,13 @@ const Centers = () => {
     try {
       setLoading(true);
       const data = await getAllCenters();
-      setCenters(data);
+      // Kiểm tra nếu data là một object có thuộc tính 'centers'
+      if (data && data.centers) {
+        setCenters(data.centers);
+      } else {
+        // Nếu API trả về trực tiếp mảng centers, thì setCenters(data)
+        setCenters(data);
+      }
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -135,7 +141,7 @@ const Centers = () => {
   const renderFacilities = (facilities) => {
     return (
       <div className="center-facilities">
-        {facilities.map((facility, index) => (
+        {facilities && facilities.map((facility, index) => ( // Thêm kiểm tra facilities tồn tại
           <span key={index} className="facility-tag">
             {facility}
           </span>
@@ -185,59 +191,60 @@ const Centers = () => {
         </div>
 
         {loading ? (
-          <p>Loading...</p>
+          <p data-testid="centers-loading-message">Đang tải...</p>
         ) : error ? (
-          <p>Error: {error}</p>
+          <p data-testid="centers-error-message">Error: {error}</p>
         ) : (
           <div className="centers-grid">
             {centers.map((center) => (
-              <div key={center._id} className="center-card">
+              <div key={center._id} className="center-card" data-testid={`center-card-${center._id}`}>
                 <div className="center-image">
                   <img
-                    src={center.imgUrl[0] || "/images/default.png"}
+                    src={center.imgUrl && center.imgUrl[0] ? center.imgUrl[0] : "/images/default.png"}
                     alt={center.name}
                     onError={(e) => {
                       e.target.src = "/images/default.png";
                     }}
+                    data-testid={`center-image-${center._id}`}
                   />
-                  <div className="center-badge">
+                  <div className="center-badge" data-testid={`center-total-courts-badge-${center._id}`}>
                     <i className="fas fa-table-tennis"></i> {center.totalCourts} sân
                   </div>
                   {center.popularity && (
-                    <div className="center-popular-tag">
+                    <div className="center-popular-tag" data-testid={`center-popularity-${center._id}`}>
                       <i className="fas fa-fire"></i> {center.popularity}
                     </div>
                   )}
                   {center.promotion && (
-                    <div className="center-promo-badge">
+                    <div className="center-promo-badge" data-testid={`center-promotion-${center._id}`}>
                       <i className="fas fa-tags"></i> {center.promotion}
                     </div>
                   )}
                 </div>
                 <div className="center-info">
                   <div className="center-header">
-                    <h2>{center.name}</h2>
-                    <div className="center-rating">
+                    <h2 data-testid={`center-name-${center._id}`}>{center.name}</h2>
+                    <div className="center-rating" data-testid={`center-rating-${center._id}`}>
                       <div className="stars">{renderRatingStars(center.avgRating)}</div>
                       <span>{center.avgRating}/5</span>
                     </div>
                   </div>
-                  <div className="center-booking-stats">
+                  <div className="center-booking-stats" data-testid={`center-booking-stats-${center._id}`}>
                     <i className="fas fa-calendar-check"></i>
                     <span>{center.bookingCount || 0}+ lượt đặt tháng này</span>
                   </div>
-                  <p className="center-address">
+                  <p className="center-address" data-testid={`center-address-${center._id}`}>
                     <i className="fas fa-map-marker-alt"></i> {center.address}
                   </p>
                   <div className="center-divider"></div>
-                  <p className="center-description">{center.description}</p>
+                  <p className="center-description" data-testid={`center-description-${center._id}`}>{center.description}</p>
                   {renderFacilities(center.facilities)}
                   <div className="center-footer">
                     <div className="center-details">
-                      <span>
+                      <span data-testid={`center-open-hours-${center._id}`}>
                         <i className="fas fa-clock"></i> {openHours}
                       </span>
-                      <span>
+                      <span data-testid={`center-phone-${center._id}`}>
                         <i className="fas fa-phone"></i> {center.phone}
                       </span>
                     </div>
@@ -246,12 +253,14 @@ const Centers = () => {
                         className="view-details-btn"
                         onClick={() => openModal(center)}
                         title="Xem chi tiết"
+                        data-testid={`center-details-button-${center._id}`} // THÊM data-testid NÀY
                       >
                         <i className="fas fa-eye"></i>
                       </button>
                       <button
                         onClick={() => goToBooking(center._id)}
                         className="book-center-btn"
+                        data-testid={`book-now-button-${center._id}`} // THÊM data-testid NÀY
                       >
                         <span>Đặt Sân Ngay</span>
                         <i className="fas fa-arrow-right"></i>
@@ -273,39 +282,39 @@ const Centers = () => {
           
           <div className="tournaments-container">
             {upcomingTournaments.map((tournament) => (
-              <div key={tournament.id} className="tournament-card">
+              <div key={tournament.id} className="tournament-card" data-testid={`tournament-card-${tournament.id}`}>
                 <div className="tournament-image">
-                  <img src={tournament.image} alt={tournament.name} />
-                  <div className="tournament-date-badge">
+                  <img src={tournament.image} alt={tournament.name} data-testid={`tournament-image-${tournament.id}`} />
+                  <div className="tournament-date-badge" data-testid={`tournament-date-badge-${tournament.id}`}>
                     <i className="fas fa-calendar-alt"></i> {tournament.date}
                   </div>
                 </div>
                 <div className="tournament-content">
-                  <h3>{tournament.name}</h3>
+                  <h3 data-testid={`tournament-name-${tournament.id}`}>{tournament.name}</h3>
                   <div className="tournament-details">
-                    <div className="tournament-detail-item">
+                    <div className="tournament-detail-item" data-testid={`tournament-location-${tournament.id}`}>
                       <i className="fas fa-map-marker-alt"></i>
                       <span>{tournament.location}</span>
                     </div>
-                    <div className="tournament-detail-item">
+                    <div className="tournament-detail-item" data-testid={`tournament-participants-${tournament.id}`}>
                       <i className="fas fa-users"></i>
                       <span>{tournament.participants} người tham gia</span>
                     </div>
-                    <div className="tournament-detail-item">
+                    <div className="tournament-detail-item" data-testid={`tournament-registration-deadline-${tournament.id}`}>
                       <i className="fas fa-stopwatch"></i>
                       <span>Hạn đăng ký: {tournament.registrationDeadline}</span>
                     </div>
-                    <div className="tournament-detail-item">
+                    <div className="tournament-detail-item" data-testid={`tournament-prize-${tournament.id}`}>
                       <i className="fas fa-trophy"></i>
                       <span>Giải thưởng: {tournament.prize}</span>
                     </div>
                   </div>
                   <div className="tournament-actions">
-                    <Link to="/competition" className="view-tournament-btn">
+                    <Link to="/competition" className="view-tournament-btn" data-testid={`view-tournament-button-${tournament.id}`}>
                       <span>Xem Chi Tiết</span>
                       <i className="fas fa-angle-right"></i>
                     </Link>
-                    <button className="register-tournament-btn">
+                    <button className="register-tournament-btn" data-testid={`register-tournament-button-${tournament.id}`}>
                       <i className="fas fa-edit"></i>
                       <span>Chờ thông báo</span>
                     </button>
@@ -316,7 +325,7 @@ const Centers = () => {
           </div>
           
           <div className="view-all-tournaments">
-            <Link to="/competition" className="view-all-btn">
+            <Link to="/competition" className="view-all-btn" data-testid="view-all-tournaments-button">
               <span>Xem Tất Cả Giải Đấu</span>
               <i className="fas fa-arrow-right"></i>
             </Link>
@@ -338,6 +347,7 @@ const Centers = () => {
                 rel="noopener noreferrer" 
                 className="partner-logo" 
                 key={index}
+                data-testid={`partner-logo-${partner.name.toLowerCase().replace(/\s/g, '-')}`} // Thêm data-testid
               >
                 <img src={partner.logo} alt={partner.name} />
               </a>
@@ -346,21 +356,21 @@ const Centers = () => {
         </div>
 
         <div className="centers-info-section">
-          <div className="info-card">
+          <div className="info-card" data-testid="info-card-safe-booking">
             <div className="info-icon">
               <i className="fas fa-shield-alt"></i>
             </div>
             <h3>Đặt Sân An Toàn</h3>
             <p>Thanh toán bảo mật và đảm bảo hoàn tiền nếu có vấn đề</p>
           </div>
-          <div className="info-card">
+          <div className="info-card" data-testid="info-card-fast-booking">
             <div className="info-icon">
               <i className="fas fa-bolt"></i>
             </div>
             <h3>Đặt Sân Nhanh Chóng</h3>
             <p>Chỉ mất vài phút để hoàn tất đặt sân và nhận xác nhận</p>
           </div>
-          <div className="info-card">
+          <div className="info-card" data-testid="info-card-quality-experience">
             <div className="info-icon">
               <i className="fas fa-chart-line"></i>
             </div>
@@ -374,6 +384,7 @@ const Centers = () => {
             center={selectedCenter}
             isOpen={modalOpen}
             onClose={closeModal}
+            data-testid="center-detail-modal" // Thêm data-testid
           />
         )}
       </div>
@@ -382,6 +393,7 @@ const Centers = () => {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+        data-testid="login-modal" // Thêm data-testid
       />
       <Footer />
     </>

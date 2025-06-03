@@ -59,7 +59,7 @@ const Login = () => {
             Đăng nhập - Chủ sân
           </h2>
           <p className="text-sm text-gray-600 mb-6">
-            ALOBO - Quản lý sân thể thao
+            BadMan - Quản lý sân thể thao
           </p>
 
           {error && (
@@ -121,18 +121,6 @@ const Login = () => {
           >
             {isLoading ? 'Đang đăng nhập...' : 'ĐĂNG NHẬP'}
           </button>
-
-          <p className="text-center text-sm text-orange-600 mb-4">
-            Nếu bạn là KHÁCH CHƠI, bấm vào đây để tải ứng dụng ALOBO - Tìm kiếm
-            và đặt lịch
-          </p>
-
-          <p className="text-center text-sm">
-            Bạn chưa có tài khoản?{' '}
-            <span className="text-green-600 cursor-pointer">
-              Xem hướng dẫn
-            </span>
-          </p>
         </div>
       </div>
     </div>

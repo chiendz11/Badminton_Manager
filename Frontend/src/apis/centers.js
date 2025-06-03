@@ -13,18 +13,6 @@ export const getCourtsByCenter = async (centerId) => {
   }
 };
 
-export const getCourtStatusByBooking = async (centerId, date, courtId) => {
-  try {
-    const response = await axiosInstance.get("/api/centers/status", {
-      params: { centerId, date }
-    });
-    // Nếu không có dữ liệu cho court, trả về mảng mặc định (số slot = times.length - 1)
-    return response.data[courtId] || Array(19).fill("trống");
-  } catch (error) {
-    console.error("Lỗi khi lấy trạng thái booking:", error.response?.data || error.message);
-    throw error;
-  }
-};
 
 export const getPriceForTimeslot = async ({ centerId, date, timeslot }) => {
   try {

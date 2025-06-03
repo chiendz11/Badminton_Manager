@@ -12,7 +12,9 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
   const [selectedRating, setSelectedRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviews, setReviews] = useState([]);
-  const [showConfirmModal, setShowConfirmModal] = useState(false); // State cho modal xác nhận
+  const [showConfirmModal, setShowConfirmModal] = useState(false); // Modal xác nhận
+  const [showErrorModal, setShowErrorModal] = useState(false); // Modal thông báo lỗi
+  const [errorMessage, setErrorMessage] = useState(""); // Thông báo lỗi
   const { user } = useContext(AuthContext);
   const userId = user?._id;
 
@@ -29,16 +31,18 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
     const handleEscape = (e) => {
       if (e.key === "Escape") {
         if (showConfirmModal) {
-          setShowConfirmModal(false); // Đóng modal xác nhận nếu đang mở
+          setShowConfirmModal(false);
+        } else if (showErrorModal) {
+          setShowErrorModal(false);
         } else {
-          onClose(); // Đóng modal chính nếu modal xác nhận không mở
+          onClose();
         }
       }
     };
 
     if (isOpen) window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose, showConfirmModal]);
+  }, [isOpen, onClose, showConfirmModal, showErrorModal]);
 
   // Close modal when clicking outside the modal container
   const handleOutsideClick = (e) => {
@@ -81,14 +85,27 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
     }
   }, [center]);
 
-  // Xử lý khi nhấn "Gửi đánh giá" - Hiển thị modal xác nhận
+  // Xử lý khi nhấn "Gửi đánh giá" - Kiểm tra đăng nhập trước
   const handleSubmitReview = (e) => {
     e.preventDefault();
 
-    if (reviewContent.trim() === "") {
-      alert("Vui lòng nhập nội dung đánh giá!");
+    // Kiểm tra nếu chưa đăng nhập (userId không tồn tại)
+    if (!userId) {
+      setErrorMessage("Vui lòng đăng nhập để đánh giá!");
+      setShowErrorModal(true);
       return;
     }
+
+    // Kiểm tra nội dung đánh giá
+    if (reviewContent.trim() === "") {
+      setErrorMessage("Vui lòng nhập nội dung đánh giá!");
+      setShowErrorModal(true);
+      return;
+    }
+
+    // Reset thông báo lỗi trước khi gửi
+    setErrorMessage("");
+    setShowErrorModal(false);
 
     // Hiển thị modal xác nhận
     setShowConfirmModal(true);
@@ -98,28 +115,23 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
   const confirmSubmitReview = async () => {
     const ratingData = {
       centerId: center._id,
-      userId, // Lấy từ context, đảm bảo user đã đăng nhập
       stars: selectedRating,
       comment: reviewContent,
     };
 
     try {
-      // Gửi đánh giá qua API
       const data = await submitRating(ratingData);
-      // Giả sử API trả về { message: "...", rating: {...} }
       if (data && data.rating) {
-        // Thêm đánh giá mới vào đầu danh sách
         setReviews([data.rating, ...reviews]);
         alert("Đánh giá của bạn đã được gửi thành công!");
       }
-      // Reset form sau khi gửi thành công
       setReviewContent("");
       setSelectedRating(5);
     } catch (error) {
       console.error("Error submitting review:", error);
-      alert("Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại!");
+      setErrorMessage(error || "Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại!");
+      setShowErrorModal(true);
     } finally {
-      // Đóng modal xác nhận
       setShowConfirmModal(false);
     }
   };
@@ -371,7 +383,7 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
               Xác nhận đánh giá
             </h3>
             <p style={{ marginBottom: '20px', fontSize: '1rem' }}>
-              Bạn có chắc chắn về đánh giá này không?
+              Bạn có chắc chắn về đánh giá này không?. Nếu hệ thống phát hiện bạn đánh giá của bạn có chứa từ ngữ tiêu cực thì sẽ trừ 500 điểm của bạn.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
               <button
@@ -403,6 +415,63 @@ const CenterDetailModal = ({ center, isOpen, onClose }) => {
                 Hủy
               </button>
             </div>
+          </div>
+        </>
+      )}
+
+      {/* Modal thông báo lỗi */}
+      {showErrorModal && (
+        <>
+          <div 
+            className="modal-overlay confirm-overlay"
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              zIndex: 2000,
+              display: 'block'
+            }}
+            onClick={() => setShowErrorModal(false)}
+          />
+          <div 
+            className="confirm-modal"
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              backgroundColor: 'white',
+              padding: '20px',
+              borderRadius: '10px',
+              zIndex: 2100,
+              width: '300px',
+              textAlign: 'center',
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)'
+            }}
+          >
+            <h3 style={{ marginBottom: '20px', fontSize: '1.25rem', fontWeight: 'bold', color: '#e50914' }}>
+              Lỗi khi gửi đánh giá
+            </h3>
+            <p style={{ marginBottom: '20px', fontSize: '1rem', color: '#333' }}>
+              {errorMessage}
+            </p>
+            <button
+              onClick={() => setShowErrorModal(false)}
+              style={{
+                backgroundColor: '#e50914',
+                color: 'white',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+            >
+              Đóng
+            </button>
           </div>
         </>
       )}

@@ -1,0 +1,1074 @@
+Nhập bcrypt trong adminServices.js tại: 2025-05-31T14:30:52.254Z {
+  setRandomFallback: [Function: setRandomFallback],
+  genSaltSync: [Function: genSaltSync],
+  genSalt: [Function: genSalt],
+  hashSync: [Function: hashSync],
+  hash: [Function: hash],
+  compareSync: [Function: compareSync],
+  compare: [Function: compare],
+  getRounds: [Function: getRounds],
+  getSalt: [Function: getSalt],
+  truncates: [Function: truncates],
+  encodeBase64: [Function: encodeBase64],
+  decodeBase64: [Function: decodeBase64]
+}
+Socket.IO không được khởi tạo trong môi trường TEST.
+Server Express đã được khởi tạo nhưng không lắng nghe cổng trong môi trường TEST.
+--- Global Setup ---
+Đây là path D:\newBTL\Badminton-manager-project\Backend\.env.test
+MongoDB: Đang cố gắng kết nối mặc định tới: mongodb+srv://BadmintonManager:bop29042005@cluster0.lz6cu1d.mongodb.net/BadmintonManager
+✅ MongoDB local kết nối mặc định thành công!
+MongoDB: Trạng thái kết nối mặc định: 1
+DEBUG: URI của kết nối mặc định: mongodb+srv://BadmintonManager:bop29042005@cluster0.lz6cu1d.mongodb.net/BadmintonManager
+DEBUG: SocketTimeoutMS của kết nối mặc định: 0
+DEBUG: BufferTimeoutMS của kết nối mặc định: undefined
+Test: Server chạy trên cổng 5000
+loginUserController: 306.259ms
+Created new court entry for court 68380fd4e63f0940c30dee6c with timeslot 10 (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+loginUserController: 207.073ms
+Added timeslot -1 for court 68380fd4e63f0940c30dee6c (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+loginUserController: 188.179ms
+Created new court entry for court 683b12b4698ffb7a1a03ae8c with timeslot 10 (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [
+    { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] },
+    { courtId: '683b12b4698ffb7a1a03ae8c', timeslots: [Array] }
+  ]
+}
+loginUserController: 192.227ms
+Created new court entry for court 68380fd4e63f0940c30dee6c with timeslot 10 (Cache).
+Updated pending booking in cache for key pending:undefined:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: undefined,
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+loginUserController: 215.067ms
+Đặt sân thành công! Đã lưu vào DB đơn giữ chỗ _id=undefined
+User 67bd323489acfa439c4d7947 stats.totalBookings được tăng lên thành: 464
+Updated totalBookings for user HuyHoàng: 464
+HuyHoàng
+loginUserController: 188.536ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 180.328ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 184.793ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Bạn đã có booking pending trên trung tâm này. Vui lòng chờ hết 5 phút trước khi đặt thêm.
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:83:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Bạn đã có booking pending trên trung tâm này. Vui lòng chờ hết 5 phút trước khi đặt thêm.
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:83:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 188.812ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 235.336ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 172.712ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 172.122ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 194.665ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 187.249ms
+Error confirming booking to DB (Service - Transaction aborted): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+Error confirming booking to DB (Controller): Error: Không tìm thấy booking pending trong cache
+    at pendingBookingToDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:92:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at pendingBookingToDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:49:21)
+loginUserController: 191.13ms
+Created new court entry for court 68380fd4e63f0940c30dee6c with timeslot 9 (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+Added timeslot 10 for court 68380fd4e63f0940c30dee6c (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+getMyPendingTimeslots - Mapping cho user 67bd323489acfa439c4d7947: {
+  '68380fd4e63f0940c30dee6c': [
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    {
+      status: 'myPending',
+      userId: '67bd323489acfa439c4d7947',
+      name: 'HuyHoàng'
+    },
+    {
+      status: 'myPending',
+      userId: '67bd323489acfa439c4d7947',
+      name: 'HuyHoàng'
+    },
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống'
+  ]
+}
+Đã xóa 1 keys của booking pending cho user 67bd323489acfa439c4d7947 tại center 67ca6e3cfc964efa218ab7d8
+getPendingMappingDB - Tham số date: 2025-05-31
+getPendingMappingDB - Chuẩn hóa date: 2025-05-31T00:00:00.000Z
+getPendingMappingDB - Khoảng thời gian truy vấn: từ 2025-05-31T00:00:00.000Z đến 2025-05-31T23:59:59.999Z
+getPendingMappingDB - Bookings tìm thấy (0): []
+Mapping cho center 67ca6e3cfc964efa218ab7d8, ngày 2025-05-31T00:00:00.000Z: {}
+loginUserController: 164.971ms
+Created new court entry for court 68380fd4e63f0940c30dee6c with timeslot 9 (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+Added timeslot 10 for court 68380fd4e63f0940c30dee6c (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+Đã xóa 0 keys của booking pending cho user 67bd323489acfa439c4d7947 tại center invalid-id
+getPendingMappingDB - Tham số date: 2025-05-31
+getPendingMappingDB - Chuẩn hóa date: 2025-05-31T00:00:00.000Z
+getPendingMappingDB - Khoảng thời gian truy vấn: từ 2025-05-31T00:00:00.000Z đến 2025-05-31T23:59:59.999Z
+Error clearing all pending bookings (Controller): CastError: Cast to ObjectId failed for value "invalid-id" (type string) at path "centerId" for model "Booking"
+    at SchemaObjectId.cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schema\objectId.js:251:11)
+    at SchemaObjectId.SchemaType.applySetters (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schemaType.js:1255:12)
+    at SchemaObjectId.SchemaType.castForQuery (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schemaType.js:1673:17)
+    at cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\cast.js:390:32)
+    at model.Query.Query.cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:5055:12)
+    at model.Query.Query._castConditions (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:2351:10)
+    at model.Query._find (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:2378:8)
+    at model.Query.exec (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:4604:80)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at getPendingMappingDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:409:20)
+    at getFullPendingMapping (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:467:21)
+    at clearAllPendingBookingsController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:110:21) {
+  stringValue: '"invalid-id"',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: 'invalid-id',
+  path: 'centerId',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+      at new ObjectId (D:\newBTL\Badminton-manager-project\Backend\node_modules\bson\src\objectid.ts:120:15)
+      at castObjectId (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at SchemaObjectId.cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schema\objectId.js:249:12)
+      at SchemaObjectId.SchemaType.applySetters (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schemaType.js:1255:12)
+      at SchemaObjectId.SchemaType.castForQuery (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schemaType.js:1673:17)
+      at cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\cast.js:390:32)
+      at model.Query.Query.cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:5055:12)
+      at model.Query.Query._castConditions (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:2351:10)
+      at model.Query._find (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:2378:8)
+      at model.Query.exec (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:4604:80)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at getPendingMappingDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:409:20)
+      at getFullPendingMapping (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:467:21)
+      at clearAllPendingBookingsController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:110:21),
+  valueType: 'string'
+}
+loginUserController: 181.416ms
+Removed timeslot 10 for court 68380fd4e63f0940c30dee6c (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+getMyPendingTimeslots - Mapping cho user 67bd323489acfa439c4d7947: {
+  '68380fd4e63f0940c30dee6c': [
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    {
+      status: 'myPending',
+      userId: '67bd323489acfa439c4d7947',
+      name: 'HuyHoàng'
+    },
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống'
+  ]
+}
+loginUserController: 177.833ms
+Added timeslot 10 for court 68380fd4e63f0940c30dee6c (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+getMyPendingTimeslots - Mapping cho user 67bd323489acfa439c4d7947: {}
+loginUserController: 179.325ms
+getPendingMappingDB - Tham số date: 2025-05-29
+getPendingMappingDB - Chuẩn hóa date: 2025-05-29T00:00:00.000Z
+getPendingMappingDB - Khoảng thời gian truy vấn: từ 2025-05-29T00:00:00.000Z đến 2025-05-29T23:59:59.999Z
+getPendingMappingDB - Bookings tìm thấy (1): [
+  {
+    _id: new ObjectId('683b12c2698ffb7a1a03af54'),
+    date: 2025-05-29T00:00:00.000Z,
+    status: 'pending',
+    type: 'daily',
+    courts: [ [Object] ]
+  }
+]
+Mapping cho center 67ca6e3cfc964efa218ab7d8, ngày 2025-05-29T00:00:00.000Z: {
+  '68380fd4e63f0940c30dee6c': [
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    { status: 'pending', userId: '[object Object]', name: 'HuyHoàng' },
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống',
+    'trống'
+  ]
+}
+loginUserController: 185.847ms
+getPendingMappingDB - Tham số date: invalid-date
+Error fetching pending mapping (Controller): RangeError: Invalid time value
+    at Date.toISOString (<anonymous>)
+    at toISOString (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:405:66)
+    at getPendingMappingDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:467:27)
+    at getPendingMappingController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:136:70)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at restrictToClient (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:98:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at protect (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:75:5)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+loginUserController: 200.631ms
+loginUserController: 192.188ms
+loginUserController: 195.856ms
+Error checking pending booking existence (Controller): CastError: Cast to ObjectId failed for value "invalid-id" (type string) at path "centerId" for model "Booking"
+    at SchemaObjectId.cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schema\objectId.js:251:11)
+    at SchemaObjectId.SchemaType.applySetters (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schemaType.js:1255:12)
+    at SchemaObjectId.SchemaType.castForQuery (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schemaType.js:1673:17)
+    at cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\cast.js:390:32)
+    at model.Query.Query.cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:5055:12)
+    at model.Query.Query._castConditions (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:2351:10)
+    at model.Query._findOne (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:2674:8)
+    at model.Query.exec (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:4604:80)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at checkPendingExistsController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:177:28) {
+  stringValue: '"invalid-id"',
+  messageFormat: undefined,
+  kind: 'ObjectId',
+  value: 'invalid-id',
+  path: 'centerId',
+  reason: BSONError: input must be a 24 character hex string, 12 byte Uint8Array, or an integer
+      at new ObjectId (D:\newBTL\Badminton-manager-project\Backend\node_modules\bson\src\objectid.ts:120:15)
+      at castObjectId (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\cast\objectid.js:25:12)
+      at SchemaObjectId.cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schema\objectId.js:249:12)
+      at SchemaObjectId.SchemaType.applySetters (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schemaType.js:1255:12)
+      at SchemaObjectId.SchemaType.castForQuery (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\schemaType.js:1673:17)
+      at cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\cast.js:390:32)
+      at model.Query.Query.cast (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:5055:12)
+      at model.Query.Query._castConditions (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:2351:10)
+      at model.Query._findOne (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:2674:8)
+      at model.Query.exec (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:4604:80)
+      at processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at checkPendingExistsController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:177:28),
+  valueType: 'string'
+}
+loginUserController: 198.795ms
+Found 1 booked bookings for user 67bd323489acfa439c4d7947
+Processing booking 1/1
+   Processing court 1/1
+     Slot 10: totalSlots=1, timeslotCounts[10]=1, category=Sáng
+     Slot 11: totalSlots=2, timeslotCounts[11]=1, category=Sáng
+Final timeslotCounts: { '10': 1, '11': 1 }
+Final categoryCounts: { 'Sáng': 2, 'Trưa': 0, 'Chiều': 0, 'Tối': 0 }
+Total slots counted: 2
+Popular slot: 10 with count: 1
+Popular time range computed as: 10:00 - 11:00
+Category percentages: { 'Sáng': '100.00', 'Trưa': '0.00', 'Chiều': '0.00', 'Tối': '0.00' }
+loginUserController: 207.095ms
+loginUserController: 195.289ms
+Booking với _id 683b12c9698ffb7a1a03afbe đã được đánh dấu xóa mềm (deleted: true)
+loginUserController: 177.662ms
+Không tìm thấy booking paid với _id 683b12c9698ffb7a1a03afd0 để xóa
+loginUserController: 183.296ms
+Error in deleteBookingController: Error: Invalid bookingId format
+    at deleteBookingService (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:497:11)
+    at deleteBookingController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:274:69)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at csrf (D:\newBTL\Badminton-manager-project\Backend\node_modules\csurf\index.js:117:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at restrictToClient (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:98:5)
+    at Layer.handle [as handle_request] (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\newBTL\Badminton-manager-project\Backend\node_modules\express\lib\router\route.js:149:13)
+    at protect (D:\newBTL\Badminton-manager-project\Backend\src\middleware\authMiddleware.js:75:5)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+loginUserController: 178.27ms
+loginUserController: 174.486ms
+loginUserController: 185.869ms
+Added timeslot 8 for court 68380fd4e63f0940c30dee6c (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+Removed timeslot 9 for court 68380fd4e63f0940c30dee6c (Cache).
+Updated pending booking in cache for key pending:67ca6e3cfc964efa218ab7d8:2025-05-29:67bd323489acfa439c4d7947:HuyHoàng: {
+  name: 'HuyHoàng',
+  userId: '67bd323489acfa439c4d7947',
+  centerId: '67ca6e3cfc964efa218ab7d8',
+  date: '2025-05-29',
+  status: 'pending',
+  courts: [ { courtId: '68380fd4e63f0940c30dee6c', timeslots: [Array] } ]
+}
+Đặt sân thành công! Đã lưu vào DB đơn giữ chỗ _id=undefined
+User 67bd323489acfa439c4d7947 stats.totalBookings được tăng lên thành: 464
+Updated totalBookings for user HuyHoàng: 464
+HuyHoàng
+Booking đã chuyển sang trạng thái processing. _id=683b12cd68b602d3dbfebf45, bookingCode=undefined
+Đếm completed bookings cho user 67bd323489acfa439c4d7947: 0
+Cập nhật thành công stats.completedBookings cho user 67bd323489acfa439c4d7947: 0
+User 67bd323489acfa439c4d7947 có 0 booking đã thanh toán, hãy chờ để Admin duyệt.
+Lỗi khi xác nhận và thanh toán booking (Service - Transaction aborted): MongoServerError: Plan executor error during findAndModify :: caused by :: The positional operator did not find the match needed from the query.
+    at Connection.sendCommand (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\cmap\connection.ts:551:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Connection.command (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\cmap\connection.ts:625:22)
+    at Server.command (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\sdam\server.ts:338:21)
+    at FindOneAndUpdateOperation.executeCommand (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\operations\command.ts:179:12)
+    at FindOneAndUpdateOperation.execute (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\operations\find_and_modify.ts:216:20)
+    at tryOperation (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\operations\execute_operation.ts:283:14)
+    at executeOperation (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+    at Collection.findOneAndUpdate (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\collection.ts:1005:12)
+    at model.Query._findOneAndUpdate (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:3513:13)
+    at model.Query.exec (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:4604:63)
+    at updateChartForCompleted (D:\newBTL\Badminton-manager-project\Backend\src\services\userServices.js:459:21)
+    at bookedBookingInDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:311:5)
+    at bookedBookingInDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:77:20) {
+  errorLabelSet: Set(0) {},
+  errorResponse: {
+    ok: 0,
+    errmsg: 'Plan executor error during findAndModify :: caused by :: The positional operator did not find the match needed from the query.',
+    code: 2,
+    codeName: 'BadValue',
+    '$clusterTime': {
+      clusterTime: new Timestamp({ t: 1748701901, i: 9 }),
+      signature: [Object]
+    },
+    operationTime: new Timestamp({ t: 1748701901, i: 9 })
+  },
+  ok: 0,
+  code: 2,
+  codeName: 'BadValue',
+  '$clusterTime': {
+    clusterTime: new Timestamp({ t: 1748701901, i: 9 }),
+    signature: {
+      hash: Binary.createFromBase64('T7oBFw7J8C5ele6QnlGmgxaUrMA=', 0),
+      keyId: new Long('7456826570393518086')
+    }
+  },
+  operationTime: new Timestamp({ t: 1748701901, i: 9 })
+}
+Lỗi khi xác nhận thanh toán booking (Controller): MongoServerError: Plan executor error during findAndModify :: caused by :: The positional operator did not find the match needed from the query.
+    at Connection.sendCommand (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\cmap\connection.ts:551:17)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Connection.command (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\cmap\connection.ts:625:22)
+    at Server.command (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\sdam\server.ts:338:21)
+    at FindOneAndUpdateOperation.executeCommand (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\operations\command.ts:179:12)
+    at FindOneAndUpdateOperation.execute (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\operations\find_and_modify.ts:216:20)
+    at tryOperation (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\operations\execute_operation.ts:283:14)
+    at executeOperation (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\operations\execute_operation.ts:115:12)
+    at Collection.findOneAndUpdate (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongodb\src\collection.ts:1005:12)
+    at model.Query._findOneAndUpdate (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:3513:13)
+    at model.Query.exec (D:\newBTL\Badminton-manager-project\Backend\node_modules\mongoose\lib\query.js:4604:63)
+    at updateChartForCompleted (D:\newBTL\Badminton-manager-project\Backend\src\services\userServices.js:459:21)
+    at bookedBookingInDB (D:\newBTL\Badminton-manager-project\Backend\src\services\bookingServices.js:311:5)
+    at bookedBookingInDBController (D:\newBTL\Badminton-manager-project\Backend\src\controllers\bookingController.js:77:20) {
+  errorLabelSet: Set(0) {},
+  errorResponse: {
+    ok: 0,
+    errmsg: 'Plan executor error during findAndModify :: caused by :: The positional operator did not find the match needed from the query.',
+    code: 2,
+    codeName: 'BadValue',
+    '$clusterTime': {
+      clusterTime: new Timestamp({ t: 1748701901, i: 9 }),
+      signature: [Object]
+    },
+    operationTime: new Timestamp({ t: 1748701901, i: 9 })
+  },
+  ok: 0,
+  code: 2,
+  codeName: 'BadValue',
+  '$clusterTime': {
+    clusterTime: new Timestamp({ t: 1748701901, i: 9 }),
+    signature: {
+      hash: Binary.createFromBase64('T7oBFw7J8C5ele6QnlGmgxaUrMA=', 0),
+      keyId: new Long('7456826570393518086')
+    }
+  },
+  operationTime: new Timestamp({ t: 1748701901, i: 9 })
+}
+FAIL __tests__/integration_test/booking.integration.test.js (35.883 s)
+  Booking API Integration Tests
+    POST /api/booking/pending/toggle
+      × should toggle timeslot to pending successfully (1901 ms)
+      × should return 400 for invalid timeslot (835 ms)
+      × should return 400 for invalid courtId (785 ms)
+      × should return 400 if centerId is missing (806 ms)
+    POST /api/booking/pending/pendingBookingToDB
+      × should save pending booking to DB successfully (1172 ms)
+      × should return 400 if cache is empty (852 ms)
+      × should return 400 if timeslot is already booked (853 ms)
+      × should return 400 if user has existing pending booking for the same day (902 ms)
+    POST /api/booking/pending/bookedBookingInDB
+      × should confirm booking with paymentImage successfully (832 ms)
+      × should return 400 if no paymentImage is provided (942 ms)
+      × should return 400 if pending booking does not exist (939 ms)
+      × should return 400 if note is too long (869 ms)
+      × should return 400 if paymentImage is invalid (866 ms)
+      × should return 400 if timeslot conflicts with another booking (838 ms)
+    POST /api/booking/pending/clear-all
+      × should clear all pending timeslots for user at a center (1009 ms)
+      × should return 400 for invalid centerId (916 ms)
+    GET /api/booking/pending/my-timeslots
+      × should retrieve user’s pending timeslots (814 ms)
+      √ should return empty mapping if centerId or date is missing (816 ms)
+    GET /api/booking/pending/mapping
+      × should retrieve full pending mapping for center and date (919 ms)
+      × should return 400 for invalid date (854 ms)
+    GET /api/booking/pending/exists
+      √ should check if pending booking exists (886 ms)
+      √ should return exists=false if no pending booking (892 ms)
+      × should return 400 for invalid centerId (800 ms)
+    GET /api/booking/popular-times
+      √ should retrieve popular timeslots for user (928 ms)
+    GET /api/booking/get-booking-history
+      √ should retrieve booking history for logged-in user (1032 ms)
+    POST /api/booking/delete-booking
+      √ should soft delete a paid booking (858 ms)
+      √ should return 404 if bookingId does not exist (801 ms)
+      × should return 400 for invalid bookingId (769 ms)
+    POST /api/booking/cancel
+      × should cancel a pending booking successfully (978 ms)
+      × should return 200 if no pending booking exists (797 ms)
+    Full Booking Flow
+      × should complete the full booking cycle (1301 ms)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/toggle › should toggle timeslot to pending successfully
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "67ca6e3cfc964efa218ab7d8", "2025-05-29", "67bd323489acfa439c4d7947", "HuyHoàng"
+
+    Number of calls: 0
+
+    [0m [90m 225 |[39m       expect(response[33m.[39mbody[33m.[39mbooking[33m.[39mstatus)[33m.[39mtoBe([32m'pending'[39m)[33m;[39m
+     [90m 226 |[39m       expect(response[33m.[39mbody[33m.[39mbooking[33m.[39muserId)[33m.[39mtoBe(user[33m.[39m_id[33m.[39mtoString())[33m;[39m
+    [31m[1m>[22m[39m[90m 227 |[39m       expect(require([32m'../../src/services/bookingServices.js'[39m)[33m.[39mgetPendingKey)[33m.[39mtoHaveBeenCalledWith(
+     [90m     |[39m                                                                              [31m[1m^[22m[39m
+     [90m 228 |[39m         center[33m.[39m_id[33m.[39mtoString()[33m,[39m
+     [90m 229 |[39m         [32m'2025-05-29'[39m[33m,[39m
+     [90m 230 |[39m         user[33m.[39m_id[33m.[39mtoString()[33m,[39m[0m
+
+      at Object.toHaveBeenCalledWith (__tests__/integration_test/booking.integration.test.js:227:78)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/toggle › should return 400 for invalid timeslot
+
+    expected 400 "Bad Request", got 200 "OK"
+
+    [0m [90m 246 |[39m           ttl[33m:[39m [35m60[39m[33m,[39m
+     [90m 247 |[39m         })
+    [31m[1m>[22m[39m[90m 248 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 249 |[39m
+     [90m 250 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 251 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Timeslot không hợp lệ'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:248:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/toggle › should return 400 for invalid courtId
+
+    expected 400 "Bad Request", got 200 "OK"
+
+    [0m [90m 266 |[39m           ttl[33m:[39m [35m60[39m[33m,[39m
+     [90m 267 |[39m         })
+    [31m[1m>[22m[39m[90m 268 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 269 |[39m
+     [90m 270 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 271 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Court không tồn tại'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:268:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/toggle › should return 400 if centerId is missing
+
+    expected 400 "Bad Request", got 200 "OK"
+
+    [0m [90m 284 |[39m           ttl[33m:[39m [35m60[39m[33m,[39m
+     [90m 285 |[39m         })
+    [31m[1m>[22m[39m[90m 286 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 287 |[39m
+     [90m 288 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 289 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'CenterId là bắt buộc'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:286:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/pendingBookingToDB › should save pending booking to DB successfully
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "67ca6e3cfc964efa218ab7d8", "2025-05-29", "67bd323489acfa439c4d7947", "HuyHoàng"
+
+    Number of calls: 0
+
+    [0m [90m 325 |[39m       expect(response[33m.[39mbody[33m.[39mbooking)[33m.[39mtoBeDefined()[33m;[39m
+     [90m 326 |[39m       expect(response[33m.[39mbody[33m.[39mbooking[33m.[39mstatus)[33m.[39mtoBe([32m'pending'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 327 |[39m       expect(require([32m'../../src/services/bookingServices.js'[39m)[33m.[39mgetPendingKey)[33m.[39mtoHaveBeenCalledWith(
+     [90m     |[39m                                                                              [31m[1m^[22m[39m
+     [90m 328 |[39m         center[33m.[39m_id[33m.[39mtoString()[33m,[39m
+     [90m 329 |[39m         [32m'2025-05-29'[39m[33m,[39m
+     [90m 330 |[39m         user[33m.[39m_id[33m.[39mtoString()[33m,[39m[0m
+
+      at Object.toHaveBeenCalledWith (__tests__/integration_test/booking.integration.test.js:327:78)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/pendingBookingToDB › should return 400 if cache is empty
+
+    expected 400 "Bad Request", got 500 "Internal Server Error"
+
+    [0m [90m 344 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 345 |[39m         })
+    [31m[1m>[22m[39m[90m 346 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 347 |[39m
+     [90m 348 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 349 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Không tìm thấy booking pending trong cache'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:346:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/pendingBookingToDB › should return 400 if timeslot is already booked
+
+    expected 400 "Bad Request", got 500 "Internal Server Error"
+
+    [0m [90m 369 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 370 |[39m         })
+    [31m[1m>[22m[39m[90m 371 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 372 |[39m
+     [90m 373 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 374 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Timeslot đã được đặt'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:371:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/pendingBookingToDB › should return 400 if user has existing pending booking for the same day
+
+    expected 400 "Bad Request", got 500 "Internal Server Error"
+
+    [0m [90m 394 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 395 |[39m         })
+    [31m[1m>[22m[39m[90m 396 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 397 |[39m
+     [90m 398 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 399 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Bạn đã có booking pending trên trung tâm này'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:396:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/bookedBookingInDB › should confirm booking with paymentImage successfully
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+    [0m [90m 430 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 431 |[39m         })
+    [31m[1m>[22m[39m[90m 432 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 433 |[39m
+     [90m 434 |[39m       pendingBooking [33m=[39m response[33m.[39mbody[33m.[39mbooking[33m;[39m
+     [90m 435 |[39m     })[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:432:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/bookedBookingInDB › should return 400 if no paymentImage is provided
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+    [0m [90m 430 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 431 |[39m         })
+    [31m[1m>[22m[39m[90m 432 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 433 |[39m
+     [90m 434 |[39m       pendingBooking [33m=[39m response[33m.[39mbody[33m.[39mbooking[33m;[39m
+     [90m 435 |[39m     })[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:432:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/bookedBookingInDB › should return 400 if pending booking does not exist
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+    [0m [90m 430 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 431 |[39m         })
+    [31m[1m>[22m[39m[90m 432 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 433 |[39m
+     [90m 434 |[39m       pendingBooking [33m=[39m response[33m.[39mbody[33m.[39mbooking[33m;[39m
+     [90m 435 |[39m     })[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:432:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/bookedBookingInDB › should return 400 if note is too long
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+    [0m [90m 430 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 431 |[39m         })
+    [31m[1m>[22m[39m[90m 432 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 433 |[39m
+     [90m 434 |[39m       pendingBooking [33m=[39m response[33m.[39mbody[33m.[39mbooking[33m;[39m
+     [90m 435 |[39m     })[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:432:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/bookedBookingInDB › should return 400 if paymentImage is invalid
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+    [0m [90m 430 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 431 |[39m         })
+    [31m[1m>[22m[39m[90m 432 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 433 |[39m
+     [90m 434 |[39m       pendingBooking [33m=[39m response[33m.[39mbody[33m.[39mbooking[33m;[39m
+     [90m 435 |[39m     })[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:432:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/bookedBookingInDB › should return 400 if timeslot conflicts with another booking
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+    [0m [90m 430 |[39m           totalAmount[33m:[39m [35m140000[39m[33m,[39m
+     [90m 431 |[39m         })
+    [31m[1m>[22m[39m[90m 432 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 433 |[39m
+     [90m 434 |[39m       pendingBooking [33m=[39m response[33m.[39mbody[33m.[39mbooking[33m;[39m
+     [90m 435 |[39m     })[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:432:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/clear-all › should clear all pending timeslots for user at a center
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "67ca6e3cfc964efa218ab7d8", "2025-05-29", "67bd323489acfa439c4d7947", "HuyHoàng"
+
+    Number of calls: 0
+
+    [0m [90m 624 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 625 |[39m       expect(response[33m.[39mbody[33m.[39mresult)[33m.[39mtoHaveProperty([32m'deletedCount'[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 626 |[39m       expect(require([32m'../../src/services/bookingServices.js'[39m)[33m.[39mgetPendingKey)[33m.[39mtoHaveBeenCalledWith(
+     [90m     |[39m                                                                              [31m[1m^[22m[39m
+     [90m 627 |[39m         center[33m.[39m_id[33m.[39mtoString()[33m,[39m
+     [90m 628 |[39m         [32m'2025-05-29'[39m[33m,[39m
+     [90m 629 |[39m         user[33m.[39m_id[33m.[39mtoString()[33m,[39m[0m
+
+      at Object.toHaveBeenCalledWith (__tests__/integration_test/booking.integration.test.js:626:78)
+
+  ● Booking API Integration Tests › POST /api/booking/pending/clear-all › should return 400 for invalid centerId
+
+    expected 400 "Bad Request", got 500 "Internal Server Error"
+
+    [0m [90m 646 |[39m         [33m.[39m[36mset[39m([32m'x-csrf-token'[39m[33m,[39m csrfToken)
+     [90m 647 |[39m         [33m.[39msend({ centerId[33m:[39m [32m'invalid-id'[39m })
+    [31m[1m>[22m[39m[90m 648 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 649 |[39m
+     [90m 650 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 651 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Invalid centerId'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:648:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › GET /api/booking/pending/my-timeslots › should retrieve user’s pending timeslots
+
+    expect(received).toEqual(expected) // deep equality
+
+    Expected: ObjectContaining {"name": "HuyHoàng", "status": "myPending", "userId": "67bd323489acfa439c4d7947"}
+    Received: "trống"
+
+    [0m [90m 679 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 680 |[39m       expect(response[33m.[39mbody[33m.[39mmapping[court1[33m.[39m_id[33m.[39mtoString()])[33m.[39mtoBeDefined()[33m;[39m
+    [31m[1m>[22m[39m[90m 681 |[39m       expect(response[33m.[39mbody[33m.[39mmapping[court1[33m.[39m_id[33m.[39mtoString()][[35m5[39m])[33m.[39mtoEqual(expect[33m.[39mobjectContaining({
+     [90m     |[39m                                                               [31m[1m^[22m[39m
+     [90m 682 |[39m         status[33m:[39m [32m'myPending'[39m[33m,[39m
+     [90m 683 |[39m         userId[33m:[39m user[33m.[39m_id[33m.[39mtoString()[33m,[39m
+     [90m 684 |[39m         name[33m:[39m user[33m.[39mname[33m,[39m[0m
+
+      at Object.toEqual (__tests__/integration_test/booking.integration.test.js:681:63)
+
+  ● Booking API Integration Tests › GET /api/booking/pending/mapping › should retrieve full pending mapping for center and date
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+    - ObjectContaining {
+    + Object {
+        "name": "HuyHoàng",
+        "status": "pending",
+    -   "userId": "67bd323489acfa439c4d7947",
+    +   "userId": "[object Object]",
+      }
+
+    [0m [90m 725 |[39m       expect(response[33m.[39mbody[33m.[39mmapping)[33m.[39mtoBeDefined()[33m;[39m
+     [90m 726 |[39m       expect(response[33m.[39mbody[33m.[39mmapping[court1[33m.[39m_id[33m.[39mtoString()])[33m.[39mtoBeDefined()[33m;[39m
+    [31m[1m>[22m[39m[90m 727 |[39m       expect(response[33m.[39mbody[33m.[39mmapping[court1[33m.[39m_id[33m.[39mtoString()][[35m5[39m])[33m.[39mtoEqual(expect[33m.[39mobjectContaining({
+     [90m     |[39m                                                               [31m[1m^[22m[39m
+     [90m 728 |[39m         status[33m:[39m [32m'pending'[39m[33m,[39m
+     [90m 729 |[39m         userId[33m:[39m user[33m.[39m_id[33m.[39mtoString()[33m,[39m
+     [90m 730 |[39m         name[33m:[39m user[33m.[39mname[33m,[39m[0m
+
+      at Object.toEqual (__tests__/integration_test/booking.integration.test.js:727:63)
+
+  ● Booking API Integration Tests › GET /api/booking/pending/mapping › should return 400 for invalid date
+
+    expected 400 "Bad Request", got 500 "Internal Server Error"
+
+    [0m [90m 736 |[39m         [33m.[39m[36mget[39m([32m`/api/booking/pending/mapping?centerId=${center._id.toString()}&date=invalid-date`[39m)
+     [90m 737 |[39m         [33m.[39m[36mset[39m([32m'Cookie'[39m[33m,[39m cookies)
+    [31m[1m>[22m[39m[90m 738 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 739 |[39m
+     [90m 740 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 741 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Invalid date'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:738:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › GET /api/booking/pending/exists › should return 400 for invalid centerId
+
+    expected 400 "Bad Request", got 500 "Internal Server Error"
+
+    [0m [90m 784 |[39m         [33m.[39m[36mget[39m([32m`/api/booking/pending/exists?centerId=invalid-id`[39m)
+     [90m 785 |[39m         [33m.[39m[36mset[39m([32m'Cookie'[39m[33m,[39m cookies)
+    [31m[1m>[22m[39m[90m 786 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 787 |[39m
+     [90m 788 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 789 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Invalid centerId'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:786:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/delete-booking › should return 400 for invalid bookingId
+
+    expected 400 "Bad Request", got 500 "Internal Server Error"
+
+    [0m [90m 901 |[39m         [33m.[39m[36mset[39m([32m'x-csrf-token'[39m[33m,[39m csrfToken)
+     [90m 902 |[39m         [33m.[39msend({ bookingId[33m:[39m [32m'invalid-id'[39m })
+    [31m[1m>[22m[39m[90m 903 |[39m         [33m.[39mexpect([35m400[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 904 |[39m
+     [90m 905 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mfalse[39m)[33m;[39m
+     [90m 906 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Invalid bookingId format'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:903:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/cancel › should cancel a pending booking successfully
+
+    expected 200 "OK", got 404 "Not Found"
+
+    [0m [90m 927 |[39m         [33m.[39m[36mset[39m([32m'x-csrf-token'[39m[33m,[39m csrfToken)
+     [90m 928 |[39m         [33m.[39msend({ centerId[33m:[39m center[33m.[39m_id[33m.[39mtoString() })
+    [31m[1m>[22m[39m[90m 929 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 930 |[39m
+     [90m 931 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 932 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Xóa booking cancel thành công'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:929:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › POST /api/booking/cancel › should return 200 if no pending booking exists
+
+    expected 200 "OK", got 404 "Not Found"
+
+    [0m [90m 940 |[39m         [33m.[39m[36mset[39m([32m'x-csrf-token'[39m[33m,[39m csrfToken)
+     [90m 941 |[39m         [33m.[39msend({ centerId[33m:[39m center[33m.[39m_id[33m.[39mtoString() })
+    [31m[1m>[22m[39m[90m 942 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m     |[39m          [31m[1m^[22m[39m
+     [90m 943 |[39m
+     [90m 944 |[39m       expect(response[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 945 |[39m       expect(response[33m.[39mbody[33m.[39mmessage)[33m.[39mtoContain([32m'Xóa booking cancel thành công'[39m)[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:942:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+  ● Booking API Integration Tests › Full Booking Flow › should complete the full booking cycle
+
+    expected 200 "OK", got 500 "Internal Server Error"
+
+    [0m [90m 1004 |[39m           note[33m:[39m [32m'Full flow test'[39m[33m,[39m
+     [90m 1005 |[39m         })
+    [31m[1m>[22m[39m[90m 1006 |[39m         [33m.[39mexpect([35m200[39m)[33m;[39m
+     [90m      |[39m          [31m[1m^[22m[39m
+     [90m 1007 |[39m
+     [90m 1008 |[39m       expect(bookedBookingResponse[33m.[39mbody[33m.[39msuccess)[33m.[39mtoBe([36mtrue[39m)[33m;[39m
+     [90m 1009 |[39m       expect(bookedBookingResponse[33m.[39mbody[33m.[39mbooking)[33m.[39mtoBeDefined()[33m;[39m[0m
+
+      at Object.expect (__tests__/integration_test/booking.integration.test.js:1006:10)
+      ----
+      at Test._assertStatus (node_modules/supertest/lib/test.js:267:14)
+      at node_modules/supertest/lib/test.js:323:13
+      at Test._assertFunction (node_modules/supertest/lib/test.js:300:13)
+      at Test.assert (node_modules/supertest/lib/test.js:179:23)
+      at Server.localAssert (node_modules/supertest/lib/test.js:135:14)
+
+----------|---------|----------|---------|---------|-------------------
+File      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+----------|---------|----------|---------|---------|-------------------
+All files |       0 |        0 |       0 |       0 |                   
+----------|---------|----------|---------|---------|-------------------
+Test Suites: 1 failed, 1 total
+Tests:       24 failed, 7 passed, 31 total
+Snapshots:   0 total
+Time:        37.952 s
+Ran all test suites matching /booking.integration.test.js/i.
+--- Global Teardown ---
+MongoDB: Đã xóa database.
+MongoDB: Đã ngắt kết nối Mongoose.
+--- Teardown hoàn tất ---
